@@ -48,9 +48,9 @@ async def kakao_auth(request: Request):
 
 
 # 파티방 관리
-@app.post("/company/{companyId}/party", summary="파티방 등록", tags=["party"])
-async def create_company_party(
-    companyId: int = Path(..., description="회사 ID"), 
+## 파티방 등록
+@app.post("/party", summary="파티방 등록", tags=["party"])
+async def create_party(
     party: schemas.PartyBase = Body(..., description="파티 정보"), 
     db: AsyncSession = Depends(database.get_db)
     ):
@@ -66,8 +66,92 @@ async def create_company_party(
     """
     
     return await crud.create_party(db=db, party=party)
+
+
+## 날짜별 파티방 리스트
+@app.get("/party", response_model=schemas.PartyBase,summary="날짜별 파티방 리스트", tags=["party"])
+async def read_party_list(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
+    owners = await crud.party_list(db, skip=skip, limit=limit)
+    return owners
+
+## 전체 명단 리스트
+@app.get("/participant/{partyId}", response_model=schemas.Participant, summary="날짜별 파티방 명단", tags=["party"])
+async def read_party_participant(partyId: int, db: AsyncSession = Depends(database.get_db)):
+    participant = await crud.party_participant(db, party_id=partyId)
+    return participant
+
+
+## 파티방 명단 생성
+@app.post("/participant", response_model=schemas.Participant, summary="파티방 명단 등록", tags=["party"])
+async def create_party_participant(participant: schemas.Participant, db: AsyncSession = Depends(database.get_db)):
+    """
+    파티방 명단 등록.
+    
+    - **party_id**: 파티 아이디.
+    - **name**: 이름.
+    - **phone**: 핸드폰.
+    - **mbti**: mbti.
+    - **age**: 나이.
+    - **region**: 지역.
+    - **gender**: 성별.
+    """
+    return await crud.create_party_participant(db=db, participant=participant)
+
+## 파티방 명단 수정
+@app.put("/participant/{id}", response_model=schemas.Participant, summary="파티 수정", tags=["party"])
+async def update_party_participant(id: int, participant: schemas.Participant, db: AsyncSession = Depends(database.get_db)):
+    return await crud.update_party_participant(db=db, participant_id=id, participant=participant)
+
+## 파티방 명단 삭제
+@app.delete("/participant/{id}", response_model=schemas.Participant, summary="파티 삭제", tags=["party"])
+async def delete_party_participant(id: int, db: AsyncSession = Depends(database.get_db)):
+    return await crud.delete_party_participant(db=db, participant_id=id)
+
+
+
 # 조 관리
+## 조 자동생성
+
+## 조 리스트
+
+## 개별 조 상세정보
+
+## 조 별 매니저 권한 생성
+
+
+## 조 별 매니저 권한 수정
+
+## 조 별 매니저 권한 삭제
+
+
+
+
+
+
 
 # 매니저 관리
+## 매니저 리스트
 
-# 프로그램 실행 
+## 매니저 상세정보
+
+## 매니저 생성
+
+## 매니저 수정
+
+## 매니저 삭제
+
+
+
+
+
+#  프로그램 관리
+## 실시간 참석 on/off
+
+## 실시간 참석 추가 요청
+
+## 강제 퇴장
+
+## 짝 매칭 프로그램 실행
+
+
+## 파티방 개설

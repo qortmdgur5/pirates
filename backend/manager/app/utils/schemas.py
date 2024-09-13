@@ -30,3 +30,19 @@ class Party(PartyBase):
 
     class Config:
         from_attributes = True
+        
+        
+class ParticipantBase(BaseModel):
+    party_id: int
+    name: str
+    phone: str
+    mbti: str
+    age: int
+    region: str
+    gender: int
+    
+class Participant(ParticipantBase):
+    id: int
+
+    class Config:
+        from_attributes = True

@@ -33,7 +33,8 @@ async def authenticate_user(db: AsyncSession, user: schemas.UserCreate):
 
     return {"msg": "Login successful"}
 
-
+# 파티방 관리
+## 파티방 등록
 async def create_party(db: AsyncSession, party: schemas.PartyBase):
     db_party = models.Party(
         accommodation_id=party.accommodation_id,
@@ -47,3 +48,59 @@ async def create_party(db: AsyncSession, party: schemas.PartyBase):
     await db.commit()
     await db.refresh(db_party)
     return db_party
+
+## 날짜별 파티방 리스트
+async def party_list(db: AsyncSession, skip: int = 0, limit: int = 10):
+    result = await db.execute(
+        select(models.Party).offset(skip).limit(limit)
+    )
+    return result.scalars().all()
+
+## 전체 명단 리스트
+async def party_participant(db: AsyncSession, party_id: int):
+    result = await db.execute(
+        select(models.Participant).filter(models.Participant.party_id == party_id)
+    )
+    return result.scalar_one_or_none()
+
+## 파티방 명단 생성
+async def create_party_participant(db: AsyncSession, participant: schemas.Participant):
+    
+    db_participant = models.Participant(
+        party_id=participant.party_id,
+        name=participant.name,
+        phone=participant.phone,
+        mbti=participant.mbti,
+        age=participant.age,
+        region=participant.region,
+        gender=participant.gender
+    )
+    db.add(db_participant)
+    await db.commit()
+    await db.refresh(db_participant)
+    
+    return db_participant
+
+## 파티방 명단 수정
+async def update_party_participant(db: AsyncSession, participant_id: int, participant: schemas.Participant):
+    result = await db.execute(
+        select(models.Participant).filter(models.Participant.id == participant_id)
+    )
+    db_participant = result.scalar_one_or_none()
+    if db_participant:
+        for key, value in participant.dict().items():
+            setattr(db_participant, key, value)
+        await db.commit()
+        await db.refresh(db_participant)
+    return db_participant
+
+## 파티방 명단 삭제
+async def delete_party_participant(db: AsyncSession, participant_id: int):
+    result = await db.execute(
+        select(models.Participant).filter(models.Participant.id == participant_id)
+    )
+    db_participant = result.scalar_one_or_none()
+    if db_participant:
+        await db.delete(db_participant)
+        await db.commit()
+    return db_participant
