@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, Depends, Request, Path, Body
+from fastapi import FastAPI, Depends, HTTPException, Request, Path, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from .oauth import oauth
 from .db import crud, database
@@ -110,20 +110,64 @@ async def delete_party_participant(id: int, db: AsyncSession = Depends(database.
 
 
 
-# 조 관리
-## 조 자동생성
+# # 조 관리
+# ## 조 자동생성
+# @app.post("/team", response_model=schemas.PartyTeam, summary="조 자동 생성", tags=["team"])
+# async def create_party_team(team: schemas.PartyTeam, db: AsyncSession = Depends(database.get_db)):
+#     """
+#     파티방 명단 등록.
+    
+#     - **id**: 파티 아이디.
+#     - **totalNumber**: 총 예약 인원 수.
+#     - **teamNumber**: 총 파티 조 수.
+#     """
+#     return await crud.create_team_participant(db=db, team=team)
 
-## 조 리스트
 
-## 개별 조 상세정보
+# ## 조 리스트
+# @app.get("/team", response_model=List[schemas.PartyTeam], summary="조 리스트", tags=["team"])
+# async def read_party_team(partyId: int, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
+#     party_team_list = await crud.party_team(db, party_id=partyId, skip=skip, limit=limit)
+#     return party_team_list
 
-## 조 별 매니저 권한 생성
+
+# ## 개별 조 상세정보
+# @app.get("/team/{id}", response_model=schemas.PartyTeam, summary="개별 조 상세정보", tags=["team"])
+# async def read_party_team(id: int, db: AsyncSession = Depends(database.get_db)):
+#     party_team = await crud.get_party_team(db, team_id=id)
+#     if party_team is None:
+#         raise HTTPException(status_code=404, detail="team not found")
+#     return party_team
 
 
-## 조 별 매니저 권한 수정
+# ## 조 별 매니저 권한 생성
+# @app.post("/team/auth", response_model=schemas.Manager, summary="조 별 매니저 권한 생성", tags=["team"])
+# async def create_party_team_auth(manager: schemas.ManagerBase, db: AsyncSession = Depends(database.get_db)):
+#     """
+#     파티방 명단 등록.
+    
+#     - **party_id**: 파티 아이디.
+#     - **name**: 이름.
+#     - **phone**: 핸드폰.
+#     - **mbti**: mbti.
+#     - **age**: 나이.
+#     - **region**: 지역.
+#     - **gender**: 성별.
+#     """
+#     return await crud.create_party_team_auth(db=db, manager=manager)
 
-## 조 별 매니저 권한 삭제
 
+
+# ## 조 별 매니저 권한 수정
+# @app.put("/pteam/auth/{id}", response_model=schemas.Manager, summary="조 별 매니저 권한 수정", tags=["team"])
+# async def update_party_participant(id: int, manager: schemas.ManagerBase, db: AsyncSession = Depends(database.get_db)):
+#     return await crud.update_party_team_auth(db=db, team_id=id, manager=manager)
+
+
+# ## 조 별 매니저 권한 삭제
+# @app.delete("/team/auth/{id}", response_model=schemas.Manager, summary="조 별 매니저 권한 삭제", tags=["team"])
+# async def delete_party_team_auth(id: int, db: AsyncSession = Depends(database.get_db)):
+#     return await crud.delete_party_team_auth(db=db, team_id=id)
 
 
 
@@ -132,15 +176,45 @@ async def delete_party_participant(id: int, db: AsyncSession = Depends(database.
 
 # 매니저 관리
 ## 매니저 리스트
+@app.get("/managers", response_model=list[schemas.Manager], summary="매니저 리스트", tags=["manager"])
+async def read_managers(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
+    managers = await crud.get_managers(db, skip=skip, limit=limit)
+    return managers
+
 
 ## 매니저 상세정보
+@app.get("/manager/{id}", response_model=schemas.Manager, summary="매니저 조회", tags=["manager"])
+async def read_manager(id: int, db: AsyncSession = Depends(database.get_db)):
+    manager = await crud.get_manager(db, manager_id=id)
+    if manager is None:
+        raise HTTPException(status_code=404, detail="Manager not found")
+    return manager
+
 
 ## 매니저 생성
+@app.post("/manager", response_model=schemas.ManagerCreate, summary="매니저 등록", tags=["manager"])
+async def create_manager(manager: schemas.ManagerCreate, db: AsyncSession = Depends(database.get_db)):
+    """
+    업체 등록.
+
+    - **owner_id**: 사장 테이블 pk.
+    - **username**: 매니저 아이디.
+    - **password**: 매니저 비밀번호.
+    - **role**: 매니저 권한(승인-ROLE_AUTH_MANAGER, 미승인-ROLE_NOTAUTH_MANAGER).
+    """
+    return await crud.create_manager(db=db, manager=manager)
+
 
 ## 매니저 수정
+@app.put("/manager/{id}", response_model=schemas.ManagerCreate, summary="매니저 수정", tags=["manager"])
+async def update_manager(id: int, manager: schemas.ManagerCreate, db: AsyncSession = Depends(database.get_db)):
+    return await crud.update_manager(db=db, manager_id=id, manager=manager)
+
 
 ## 매니저 삭제
-
+@app.delete("/manager/{id}", response_model=schemas.Manager, summary="매니저 삭제", tags=["manager"])
+async def delete_manager(id: int, db: AsyncSession = Depends(database.get_db)):
+    return await crud.delete_manager(db=db, manager_id=id)
 
 
 

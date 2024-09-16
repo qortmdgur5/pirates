@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Time
+from sqlalchemy import Column, Integer, String, Date, Time, DateTime, func
 from ..db.database import Base
 
 # 회원가입, 로그인 나중에, 테이블 다 바꿔야 함
@@ -9,6 +9,8 @@ class User(Base):
     hashed_password = Column(String)
     is_active = Column(Integer, default=1)
 
+
+# 파티방 관리
 class Party(Base):
     __tablename__ = 'Party'
     id = Column(Integer, primary_key=True, index=True)
@@ -19,7 +21,8 @@ class Party(Base):
     number = Column(Integer, index=True)
     partyOn = Column(Integer, index=True)
     
-    
+
+# 파티방 명단   
 class Participant(Base):
     __tablename__ = 'Participant'
     id = Column(Integer, primary_key=True, index=True)
@@ -30,3 +33,34 @@ class Participant(Base):
     age = Column(Integer, index=True)
     region = Column(String(255), index=True)
     gender = Column(Integer, index=True)
+    
+    
+    
+
+# # 조 관리
+# class PartyUserInfo(Base):
+#     __tablename__ = 'PartyUserInfo'
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, index=True, nullable=False)
+#     team =Column(Integer, index=True)
+#     partyOn = Column(Integer, index=True)
+
+
+
+
+
+
+# 매니저 관리
+class Manager(Base):
+    __tablename__ = 'Manager'
+    id = Column(Integer, primary_key=True, index=True)
+    owner_id = Column(Integer, index=True, nullable=False)
+    username = Column(String(255), index=True)
+    password = Column(String(255), index=True)
+    role = Column(String(255), index=True)
+    date = Column(DateTime, default=func.now(), index=True)
+
+
+
+
+#  프로그램 관리

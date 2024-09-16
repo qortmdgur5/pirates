@@ -2,7 +2,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models, schemas
-from ..service.password import get_password_hash, verify_password
+from ..service.password import get_password_hash, hash_password, verify_password
 from fastapi import HTTPException
 
 
@@ -104,3 +104,103 @@ async def delete_party_participant(db: AsyncSession, participant_id: int):
         await db.delete(db_participant)
         await db.commit()
     return db_participant
+
+
+
+
+# 조 관리
+## 조 자동생성
+
+## 조 리스트
+
+## 개별 조 상세정보
+
+## 조 별 매니저 권한 생성
+
+
+## 조 별 매니저 권한 수정
+
+## 조 별 매니저 권한 삭제
+
+
+
+
+
+
+
+# 매니저 관리
+## 매니저 리스트
+async def get_managers(db: AsyncSession, skip: int = 0, limit: int = 10):
+    result = await db.execute(
+        select(models.Manager).offset(skip).limit(limit)
+    )
+    return result.scalars().all()
+
+
+## 매니저 상세정보
+async def get_manager(db: AsyncSession, manager_id: int):
+    result = await db.execute(
+        select(models.Manager).filter(models.Manager.id == manager_id)
+    )
+    return result.scalar_one_or_none()
+
+
+## 매니저 생성
+async def create_manager(db: AsyncSession, manager: schemas.ManagerCreate):
+    hashed_password = hash_password(manager.password)
+    
+    db_manager = models.Manager(
+        owner_id=manager.owner_id,
+        username=manager.username,
+        password=hashed_password,
+        role=manager.role
+    )
+    db.add(db_manager)
+    await db.commit()
+    await db.refresh(db_manager)
+    
+    db_manager.date = db_manager.date.date()
+    
+    return db_manager
+
+
+## 매니저 수정
+async def update_manager(db: AsyncSession, manager_id: int, manager: schemas.ManagerCreate):
+    result = await db.execute(
+        select(models.Manager).filter(models.Manager.id == manager_id)
+    )
+    db_manager = result.scalar_one_or_none()
+    if db_manager:
+        for key, value in manager.dict().items():
+            setattr(db_manager, key, value)
+        await db.commit()
+        await db.refresh(db_manager)
+    return db_manager
+
+
+## 매니저 삭제
+async def delete_manager(db: AsyncSession, manager_id: int):
+    result = await db.execute(
+        select(models.Manager).filter(models.Manager.id == manager_id)
+    )
+    db_manager = result.scalar_one_or_none()
+    if db_manager:
+        await db.delete(db_manager)
+        await db.commit()
+    return db_manager
+
+
+
+
+
+#  프로그램 관리
+## 실시간 참석 on/off
+
+## 실시간 참석 추가 요청
+
+## 강제 퇴장
+
+## 짝 매칭 프로그램 실행
+
+
+## 파티방 개설
