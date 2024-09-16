@@ -57,11 +57,11 @@ async def party_list(db: AsyncSession, skip: int = 0, limit: int = 10):
     return result.scalars().all()
 
 ## 전체 명단 리스트
-async def party_participant(db: AsyncSession, party_id: int):
+async def party_participant(db: AsyncSession, party_id: int, skip: int = 0, limit: int = 10):
     result = await db.execute(
-        select(models.Participant).filter(models.Participant.party_id == party_id)
+        select(models.Participant).filter(models.Participant.party_id == party_id).offset(skip).limit(limit)
     )
-    return result.scalar_one_or_none()
+    return result.scalars().all()
 
 ## 파티방 명단 생성
 async def create_party_participant(db: AsyncSession, participant: schemas.Participant):

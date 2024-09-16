@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Depends, Request, Path, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from .oauth import oauth
@@ -69,21 +70,21 @@ async def create_party(
 
 
 ## 날짜별 파티방 리스트
-@app.get("/party", response_model=schemas.PartyBase,summary="날짜별 파티방 리스트", tags=["party"])
+@app.get("/party", response_model=List[schemas.Party] ,summary="날짜별 파티방 리스트", tags=["party"])
 async def read_party_list(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
-    owners = await crud.party_list(db, skip=skip, limit=limit)
-    return owners
+    party = await crud.party_list(db, skip=skip, limit=limit)
+    return party
 
 ## 전체 명단 리스트
-@app.get("/participant/{partyId}", response_model=schemas.Participant, summary="날짜별 파티방 명단", tags=["party"])
-async def read_party_participant(partyId: int, db: AsyncSession = Depends(database.get_db)):
-    participant = await crud.party_participant(db, party_id=partyId)
+@app.get("/participant/{partyId}", response_model=List[schemas.Participant], summary="날짜별 파티방 명단", tags=["party"])
+async def read_party_participant(partyId: int, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
+    participant = await crud.party_participant(db, party_id=partyId, skip=skip, limit=limit)
     return participant
 
 
 ## 파티방 명단 생성
 @app.post("/participant", response_model=schemas.Participant, summary="파티방 명단 등록", tags=["party"])
-async def create_party_participant(participant: schemas.Participant, db: AsyncSession = Depends(database.get_db)):
+async def create_party_participant(participant: schemas.ParticipantBase, db: AsyncSession = Depends(database.get_db)):
     """
     파티방 명단 등록.
     
@@ -99,7 +100,7 @@ async def create_party_participant(participant: schemas.Participant, db: AsyncSe
 
 ## 파티방 명단 수정
 @app.put("/participant/{id}", response_model=schemas.Participant, summary="파티 수정", tags=["party"])
-async def update_party_participant(id: int, participant: schemas.Participant, db: AsyncSession = Depends(database.get_db)):
+async def update_party_participant(id: int, participant: schemas.ParticipantBase, db: AsyncSession = Depends(database.get_db)):
     return await crud.update_party_participant(db=db, participant_id=id, participant=participant)
 
 ## 파티방 명단 삭제
