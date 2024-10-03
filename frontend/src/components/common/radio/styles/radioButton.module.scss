@@ -1,0 +1,53 @@
+.radioButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.radioInput {
+  display: none;
+}
+
+.customRadio {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid $color-black-300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  position: relative;
+}
+
+.customRadio::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-color: $color-black-300; /* 체크되지 않은 상태의 색상 */
+  border-radius: 50%;
+  position: absolute;
+}
+
+.radioInput:checked + .customRadio {
+  border-color: $color-blue-000; // 선택된 경우 외곽선 색상
+}
+
+.customRadio::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-color: $color-blue-000; // 선택된 경우 내부 색상
+  border-radius: 50%;
+  position: absolute;
+  display: none;
+}
+
+.radioInput:checked + .customRadio::after {
+  display: block;
+}
+
+.labelText {
+  font-size: 25px;
+  color: $color-black-200;
+}

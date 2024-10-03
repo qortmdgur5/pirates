@@ -6,7 +6,7 @@ interface MenuBoxProps {
   menuTabs: { text: string; isActive: boolean }[]; // 각 탭의 텍스트와 활성화 여부를 배열로 전달받음
 }
 
-const MenuBox: React.FC<MenuBoxProps> = ({ menuTabs }) => {
+function MenuBox({ menuTabs }: MenuBoxProps) {
   return (
     <div className={styles.house_manage_menu_box}>
       {/* menuTabs 배열을 map으로 순회하면서 각 탭을 렌더링 */}
