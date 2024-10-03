@@ -1,0 +1,52 @@
+.table_container {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.guest_house_table {
+  width: 100%;
+  border-radius: 40px;
+  overflow: hidden;
+  border-bottom: 1px solid;
+}
+
+.guest_house_table th {
+  height: 97px;
+  line-height: 97px;
+  font-size: 28px;
+  color: $color-black-100;
+  background-color: $color-blue-200;
+  font-weight: bold;
+}
+
+.th_left_blank,
+.td_left_black{
+  width: 36px;
+}
+
+.th_right_blank,
+.td_right_black{
+  width: 50px;
+}
+
+.guest_house_table td {
+  height: 90px;
+  line-height: 90px;
+  font-size: 26px;
+  color: $color-black-400;
+  border-bottom: 1px solid $color-gray-200;
+  background-color: $color-white-000;
+
+  &:first-child,
+  &:last-child{
+    border-bottom: none;
+  }
+}
+
+.text_left {
+  text-align: left;
+}
+
+.text_center {
+  text-align: center;
+}
