@@ -1,0 +1,52 @@
+.house_manage_menu_box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 300px;
+  filter: drop-shadow(4.5px 7.794px 2.5px rgba(4, 0, 0, 0.25));
+  background-color: $color-blue-000;
+  margin-top: 35px;
+  padding-top: 42px;
+  border-radius: 0 18px 0 0;
+
+  .menu_tab {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 64px;
+
+    .menu_tab_sideBar {
+      width: 8px;
+      height: 100%;
+      border-radius: 4px;
+      background-color: $color-blue-100;
+      visibility: hidden; /* 기본적으로 hidden */
+      
+      /* isActive일 때 visible */
+      &.visible {
+        visibility: visible;
+      }
+    }
+
+    .menu_card {
+      position: absolute;
+      left: 23px;
+      display: flex;
+      align-items: center;
+      width: 287px;
+      height: 100%;
+      border-radius: 18px;
+      padding-left: 30px;
+      filter: drop-shadow(4.5px 7.794px 2.5px rgba(4, 0, 0, 0.25));
+      background-color: transparent;
+      font-size: 28px;
+      color: $color-white-000;
+      cursor: pointer;
+
+      /* isActive일 때 스타일 */
+      &.active_card {
+        background-color: $color-blue-100;
+      }
+    }
+  }
+}

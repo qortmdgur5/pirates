@@ -1,0 +1,44 @@
+.house_manage_profile_box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 300px;
+  filter: drop-shadow(4.5px 7.794px 2.5px rgba(4, 0, 0, 0.25));
+  background-color: #4462d0;
+  border-radius: 0 18px 18px 0;
+  padding: 20px 0 40px 0;
+
+  .houes_manage_profile_text_1 {
+    font-size: 33px;
+    line-height: 41px;
+    color: $color-white-000;
+    font-weight: bold;
+
+    span {
+      font-weight: lighter;
+    }
+  }
+
+  .house_manage_profile_img_box {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    width: 129px;
+    height: 129px;
+    border-radius: 50%;
+    background-color: #aebae8;
+    overflow: hidden;
+    margin-top: 50px;
+
+    img {
+      width: 80%;
+      height: 80%;
+    }
+  }
+
+  .house_manage_profile_id {
+    font-size: 29px;
+    color: $color-white-000;
+    margin-top: 10px;
+  }
+}

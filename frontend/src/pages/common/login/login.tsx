@@ -1,4 +1,4 @@
-import Input from "../../components/common/input/Input";
+import Input from "../../../components/common/input/Input";
 import styles from "./styles/login.module.scss";
 import styled from "styled-components";
 
