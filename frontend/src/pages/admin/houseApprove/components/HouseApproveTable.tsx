@@ -1,5 +1,9 @@
 import styles from "./styles/houseApproveTable.module.scss"
 
+// 컴포넌트
+import ApproveButton from "../../../../components/common/button/ApproveButton";
+import DenyButton from "../../../../components/common/button/DenyButton";
+
 function HouseApproveTable() {
   const data = [
     {
@@ -50,8 +54,8 @@ function HouseApproveTable() {
               <td className={styles.text_left}>{item.id}</td>
               <td className={styles.text_left}>{item.phone}</td>
               <td className={styles.text_center}>{item.isApprove ? "Yes" : "No"}</td>
-              <td className={styles.text_center}>{item.isApprove ? "Yes" : "No"}</td>
-              <td className={styles.text_center}>{item.isApprove ? "Yes" : "No"}</td>
+              <td className={styles.text_center}><ApproveButton isApprove={item.isApprove} /></td>
+              <td className={styles.text_center}><DenyButton /></td>
               <td className={styles.td_right_black}></td>
             </tr>
           ))}
