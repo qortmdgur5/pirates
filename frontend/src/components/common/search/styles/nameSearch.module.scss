@@ -1,8 +1,8 @@
 .input_wrapper {
   position: relative;
+  flex-grow: 1;
 
   .name_input {
-    flex-grow: 1;
     height: 54px;
     border-radius: 27px;
     background-color: $color-white-000;

@@ -7,6 +7,7 @@ import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import ManagerApproveTable from "./components/ManagerApproveTable";
+import NameSearch from "../../../components/common/search/NameSearch";
 
 function ManagerApprove() {
   // 메뉴 탭 데이터
@@ -52,6 +53,7 @@ function ManagerApprove() {
                     onChange={setSelectedOption}
                   />
                 </div>
+                <NameSearch />
               </div>
               <ManagerApproveTable />
             </div>
