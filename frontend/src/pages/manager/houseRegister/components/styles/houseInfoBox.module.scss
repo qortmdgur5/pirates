@@ -1,0 +1,87 @@
+.container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 20px 0 30px 0;
+
+  .house_info_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 1063px;
+    height: 789px;
+    border-radius: 57px;
+    padding: 32px 35px 50px 32px;
+    background-color: $color-white-000;
+    overflow: hidden;
+
+    .house_name {
+      font-size: 40px;
+      font-weight: bold;
+      padding: 20px 40px 20px 40px;
+      border-radius: 18px;
+      background-color: $color-blue-200;
+    }
+
+    .house_info_box {
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+      width: 100%;
+      margin-top: 65px;
+
+      .house_info {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .houes_info_left_text {
+          font-size: 38px;
+          font-weight: bold;
+          color: $color-black-100;
+        }
+
+        .houes_info_right_text {
+          font-size: 33px;
+          color: $color-black-400;
+        }
+      }
+    }
+
+    .button_container {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      gap: 55px;
+      margin-top: 100px;
+
+      .register_button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 211px;
+        height: 58px;
+        font-size: 34px;
+        color: $color-white-000;
+        border-radius: 16px;
+        box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+        background-color: $color-blue-000;
+      }
+
+      .modify_button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 211px;
+        height: 58px;
+        font-size: 34px;
+        color: $color-black-100;
+        border-radius: 16px;
+        box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+        background-color: $color-gray-300;
+      }
+    }
+  }
+}

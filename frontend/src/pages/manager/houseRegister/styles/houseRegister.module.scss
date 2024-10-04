@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 120px);
+
+  .manage_right_box {
+    flex-grow: 1;
+    padding: 0 60px 60px 60px;
+
+    .manage_container {
+      width: 100%;
+      height: 100%;
+      background-color: $color-gray-100;
+
+      .manage_title {
+        display: flex;
+        font-size: 40px;
+        color: $color-black-100;
+        padding: 32px 0 0 37px;
+
+        &::before{
+          content: "";
+          width: 5px;
+          height: 40px;
+          background-color: #313131;
+          margin-right: 14px;
+        }
+      }
+    }
+  }
+}

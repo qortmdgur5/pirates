@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/common/login/login"
 import AdminHouseManagePage from "./pages/admin/houseManage/HouseManage"
 import AdminHouseApprovePage from "./pages/admin/houseApprove/HouseApprove"
+import ManagerHouseRegisterPage from "./pages/manager/houseRegister/HouseRegister"
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route index path="/" element={<LoginPage />}></Route>
         <Route path="/admin/houseManage" element={<AdminHouseManagePage />}></Route>
         <Route path="/admin/houseApprove" element={<AdminHouseApprovePage />}></Route>
+        <Route path="/manager/houseRegister" element={<ManagerHouseRegisterPage />}></Route>
       </Routes>
     </BrowserRouter>
   );
