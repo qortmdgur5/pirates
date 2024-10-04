@@ -7,6 +7,7 @@ import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import GuestHouseTable from "./components/GuestHoustTable";
+import NameSearch from "../../../components/common/search/NameSearch";
 
 function HouseManage() {
   // 메뉴 탭 데이터
@@ -51,6 +52,7 @@ function HouseManage() {
                     onChange={setSelectedOption}
                   />
                 </div>
+                <NameSearch />
               </div>
               <GuestHouseTable />
             </div>
