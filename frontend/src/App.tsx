@@ -6,6 +6,7 @@ import AdminHouseManagePage from "./pages/admin/houseManage/HouseManage"
 import AdminHouseApprovePage from "./pages/admin/houseApprove/HouseApprove"
 import ManagerHouseRegisterPage from "./pages/manager/houseRegister/HouseRegister"
 import ManagerApprovePage from "./pages/manager/managerApprove/ManagerApprove";
+import ManagePartyPage from "./pages/manager/manageParty/ManageParty"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/admin/houseApprove" element={<AdminHouseApprovePage />}></Route>
         <Route path="/manager/houseRegister" element={<ManagerHouseRegisterPage />}></Route>
         <Route path="/manager/managerApprove" element={<ManagerApprovePage />}></Route>
+        <Route path="/manager/manageParty" element={<ManagePartyPage />}></Route>
       </Routes>
     </BrowserRouter>
   );
