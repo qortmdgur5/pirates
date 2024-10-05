@@ -1,4 +1,6 @@
 import { useState } from "react";
+
+// 컴포넌트
 import Header from "../../../components/common/header/Header";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";

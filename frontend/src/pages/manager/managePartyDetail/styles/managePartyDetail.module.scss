@@ -34,7 +34,7 @@
 
       .manage_box {
         width: 100%;
-        padding: 160px 140px 120px 70px;
+        padding: 36px 140px 160px 70px;
 
         .search_box {
           display: flex;
@@ -46,22 +46,6 @@
             display: flex;
             gap: 25px;
           }
-        }
-
-        .blue_button {
-          float: right;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 263px;
-          height: 72px;
-          border-radius: 16px;
-          box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
-          background-color: $color-blue-000;
-          font-size: 30px;
-          color: $color-white-000;
-          margin-top: 36px;
-          margin-right: 15px;
         }
       }
     }
