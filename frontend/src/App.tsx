@@ -8,6 +8,7 @@ import ManagerHouseRegisterPage from "./pages/manager/houseRegister/HouseRegiste
 import ManagerApprovePage from "./pages/manager/managerApprove/ManagerApprove";
 import ManagePartyPage from "./pages/manager/manageParty/ManageParty"
 import ManagePartyDetailPage from "./pages/manager/managePartyDetail/ManagePartyDetail"
+import OwnerSignupPage from "./pages/owner/signup/Signup"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/manager/managerApprove" element={<ManagerApprovePage />}></Route>
         <Route path="/manager/manageParty" element={<ManagePartyPage />}></Route>
         <Route path="/manager/managePartyDetail" element={<ManagePartyDetailPage />}></Route>
+        <Route path="/owner/signup" element={<OwnerSignupPage />}></Route>
       </Routes>
     </BrowserRouter>
   );
