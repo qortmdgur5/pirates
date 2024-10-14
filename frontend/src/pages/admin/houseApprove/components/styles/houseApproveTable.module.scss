@@ -20,12 +20,12 @@
 }
 
 .th_left_blank,
-.td_left_black{
+.td_left_black {
   width: 36px;
 }
 
 .th_right_blank,
-.td_right_black{
+.td_right_black {
   width: 50px;
 }
 
@@ -38,7 +38,7 @@
   background-color: $color-white-000;
 
   &:first-child,
-  &:last-child{
+  &:last-child {
     border-bottom: none;
   }
 }
@@ -49,4 +49,35 @@
 
 .text_center {
   text-align: center;
+}
+
+.modal_text_1 {
+  font-size: 41px;
+  color: $color-black-100;
+}
+
+.modal_button_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 52px;
+  margin-top: 36px;
+
+  button {
+    width: 211px;
+    height: 58px;
+    border-radius: 16px;
+    box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+    font-size: 34px;
+  }
+
+  .modal_blue_button{
+    color: $color-white-000;
+    background-color: $color-blue-000;
+  }
+
+  .modal_gray_button{
+    color: $color-black-100;
+    background-color: $color-gray-300;
+  }
 }
