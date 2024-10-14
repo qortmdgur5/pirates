@@ -64,14 +64,17 @@ function HouseApproveTable() {
     },
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // 승인 확인 모달 상태 관리
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openApproveModal = () => setIsApproveModalOpen(true);
+  const closeApproveModal = () => setIsApproveModalOpen(false);
 
-  const handleApprove = () => {
-    closeModal(); // 모달 닫기
-  };
+  // 승인 취소 모달 상태 관리
+  const [isDenyModalOpen, setIsDenyModalOpen] = useState(false);
+
+  const openDenyModal = () => setIsDenyModalOpen(true);
+  const closeDenyModal = () => setIsDenyModalOpen(false);
 
   return (
     <div className={styles.table_container}>
@@ -101,10 +104,10 @@ function HouseApproveTable() {
                 {item.isApprove ? "Yes" : "No"}
               </td>
               <td className={styles.text_center}>
-                <ApproveButton isApprove={item.isApprove} onClick={openModal}/>
+                <ApproveButton isApprove={item.isApprove} onClick={openApproveModal}/>
               </td>
               <td className={styles.text_center}>
-                <DenyButton />
+                <DenyButton onClick={openDenyModal} />
               </td>
               <td className={styles.td_right_black}></td>
             </tr>
@@ -112,8 +115,8 @@ function HouseApproveTable() {
         </tbody>
       </table>
       <Modal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
+        isOpen={isApproveModalOpen}
+        onRequestClose={closeApproveModal}
         contentLabel="승인 확인 모달"
         style={customModalStyles}
         ariaHideApp={false}
@@ -121,7 +124,20 @@ function HouseApproveTable() {
         <p className={styles.modal_text_1}>"김철수" 님을 승인하시겠습니까?</p>
         <div className={styles.modal_button_box}>
           <button className={styles.modal_blue_button}>확인</button>
-          <button className={styles.modal_gray_button} onClick={closeModal}>취소</button>
+          <button className={styles.modal_gray_button} onClick={closeApproveModal}>취소</button>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isDenyModalOpen}
+        onRequestClose={closeDenyModal}
+        contentLabel="승인 취소 모달"
+        style={customModalStyles}
+        ariaHideApp={false}
+      >
+        <p className={styles.modal_text_1}>"김철수" 님을 취소하시겠습니까?</p>
+        <div className={styles.modal_button_box}>
+          <button className={styles.modal_blue_button}>확인</button>
+          <button className={styles.modal_gray_button} onClick={closeDenyModal}>취소</button>
         </div>
       </Modal>
     </div>

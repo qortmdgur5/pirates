@@ -13,9 +13,13 @@ const DenyButtonBox = styled.button`
   }
 `;
 
-function DenyButton() {
+interface DenyButtonInterface {
+  onClick: () => void; // 클릭 핸들러 타입 정의
+}
+
+function DenyButton({ onClick }: DenyButtonInterface) {
   return (
-    <DenyButtonBox>
+    <DenyButtonBox onClick={onClick}>
       <img src="/src/assets/image/denyButton.png" alt="denyButton_img" />
     </DenyButtonBox>
   );
