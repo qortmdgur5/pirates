@@ -67,3 +67,151 @@
     }
   }
 }
+
+.modal_logo_box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  .modal_logo_img_box {
+    width: 36px;
+    height: 36px;
+
+    img {
+      width: 100%;
+    }
+  }
+
+  .modal_logo_text {
+    background: linear-gradient(152deg, #6e2a72 0%, #3b52a9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 35px;
+    font-weight: bold;
+  }
+}
+
+.modal_text_1 {
+  font-size: 54px;
+  color: $color-black-100;
+  margin-top: 65px;
+}
+
+.modal_text_2 {
+  font-size: 18px;
+  color: $color-black-100;
+  margin-top: 30px;
+  padding: 0 30px 0 30px;
+}
+
+.party_register_form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  margin-top: 70px;
+
+  .party_register_form_input_box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .party_register_form_input_left {
+      font-size: 26px;
+      color: $color-black-100;
+    }
+
+    .party_register_form_input_right {
+      display: flex;
+      align-items: center;
+
+      .date_input_text,
+      .time_input_text {
+        font-size: 26px;
+        color: $color-black-100;
+        margin-right: 20px;
+      }
+
+      .date_calendar_emoji,
+      .time_clock_emoji {
+        font-size: 36px;
+        background-color: transparent;
+      }
+
+      .party_exist_check_box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        margin-right: 20px;
+
+        .party_register_input_text {
+          font-size: 26px;
+          color: $color-black-100;
+        }
+
+        .party_register_check_box {
+          width: 28px;
+          height: 28px;
+        }
+      }
+
+      .party_not_exist_check_box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+
+        .party_register_input_text {
+          font-size: 26px;
+          color: $color-black-100;
+        }
+
+        .party_register_check_box {
+          width: 28px;
+          height: 28px;
+        }
+      }
+    }
+
+    .party_register_max_input {
+      width: 180px;
+      border-radius: 18px;
+      font-size: 28px;
+      color: #8c8c8c;
+      border: 1px solid #c9c9c9;
+      padding: 0 25px 0 25px;
+      text-align: right;
+    }
+  }
+
+  .button_box{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 46px;
+    margin-top: 40px;
+
+    .blue_button{
+      width: 180px;
+      height: 50px;
+      border-radius: 16px;
+      box-shadow: inset -2.517px -3.109px 4px rgba(4,0,0,0.55);
+      background-color: $color-blue-000;
+      font-size: 29px;
+      color: $color-white-000;
+    }
+
+    .gray_button{
+      width: 180px;
+      height: 50px;
+      border-radius: 16px;
+      box-shadow: inset -2.517px -3.109px 4px rgba(4,0,0,0.55);
+      background-color: $color-gray-300;
+      font-size: 29px;
+      color: $color-black-100;
+    }
+  }
+}
