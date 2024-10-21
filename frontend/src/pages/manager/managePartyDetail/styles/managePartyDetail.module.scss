@@ -63,3 +63,16 @@
     }
   }
 }
+
+.modal_close_button{
+  position: absolute;
+  top: -32px;
+  right: 38px;
+  font-size: 18px;
+  color: $color-white-000;
+  background-color: transparent;
+}
+
+.modal_table_container{
+  width: 100%;
+}

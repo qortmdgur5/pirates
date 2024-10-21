@@ -1,0 +1,87 @@
+.table_container {
+  width: 100%;
+  background-color: $color-white-000;
+  border-radius: 40px;
+  padding-bottom: 42px;
+
+  .participant_modal_table {
+    width: 100%;
+    border-radius: 40px;
+    overflow: hidden;
+
+    th {
+      height: 109px;
+      background-color: $color-blue-200;
+      color: $color-black-100;
+      vertical-align: middle;
+      font-size: 27px;
+      font-weight: bold;
+    }
+
+    td {
+      height: 60px;
+      font-size: 27px;
+      vertical-align: middle;
+      color: $color-black-400;
+      font-weight: 500;
+    }
+
+    .modal_input {
+
+      input {
+        width: 60%;
+        height: 60%;
+        border: 1px solid $color-gray-600;
+        display: block;
+        margin: 0 auto;
+        font-size: 22px;
+        color: $color-black-400;
+        text-align: center;
+      }
+    }
+
+    .th_left_blank,
+    .td_left_black {
+      width: 36px;
+    }
+
+    .th_right_blank,
+    .td_right_black {
+      width: 50px;
+    }
+
+    .x_button {
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      background-color: $color-gray-600;
+      font-size: 25px;
+      color: $color-white-000;
+    }
+  }
+
+  .modal_blue_button_box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .blue_button {
+      width: 141px;
+      height: 53px;
+      border-radius: 16px;
+      box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+      background-color: $color-blue-000;
+      font-size: 28px;
+      color: $color-white-000;
+      margin-top: 66px;
+    }
+  }
+}
+
+.text_left {
+  text-align: left;
+}
+
+.text_center {
+  text-align: center;
+}
