@@ -33,6 +33,7 @@ function ManagePartyDetail() {
             </div>
             <p className={styles.manage_title}>참석자 명단</p>
             <div className={styles.manage_box}>
+              <button className={styles.blue_button}>등록</button>
               <ParticipantTable />
             </div>
           </div>

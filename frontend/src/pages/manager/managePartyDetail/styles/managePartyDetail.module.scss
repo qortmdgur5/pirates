@@ -47,6 +47,18 @@
             gap: 25px;
           }
         }
+
+        .blue_button {
+          float: right;
+          width: 117px;
+          height: 46px;
+          border-radius: 16px;
+          box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+          background-color: $color-blue-000;
+          font-size: 19px;
+          color: $color-white-000;
+          margin: auto 32px 20px auto;
+        }
       }
     }
   }

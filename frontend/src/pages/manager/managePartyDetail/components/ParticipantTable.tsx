@@ -49,7 +49,7 @@ function ParticipantTable() {
               <td className={styles.text_center}>{item.phone}</td>
               <td className={styles.text_center}>{item.age}</td>
               <td className={styles.text_center}>{item.sex ? `남` : `여`}</td>
-              <td className={styles.text_center}>삭제버튼</td>
+              <td className={styles.text_center}><button className={styles.red_button}>삭제</button></td>
               <td className={styles.td_right_black}></td>
             </tr>
           ))}

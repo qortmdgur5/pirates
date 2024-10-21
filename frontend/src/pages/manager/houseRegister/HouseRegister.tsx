@@ -26,7 +26,7 @@ function HouseRegister() {
         </div>
         <div className={styles.manage_right_box}>
           <div className={styles.manage_container}>
-            <p className={styles.manage_title}>매니저 관리</p>
+            <p className={styles.manage_title}>게스트하우스 관리</p>
             <HouseInfoBox />
           </div>
         </div>
