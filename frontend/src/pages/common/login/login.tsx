@@ -1,6 +1,7 @@
 import Input from "../../../components/common/input/Input";
 import styles from "./styles/login.module.scss";
 import styled from "styled-components";
+import { useNavigation  } from "../../../utils/navigation";
 
 const RoundButton = styled.button<{ iconUrl: string }>`
   width: 90px;
@@ -23,6 +24,9 @@ const RoundButton = styled.button<{ iconUrl: string }>`
 `;
 
 function Login() {
+  // 네비게이션 함수
+  const navigation = useNavigation();
+
   return (
     <div className={styles.container}>
       <div className={styles.login_box}>
@@ -43,16 +47,28 @@ function Login() {
         </div>
         <div className={styles.login_box_right}>
           <div className={styles.login_box_right_inner}>
-            <p className={styles.login_box_right_inner_text_1}>안녕하세요.<br />해적입니다.</p>
-            <p className={styles.login_box_right_inner_text_2}>회원 서비스 이용을 위해 로그인 해주세요.</p>
+            <p className={styles.login_box_right_inner_text_1}>
+              안녕하세요.
+              <br />
+              해적입니다.
+            </p>
+            <p className={styles.login_box_right_inner_text_2}>
+              회원 서비스 이용을 위해 로그인 해주세요.
+            </p>
             <div className={styles.login_box_right_inner_input_box}>
               <Input placeholder="아이디 입력" type="text" />
               <Input placeholder="비밀번호 입력" type="password" />
-              <button className={styles.login_box_right_inner_login_button}>로그인</button>
+              <button className={styles.login_box_right_inner_login_button} onClick={() => navigation("/admin/houseManage")}>
+                로그인
+              </button>
             </div>
             <div className={styles.login_box_right_inner_signup_box}>
-              <p className={styles.login_box_right_inner_signup_text}>아직 회원이 아니신가요?</p>
-              <button className={styles.login_box_right_inner_signup_button}>회원가입</button>
+              <p className={styles.login_box_right_inner_signup_text}>
+                아직 회원이 아니신가요?
+              </p>
+              <button className={styles.login_box_right_inner_signup_button} onClick={() => navigation("/owner/signup")}>
+                회원가입
+              </button>
             </div>
             <div className={styles.login_box_right_inner_sns_text}>
               SNS 계정으로 로그인

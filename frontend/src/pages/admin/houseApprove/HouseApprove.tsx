@@ -12,9 +12,9 @@ import NameSearch from "../../../components/common/search/NameSearch";
 function HouseApprove() {
   // 메뉴 탭 데이터
   const adminMenuTabs = [
-    { text: "게스트 하우스 관리", isActive: false },
-    { text: "게스트 승인 관리", isActive: true },
-    { text: "마이페이지", isActive: false },
+    { text: "게스트 하우스 관리", isActive: false, path: "/admin/houseManage" },
+    { text: "게스트 승인 관리", isActive: true, path: "/admin/houseApprove" },
+    { text: "마이페이지", isActive: false, path: "#" },
   ];
 
   const [selectedOption, setSelectedOption] = useState("asdOrders");

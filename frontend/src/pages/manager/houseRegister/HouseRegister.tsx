@@ -7,10 +7,10 @@ import styles from "./styles/houseRegister.module.scss";
 function HouseRegister() {
   // 메뉴 탭 데이터
   const managerMenuTabs = [
-    { text: "게스트 하우스 등록", isActive: true },
-    { text: "매니저 등록 관리", isActive: false },
-    { text: "파티방 관리", isActive: false },
-    { text: "마이페이지", isActive: false },
+    { text: "게스트 하우스 등록", isActive: true, path: "/manager/houseRegister" },
+    { text: "매니저 등록 관리", isActive: false, path: "/manager/managerApprove" },
+    { text: "파티방 관리", isActive: false, path: "/manager/manageParty" },
+    { text: "마이페이지", isActive: false, path: "#" },
   ];
   return (
     <>

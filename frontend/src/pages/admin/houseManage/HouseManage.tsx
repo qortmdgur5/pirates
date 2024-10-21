@@ -1,5 +1,6 @@
 import styles from "./styles/houseManage.module.scss";
 import { useState } from "react";
+import { useNavigation } from "../../../utils/navigation";
 
 // 컴포넌트
 import Header from "../../../components/common/header/Header";
@@ -10,11 +11,14 @@ import GuestHouseTable from "./components/GuestHoustTable";
 import NameSearch from "../../../components/common/search/NameSearch";
 
 function HouseManage() {
+  // 네비게이션 함수
+  const navigation = useNavigation();
+
   // 메뉴 탭 데이터
   const adminMenuTabs = [
-    { text: "게스트 하우스 관리", isActive: true },
-    { text: "게스트 승인 관리", isActive: false },
-    { text: "마이페이지", isActive: false },
+    { text: "게스트 하우스 관리", isActive: true, path: "/admin/houseManage" },
+    { text: "게스트 승인 관리", isActive: false, path: "/admin/houseApprove" },
+    { text: "마이페이지", isActive: false, path: "#" },
   ];
 
   const [selectedOption, setSelectedOption] = useState("manyReviews");
