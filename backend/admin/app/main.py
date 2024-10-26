@@ -2,144 +2,133 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from .db import crud, database
 from .utils import schemas
+import logging
 
 app = FastAPI()
 
-## 새롭게 다시 개발 진행 중
-@app.get("/admin/accomodations", response_model=list[schemas.AdminAccomodations], summary="관리자용 게스트하우스 관리 페이지", tags=["admin"])
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+## admim (관리자 사용 API)
+@app.get("/admin/accomodations", response_model=list[schemas.AdminAccomodations], summary="관리자용 게스트 하우스 관리 페이지 - 게스트 하우스 리스트 정보 가져오기 API", tags=["admin"])
 async def read_adminAccomodations(
     isMostReviews: bool = Query(True), 
     skip: int = Query(0),
     limit: int = Query(10), 
     db: AsyncSession = Depends(database.get_db)):
-    accomodations_data = await crud.get_adminAccomodations(db, isMostReviews=isMostReviews, skip=skip, limit=limit)
-    return accomodations_data
+    try:
+        data = await crud.get_adminAccomodations(db, isMostReviews=isMostReviews, skip=skip, limit=limit)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message) 
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
 
-@app.get("/admin/owners", response_model=list[schemas.AdminOwners], summary="관리자용 게스트하우스 승인 관리 페이지", tags=["admin"])
+@app.get("/admin/owners", response_model=list[schemas.AdminOwners], summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 리스트 정보 가져오기 API", tags=["admin"])
 async def read_adminOwners(
             isOldestOrders: bool = Query(True),
             skip: int = Query(0),
             limit: int = Query(10), 
             db: AsyncSession = Depends(database.get_db)):
-    owners_data = await crud.get_adminOwners(db, isOldestOrders=isOldestOrders, skip=skip, limit=limit)
-    return owners_data
+    try:
+        data = await crud.get_adminOwners(db, isOldestOrders=isOldestOrders, skip=skip, limit=limit)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message) 
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+
+@app.put("/admin/owner/auth/{id}", summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 승인 API , 승인 요청 시 해당 사장님 role 컬럼을 ROLE_AUTH_OWNER 로 변경", tags=["admin"])
+async def update_auth_adminOwners(id: int, db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.put_auth_adminOwners(db=db, id=id)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message) 
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+
+@app.put("/admin/owner/deny/{id}", summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 취소 API, 요청 시 사장님 role 컬럼을 ROLE_NOTAUTH_OWNER 로 변경", tags=["admin"])
+async def update_deny_owner(id: int, db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.put_deny_adminOwners(db=db, id=id)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+
+
+## owner (사장님 사용 API)
+@app.get("/owner/accomodation/{id}", response_model=list[schemas.OwnerAccomodationsWithoutDates], summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
+async def read_ownerAccomodation(
+    id: int, 
+    skip: int = Query(0),
+    limit: int = Query(10), 
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        data = await crud.get_ownerAccomodation(id=id, db=db, skip=skip, limit=limit)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+
+
+@app.post("/owner/accomodation", response_model=schemas.OwnerAccomodationsPost, summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API", tags=["owner"])
+async def create_ownerAccomdation(
+    accomodation: schemas.OwnerAccomodationsPost,
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.post_ownerAccomodation(db, accomodation)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+
+
+@app.put("/owner/accomodation/{id}", response_model=schemas.OwnerAccomodationsPut ,summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 수정 API", tags=["owner"])
+async def update_ownerAccomodation(
+    id: int,
+    accomodation: schemas.OwnerAccomodationsPut,
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.put_ownerAccomodation(db, id, accomodation)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
 
 
 
+@app.get("/owner/managers/{id}", response_model=list[schemas.OwnerManagers], summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
+async def read_ownermanagers(
+    id: int, 
+    isOldestOrders: bool = Query(True), 
+    skip: int = Query(0),
+    limit: int = Query(10), 
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        data = await crud.get_ownermanagers(id, db, isOldestOrders, skip, limit)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+    
 
 
-
-# 관리자 CRUD
-@app.get("/admins", response_model=list[schemas.Admin], summary="관리자 리스트", tags=[""])
-async def read_admins(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
-    admins = await crud.get_admins(db, skip=skip, limit=limit)
-    return admins
-
-@app.get("/admin/{id}", response_model=schemas.Admin, summary="관리자 조회", tags=[""])
-async def read_admin(id: int, db: AsyncSession = Depends(database.get_db)):
-    admin = await crud.get_admin(db, admin_id=id)
-    if admin is None:
-        raise HTTPException(status_code=404, detail="Admin not found")
-    return admin
-
-@app.post("/admin", response_model=schemas.Admin, summary="관리자 등록", tags=[""])
-async def create_admin(admin: schemas.AdminCreate, db: AsyncSession = Depends(database.get_db)):
-    """
-    관리자 등록.
-
-    - **username**: 관리자명.
-    - **password**: 관리자 패스워드.
-    - **role**: 관리자 권한 (SUPER_ADMIN, ADMIN, VIEWER).
-    """
-    return await crud.create_admin(db=db, admin=admin)
-
-@app.get("/admin/accomodation", response_model=list[schemas.Admin], summary="관리자 리스트", tags=[""])
-async def read_adminAccomodation(admin: schemas.AdminAccomodations, db: AsyncSession = Depends(database.get_db)):
-    admins = await crud.get_adminAccomodations(db, admin=admin)
-    return admins
-
-
-
-
-# 사장 CRUD
-@app.get("/owners", response_model=list[schemas.Owner], summary="사장 리스트", tags=["owner"])
-async def read_owners(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
-    owners = await crud.get_owners(db, skip=skip, limit=limit)
-    return owners
-
-@app.get("/owner/{id}", response_model=schemas.Owner, summary="사장 조회", tags=["owner"])
-async def read_owner(id: int, db: AsyncSession = Depends(database.get_db)):
-    owner = await crud.get_owner(db, owner_id=id)
-    if owner is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    return owner
-
-@app.post("/owner", response_model=schemas.Owner, summary="사장 등록", tags=["owner"])
-async def create_owner(owner: schemas.OwnerCreate, db: AsyncSession = Depends(database.get_db)):
-    """
-    사장 등록.
-
-    - **username**: 사장 아이디.
-    - **password**: 사장 패스워드.
-    """
-    return await crud.create_owner(db=db, owner=owner)
-
-@app.put("/owner/{id}", response_model=schemas.Owner, summary="사장 수정", tags=["owner"])
-async def update_owner(id: int, owner: schemas.OwnerUpdate, db: AsyncSession = Depends(database.get_db)):
-    return await crud.update_owner(db=db, owner_id=id, owner=owner)
-
-@app.delete("/owner/{id}", response_model=schemas.Owner, summary="사장 삭제", tags=["owner"])
-async def delete_owner(id: int, db: AsyncSession = Depends(database.get_db)):
-    return await crud.delete_owner(db=db, owner_id=id)
-
-
-
-
-# 사장 권한 U
-@app.put("/owner/role/{id}", response_model=schemas.Owner, summary="사장 권한 수정", tags=["owner role"])
-async def update_owner_role(id: int, owner: schemas.OwnerRole, db: AsyncSession = Depends(database.get_db)):
-    """
-    사장 권한 수정.
-
-    - **role**: 승인 ROLE_AUTH_OWNER, 미승인 ROLE_NOTAUTH_OWNER.
-    """
-    return await crud.update_owner_role(db=db, owner_id=id, owner=owner)
-
-
-
-
-# 숙소 CRUD
-@app.get("/owners/accommodation", response_model=list[schemas.Accommodation], summary="숙소 리스트", tags=["accommodation"])
-async def read_accommodations(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(database.get_db)):
-    accommodations = await crud.get_accommodations(db, skip=skip, limit=limit)
-    return accommodations
-
-# @app.get("/accommodations/{id}", response_model=schemas.Accommodation, summary="숙소 조회", tags=["accommodation"])
-# async def read_accommodation(id: int, db: AsyncSession = Depends(database.get_db)):
-#     accommodation = await crud.get_accommodation(db, accommodation_id=id)
-#     if accommodation is None:
-#         raise HTTPException(status_code=404, detail="Accommodation not found")
-#     return accommodation
-
-@app.post("/accommodation", response_model=schemas.Accommodation, summary="숙소 등록", tags=["accommodation"])
-async def create_accommodation(accommodation: schemas.AccommodationCreate, db: AsyncSession = Depends(database.get_db)):
-    """
-    숙소 등록.
-
-    - **owner_id**: 사장 테이블 pk.
-    - **name**: 게스트 하우스 이름.
-    - **address**: 주소.
-    - **introduction**: 숙소 소개말.
-    """
-    return await crud.create_accommodation(db=db, accommodation=accommodation)
-
-@app.put("/accommodation/{id}", response_model=schemas.Accommodation, summary="숙소 수정", tags=["accommodation"])
-async def update_accommodation(id: int, accommodation: schemas.AccommodationUpdate, db: AsyncSession = Depends(database.get_db)):
-    return await crud.update_accommodation(db=db, accommodation_id=id, accommodation=accommodation)
-
-@app.delete("/accommodation/{id}", response_model=schemas.Accommodation, summary="숙소 삭제", tags=["accommodation"])
-async def delete_accommodation(id: int, db: AsyncSession = Depends(database.get_db)):
-    return await crud.delete_accommodation(db=db, accommodation_id=id)
-
+## owner , manager(사장님 And 매니저 사용 API)
+@app.get("/manager/parties/{id}", response_model=list[schemas.managerParties], summary="매니저용 파티방 관리 페이지 - 파티방 리스트 가져오기 API", tags=["owner , manager"])
+async def read_managerParties(
+    id: int, 
+    skip: int = Query(0),
+    limit: int = Query(10), 
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        data = await crud.get_managerParties(id=id, db=db, skip=skip, limit=limit)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  # 에러 로그 저장
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
 
 

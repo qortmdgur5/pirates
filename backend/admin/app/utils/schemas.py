@@ -2,17 +2,17 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional
 
-## 새롭게 
+## admim (관리자 사용 API)
 class AdminAccomodations(BaseModel):
     id: int
     name: str
     address: str
-    phoneNumber: str
-    date: datetime
-
+    number: str
+    date: str
+    
 class AdminAccomodation(BaseModel):
     accomodations: List[AdminAccomodations]
-
+  
 class AdminOwners(BaseModel):
     id: int
     name: str
@@ -24,76 +24,56 @@ class AdminOwner(BaseModel):
     owners: List[AdminOwners]
 
 
-
-# 관리자 CRUD
-class AdminBase(BaseModel):
-    username: str
-    role: str
-
-class AdminCreate(AdminBase):
-    password: str
-
-class AdminUpdate(AdminBase):
-    pass
-
-
-
-class Admin(AdminBase):
+## owner (사장님 사용 API)
+class OwnerAccomodationsWithoutDates(BaseModel):
     id: int
-
-    class Config:
-        from_attributes = True
-        
-        
-        
-# 사장 CRUD        
-class OwnerBase(BaseModel):
-    username: str
-    password: str
-    
-
-class OwnerCreate(OwnerBase):
-    pass
-
-class OwnerUpdate(OwnerBase):
-    pass
-
-class Owner(OwnerBase):
-    id: int
-    date: datetime
-    role: Optional[str] = None
-
-    class Config:
-        from_attributes = True     
- 
- 
- 
- 
-# 사장 권한 U
-class OwnerRole(BaseModel):
-    role: str
- 
- 
- 
-# 숙소 CRUD  
-class AccommodationBase(BaseModel):
     name: str
     address: str
+    number: str
     introduction: str
-
-class AccommodationCreate(AccommodationBase):
-    owner_id: int
-
-class AccommodationUpdate(AccommodationBase):
-    pass
-
-class Accommodation(AccommodationBase):
-    id: int
-    date: datetime
     score: Optional[float] = None
     loveCount: Optional[int] = None
+    
+class OwnerAccomodationsWithoutDate(BaseModel):
+    accomodations: List[OwnerAccomodationsWithoutDates]   
+    
+class OwnerAccomodationsPost(BaseModel):
+    id: int
+    name: str
+    address: str
+    number: Optional[str] = None
+    introduction: str
 
-    class Config:
-        from_attributes = True
-        
-   
+class OwnerAccomodationsPut(BaseModel):
+    name: str
+    address: str
+    number: str
+    introduction: str    
+
+
+class OwnerManagers(BaseModel):
+    id: int
+    name: str
+    username: str
+    phoneNumber: str
+    date: str   
+    isAuth: bool 
+
+class OwnerManager(BaseModel):
+    ownerManagers: List[OwnerManagers]    
+    
+
+## owner , manager(사장님 And 매니저 사용 API)
+class managerParties(BaseModel):
+    id: int
+    partyDate: str
+    number: int
+    partyOpen: int
+    partyTime: str
+    
+
+    
+    
+    
+    
+    
