@@ -1,23 +1,27 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
-# 회사 CRUD
-class CompanyBase(BaseModel):
-    name: str
-    is_active: int
-
-class CompanyCreate(CompanyBase):
-    pass
-
-class CompanyUpdate(CompanyBase):
-    pass
-
-class Company(CompanyBase):
+## 새롭게 
+class AdminAccomodations(BaseModel):
     id: int
+    name: str
+    address: str
+    phoneNumber: str
+    date: datetime
 
-    class Config:
-        from_attributes = True
+class AdminAccomodation(BaseModel):
+    accomodations: List[AdminAccomodations]
+
+class AdminOwners(BaseModel):
+    id: int
+    name: str
+    username: str
+    phoneNumber: str
+    isAuth: bool 
+
+class AdminOwner(BaseModel):
+    owners: List[AdminOwners]
 
 
 
@@ -31,6 +35,8 @@ class AdminCreate(AdminBase):
 
 class AdminUpdate(AdminBase):
     pass
+
+
 
 class Admin(AdminBase):
     id: int
@@ -71,13 +77,12 @@ class OwnerRole(BaseModel):
  
 # 숙소 CRUD  
 class AccommodationBase(BaseModel):
-    owner_id: int
     name: str
     address: str
     introduction: str
 
 class AccommodationCreate(AccommodationBase):
-    pass
+    owner_id: int
 
 class AccommodationUpdate(AccommodationBase):
     pass

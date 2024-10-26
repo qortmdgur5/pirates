@@ -1,54 +1,70 @@
 
-from sqlalchemy import select
+from typing import List, Optional
+from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models
 from ..utils import schemas
 from ..service.admin import hash_password
+from sqlalchemy.orm import joinedload
 
-# 회사 CRUD
-async def get_companies(db: AsyncSession, skip: int = 0, limit: int = 10):
-    result = await db.execute(
-        select(models.Company).offset(skip).limit(limit)
-    )
-    return result.scalars().all()
+## 새롭게 
+async def get_adminAccomodations(
+    db: AsyncSession,
+    isMostReviews: Optional[bool] = False,
+    skip: int = 0,
+    limit: int = 10
+) -> List[dict]:  
+    if isMostReviews:
+        query = (
+            select(models.Accommodation)
+            .outerjoin(models.Owner)
+            .outerjoin(models.Review) 
+            .options(joinedload(models.Accommodation.owner))
+            .group_by(models.Accommodation.id)
+            .order_by(func.count(models.Review.id).desc())
+        )
+    else:
+        query = (
+            select(models.Accommodation)
+            .outerjoin(models.Owner)
+            .options(joinedload(models.Accommodation.owner))
+            .order_by(asc(models.Accommodation.date))
+        )
 
-async def get_company(db: AsyncSession, company_id: int):
-    result = await db.execute(
-        select(models.Company).filter(models.Company.id == company_id)
-    )
-    return result.scalar_one_or_none()
+    result = await db.execute(query.offset(skip).limit(limit))
+    accommodations = result.scalars().all()  
+    response = [
+        {
+            "id": accommodation.id,
+            "name": accommodation.name,
+            "address": accommodation.address,
+            "phoneNumber": accommodation.owner.phoneNumber,
+            "date": accommodation.date
+        }
+        for accommodation in accommodations
+    ]
+    
+    return response
 
-async def create_company(db: AsyncSession, company: schemas.CompanyCreate):
-    db_company = models.Company(
-        name=company.name,
-        is_active=company.is_active
-    )
-    db.add(db_company)
-    await db.commit()
-    await db.refresh(db_company)
-    return db_company
+async def get_adminOwners(db: AsyncSession, isOldestOrders: Optional[bool] = False, skip: int = 0, limit: int = 10):
+    query = select(models.Owner).offset(skip).limit(limit)
+    query = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
 
-async def update_company(db: AsyncSession, company_id: int, company: schemas.CompanyUpdate):
-    result = await db.execute(
-        select(models.Company).filter(models.Company.id == company_id)
-    )
-    db_company = result.scalar_one_or_none()
-    if db_company:
-        for key, value in company.dict().items():
-            setattr(db_company, key, value)
-        await db.commit()
-        await db.refresh(db_company)
-    return db_company
+    result = await db.execute(query)
+    owners = result.scalars().all()
 
-async def delete_company(db: AsyncSession, company_id: int):
-    result = await db.execute(
-        select(models.Company).filter(models.Company.id == company_id)
-    )
-    db_company = result.scalar_one_or_none()
-    if db_company:
-        await db.delete(db_company)
-        await db.commit()
-    return db_company
+    response = [
+        {
+            "id": owner.id,
+            "name": owner.name,
+            "username": owner.username,
+            "phoneNumber": owner.phoneNumber,
+            "isAuth": owner.isAuth
+        }
+        for owner in owners
+    ]
+    return response
+
 
 
 
