@@ -2,6 +2,10 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional
 
+
+class SimpleResponse(BaseModel):
+    msg: str
+    
 ## admim (관리자 사용 API)
 class AdminAccomodations(BaseModel):
     id: int
@@ -68,11 +72,14 @@ class managerParties(BaseModel):
     id: int
     partyDate: str
     number: int
-    partyOpen: int
+    partyOpen: bool
     partyTime: str
     
-
-    
+class managerPartyUpdate(BaseModel):
+    partyDate: str
+    number: int
+    partyOpen: bool
+    partyTime: str
     
     
     

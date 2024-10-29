@@ -1,5 +1,6 @@
 
 from typing import List, Optional
+from fastapi import HTTPException
 from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models
@@ -33,66 +34,83 @@ async def get_adminAccomodations(
     skip: int = 0,
     limit: int = 10
 ) -> List[dict]:
-    if isMostReviews:
-        query = (
-            select(models.Accomodation)
-            .outerjoin(models.Review)
-            .group_by(models.Accomodation.id)
-            .order_by(func.count(models.Review.id).desc())
-        )
-    else:
-        query = (
-            select(models.Accomodation)
-            .order_by(asc(models.Accomodation.date))
-        )
+    try:
+        if isMostReviews:
+            query = (
+                select(models.Accomodation)
+                .outerjoin(models.Review)
+                .group_by(models.Accomodation.id)
+                .order_by(func.count(models.Review.id).desc())
+            )
+        else:
+            query = (
+                select(models.Accomodation)
+                .order_by(asc(models.Accomodation.id))
+            )
+        
+        result = await db.execute(query.offset(skip).limit(limit))
+        accomodations = result.scalars().all()
+        
+        response = [
+            {
+                "id": accomodation.id,
+                "name": accomodation.name,
+                "address": accomodation.address,
+                "number": accomodation.number,
+                "date": format_date(accomodation.date)
+            }
+            for accomodation in accomodations
+        ]
+        
+        return response
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
     
-    result = await db.execute(query.offset(skip).limit(limit))
-    accomodations = result.scalars().all()
-    
-    response = [
-        {
-            "id": accomodation.id,
-            "name": accomodation.name,
-            "address": accomodation.address,
-            "number": accomodation.number,
-            "date": format_date(accomodation.date)
-        }
-        for accomodation in accomodations
-    ]
-    
-    return response
-
 async def get_adminOwners(db: AsyncSession, isOldestOrders: Optional[bool] = False, skip: int = 0, limit: int = 10):
-    query = select(models.Owner).offset(skip).limit(limit)
-    query = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
+    try:
+        query = select(models.Owner).offset(skip).limit(limit)
+        query = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
 
-    result = await db.execute(query)
-    owners = result.scalars().all()
+        result = await db.execute(query)
+        owners = result.scalars().all()
 
-    response = [
-        {
-            "id": owner.id,
-            "name": owner.name,
-            "username": owner.username,
-            "phoneNumber": owner.phoneNumber,
-            "isAuth": owner.role == "ROLE_AUTH_OWNER"
-        }
-        for owner in owners
-    ]
-    return response
-
+        response = [
+            {
+                "id": owner.id,
+                "name": owner.name,
+                "username": owner.username,
+                "phoneNumber": owner.phoneNumber,
+                "isAuth": owner.role == "ROLE_AUTH_OWNER"
+            }
+            for owner in owners
+        ]
+        return response
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+    
 async def put_auth_adminOwners(db: AsyncSession, id: int):
+    
     result = await db.execute(
         select(models.Owner).filter(models.Owner.id == id)
     )
     db_owner = result.scalar_one_or_none()
     if db_owner:
-        db_owner.role = "ROLE_AUTH_OWNER"
-        await db.commit()
-        await db.refresh(db_owner)
-        return {"msg": "ok"}  
+        try:
+            db_owner.role = "ROLE_AUTH_OWNER"
+            await db.commit()
+            await db.refresh(db_owner)
+            return {"msg": "ok"}  
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
     else:
         return {"msg": "fail"}
+
 
 async def put_deny_adminOwners(db: AsyncSession, id: int):
     result = await db.execute(
@@ -100,10 +118,15 @@ async def put_deny_adminOwners(db: AsyncSession, id: int):
     )
     db_owner = result.scalar_one_or_none()
     if db_owner:
-        db_owner.role = "ROLE_NOTAUTH_OWNER"
-        await db.commit()
-        await db.refresh(db_owner)
-        return {"msg": "ok"}  
+        try:
+            db_owner.role = "ROLE_NOTAUTH_OWNER"
+            await db.commit()
+            await db.refresh(db_owner)
+            return {"msg": "ok"}  
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
     else:
         return {"msg": "fail"}
 
@@ -117,75 +140,78 @@ async def get_ownerAccomodation(
     skip: int = 0,
     limit: int = 10
 ) -> List[dict]:
-    query = (
-            select(models.Accomodation)
-            .filter(models.Accomodation.owner_id == id) 
-            .order_by(asc(models.Accomodation.date))
-        )
+    try:
+        query = (
+                select(models.Accomodation)
+                .filter(models.Accomodation.owner_id == id) 
+                .order_by(asc(models.Accomodation.date))
+            )
 
-    result = await db.execute(query.offset(skip).limit(limit))
-    accomodations = result.scalars().all()
-    
-    response = [
-            {
-                "id": accomodation.id,
-                "name": accomodation.name,
-                "address": accomodation.address,
-                "number": accomodation.number,
-                "introduction": accomodation.introduction,
-                "score": accomodation.score,
-                "loveCount": accomodation.loveCount
-            }
-            for accomodation in accomodations
-        ]
-    return response
+        result = await db.execute(query.offset(skip).limit(limit))
+        accomodations = result.scalars().all()
+        
+        response = [
+                {
+                    "id": accomodation.id,
+                    "name": accomodation.name,
+                    "address": accomodation.address,
+                    "number": accomodation.number,
+                    "introduction": accomodation.introduction,
+                    "score": accomodation.score,
+                    "loveCount": accomodation.loveCount
+                }
+                for accomodation in accomodations
+            ]
+        return response
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
 
 async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAccomodationsPost):
-    db_accomodation = models.Accomodation(
-        owner_id=accomodation.id,
-        name=accomodation.name,
-        address=accomodation.address,
-        introduction=accomodation.introduction,
-        number=accomodation.number,
-        date = format_dates(datetime.now())
-    )
-    db.add(db_accomodation)
-    await db.commit()
-    await db.refresh(db_accomodation)
-    
-    return {
-        "id": db_accomodation.id, 
-        "name": db_accomodation.name,
-        "address": db_accomodation.address,
-        "number": db_accomodation.number,
-        "introduction": db_accomodation.introduction,
-    }
+    try:
+        db_accomodation = models.Accomodation(
+            owner_id=accomodation.id,
+            name=accomodation.name,
+            address=accomodation.address,
+            introduction=accomodation.introduction,
+            number=accomodation.number,
+            date = format_dates(datetime.now())
+        )
+        db.add(db_accomodation)
+        await db.commit()
+        await db.refresh(db_accomodation)
+        
+        return {"msg": "ok"}  
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
 
 async def put_ownerAccomodation(db: AsyncSession, id: int, accomodation: schemas.OwnerAccomodationsPut):
+    
     result = await db.execute(
         select(models.Accomodation).filter(models.Accomodation.id == id)
     )
     db_accomodation = result.scalar_one_or_none()
     if db_accomodation:
-        db_accomodation.name = accomodation.name
-        db_accomodation.address = accomodation.address
-        db_accomodation.number = accomodation.number
-        db_accomodation.introduction = accomodation.introduction
-        db_accomodation.date = format_dates(datetime.now())
-        
-        await db.commit()
-        await db.refresh(db_accomodation)
-        
-        return {
-            "id": db_accomodation.id, 
-            "name": db_accomodation.name,
-            "address": db_accomodation.address,
-            "number": db_accomodation.number,
-            "introduction": db_accomodation.introduction
-        }
+        try:
+            db_accomodation.name = accomodation.name
+            db_accomodation.address = accomodation.address
+            db_accomodation.number = accomodation.number
+            db_accomodation.introduction = accomodation.introduction
+            db_accomodation.date = format_dates(datetime.now())
+            
+            await db.commit()
+            await db.refresh(db_accomodation)
+            
+            return {"msg": "ok"}  
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
     else:
         return {"msg": "fail"}
-
 
 
 async def get_ownermanagers(
@@ -195,36 +221,78 @@ async def get_ownermanagers(
     skip: int = 0,
     limit: int = 10
 ) -> List[dict]:
-    if isOldestOrders:
-        query = (
-                select(models.Manager)
-                .filter(models.Manager.owner_id == id) 
-                .order_by(desc(models.Manager.date))
-            )
+    try:
+        if isOldestOrders:
+            query = (
+                    select(models.Manager)
+                    .filter(models.Manager.owner_id == id) 
+                    .order_by(desc(models.Manager.date))
+                )
+        else:
+            query = (
+                    select(models.Manager)
+                    .filter(models.Manager.owner_id == id) 
+                    .order_by(asc(models.Manager.date))
+                )
+
+        result = await db.execute(query.offset(skip).limit(limit))
+        managers = result.scalars().all()
+        
+        response = [
+                {
+                    "id": manager.id,
+                    "name": manager.name,
+                    "username": manager.username,
+                    "phoneNumber": manager.phoneNumber,
+                    "date": format_date(manager.date),
+                    "isAuth": manager.role == "ROLE_AUTH_OWNER"
+                }
+                for manager in managers
+            ]
+        return response
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+
+
+async def put_auth_ownerOwners(db: AsyncSession, id: int):
+    result = await db.execute(
+        select(models.Manager).filter(models.Manager.id == id)
+    )
+    db_manager = result.scalar_one_or_none()
+    if db_manager:
+        try:
+            db_manager.role = "ROLE_AUTH_MANAGER"
+            await db.commit()
+            await db.refresh(db_manager)
+            return {"msg": "ok"}  
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
     else:
-        query = (
-                select(models.Manager)
-                .filter(models.Manager.owner_id == id) 
-                .order_by(asc(models.Manager.date))
-            )
+        return {"msg": "fail"}
 
-    result = await db.execute(query.offset(skip).limit(limit))
-    managers = result.scalars().all()
-    
-    response = [
-            {
-                "id": manager.id,
-                "name": manager.name,
-                "username": manager.username,
-                "phoneNumber": manager.phoneNumber,
-                "date": format_date(manager.date),
-                "isAuth": manager.role == "ROLE_AUTH_OWNER"
-            }
-            for manager in managers
-        ]
-    return response
+async def put_deny_ownerOwners(db: AsyncSession, id: int):
+    result = await db.execute(
+        select(models.Manager).filter(models.Manager.id == id)
+    )
+    db_manager = result.scalar_one_or_none()
+    if db_manager:
+        try:
+            db_manager.role = "ROLE_NOTAUTH_MANAGER"
+            await db.commit()
+            await db.refresh(db_manager)
+            return {"msg": "ok"}  
 
-
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
+    else:
+        return {"msg": "fail"}
 
 
 ## owner , manager(사장님 And 매니저 사용 API)
@@ -235,38 +303,104 @@ async def get_managerParties(
     skip: int = 0,
     limit: int = 10
 ) -> List[dict]:
-    if isOldestOrders:
+    try:
+        order_by_field = models.Party.id.asc() if isOldestOrders else models.Party.id.desc()
+
         query = (
             select(models.Party)
-            .outerjoin(models.Accomodation)
-            .options(joinedload(models.Party.partys))
-            .filter(models.Party.accomodation_id == id) 
-            .order_by(func.count(models.Party.id).desc())
+            .filter(models.Party.accomodation_id == id)
+            .order_by(order_by_field)
+            .offset(skip)
+            .limit(limit)
         )
+        
+        result = await db.execute(query)
+        managerParties = result.scalars().all()
+        
+        # Format the response
+        response = [
+            {
+                "id": managerParty.id,
+                "partyDate": format_date(managerParty.partyDate),
+                "number": managerParty.number,
+                "partyOpen": managerParty.partyOpen,
+                "partyTime": format_party_time(managerParty.partyTime)
+            }
+            for managerParty in managerParties
+        ]
+        
+        return response
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+
+
+async def post_managerParty(db: AsyncSession, party: schemas.managerParties):
+    try:
+        formatted_date = datetime.strptime(party.partyDate, "%Y-%m-%d").strftime("%Y.%m.%d")
+        formatted_time = datetime.strptime(party.partyTime, "%H-%M-%S").strftime("%H:%M:%S")
+        
+        db_party = models.Party(
+            accomodation_id=party.id,
+            partyDate=formatted_date,
+            number=party.number,
+            partyOpen=party.partyOpen,
+            partyTime=formatted_time
+        )
+        db.add(db_party)
+        await db.commit()
+        await db.refresh(db_party)
+        
+        return {"msg": "ok"}  
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerParties):
+    result = await db.execute(
+        select(models.Party).filter(models.Party.id == id)
+    )
+    
+    db_party = result.scalar_one_or_none()
+    if db_party:
+        try:
+            formatted_date = datetime.strptime(party.partyDate, "%Y-%m-%d").strftime("%Y.%m.%d")
+            formatted_time = datetime.strptime(party.partyTime, "%H-%M-%S").strftime("%H:%M:%S")
+            db_party.partyDate = formatted_date
+            db_party.number = party.number
+            db_party.partyOpen = party.partyOpen
+            db_party.partyTime = formatted_time
+            await db.commit()
+            await db.refresh(db_party)
+            return {"msg": "ok"}  
+        
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
     else:
-        query = (
-            select(models.Party)
-            .outerjoin(models.Accomodation)
-            .options(joinedload(models.Party.partys))
-            .filter(models.Party.accomodation_id == id) 
-            .order_by(func.count(models.Party.id).asc())
-        )
+        return {"msg": "fail"}
     
-    result = await db.execute(query.offset(skip).limit(limit))
-    managerParties = result.scalars().all()
+async def del_managerParty(db: AsyncSession, id: int):
+    result = await db.execute(
+        select(models.Party).filter(models.Party.id == id)
+    )
     
-    response = [
-        {
-            "id": managerParty.id,
-            "partyDate": format_date(managerParty.partyDate),
-            "number": managerParty.number,
-            "partyOpen": managerParty.partyOpen,
-            "partyTime": format_party_time(managerParty.partyTime)
-        }
-        for managerParty in managerParties
-    ]
-    
-    return response
-
-
-
+    db_party = result.scalar_one_or_none()
+    if db_party:
+        try:
+            await db.delete(db_party) 
+            await db.commit() 
+            return {"msg": "ok"}  
+        
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
+    else:
+        return {"msg": "fail"}
