@@ -1,4 +1,4 @@
-import styles from "./styles/houseApprove.module.scss"
+import styles from "./styles/houseApprove.module.scss";
 import { useState } from "react";
 
 // 컴포넌트
@@ -17,7 +17,11 @@ function HouseApprove() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  const [selectedOption, setSelectedOption] = useState("asdOrders");
+  const [selectedOption, setSelectedOption] = useState<boolean>(true);
+
+  const handleRadioChange = (value: boolean) => {
+    setSelectedOption(value);
+  };
 
   return (
     <>
@@ -38,23 +42,23 @@ function HouseApprove() {
               <div className={styles.search_box}>
                 <div className={styles.radio_box}>
                   <RadioButton
-                    label="가나다 순"
-                    name="asdOrder"
-                    value="asdOrders"
-                    checked={selectedOption === "asdOrders"}
-                    onChange={setSelectedOption}
-                  />
-                  <RadioButton
                     label="최근 등록 순"
                     name="recentlyRegistered"
-                    value="recentlyRegistered"
-                    checked={selectedOption === "recentlyRegistered"}
-                    onChange={setSelectedOption}
+                    value={true}
+                    checked={selectedOption === true}
+                    onChange={handleRadioChange}
+                  />
+                  <RadioButton
+                    label="오래된 순"
+                    name="oldestOrders"
+                    value={false}
+                    checked={selectedOption === false}
+                    onChange={handleRadioChange}
                   />
                 </div>
                 <NameSearch />
               </div>
-              <HouseApproveTable />
+              <HouseApproveTable isOldestOrders={selectedOption} />
             </div>
           </div>
         </div>

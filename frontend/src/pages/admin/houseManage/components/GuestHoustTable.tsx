@@ -11,6 +11,7 @@ interface GuestHouseAPIResponse {
   date: string;
 }
 
+// 테이블 많은 리뷰 순, 최근 등록 순 Props, true 리뷰 많은 순 false 최근 등록 순
 interface GuestHouseTableProps {
   isMostReviews: boolean;
 }
@@ -28,8 +29,6 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
             headers: { accept: "application/json" },
           }
         );
-
-        console.log(response);
 
         setData(response.data);
       } catch (error) {

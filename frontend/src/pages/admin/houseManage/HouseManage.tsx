@@ -41,7 +41,7 @@ function HouseManage() {
             <div className={styles.manage_box}>
               <div className={styles.search_box}>
                 <div className={styles.radio_box}>
-                <RadioButton
+                  <RadioButton
                     label="많은 리뷰 순"
                     name="reviewOrder"
                     value={true}
