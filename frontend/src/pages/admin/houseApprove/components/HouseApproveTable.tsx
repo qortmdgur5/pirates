@@ -26,6 +26,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDenyModalOpen, setIsDenyModalOpen] = useState(false);
   const [selectedOwnerName, setSelectedOwnerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
+  const [selectedOwnerId, setSelectedOwnerId] = useState<number>(); // 클릭한 아이템의 id 저장
 
   const customModalStyles: ReactModal.Styles = {
     overlay: {
@@ -56,6 +57,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     },
   };
 
+  // 사장님 리스트 가져오기 API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -73,19 +75,51 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     fetchData();
   }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
-  const openApproveModal = (name: string) => {
+  // 승인 모달 open
+  const openApproveModal = (name: string, id: number) => {
     setSelectedOwnerName(name); // 클릭한 아이템의 이름 저장
+    setSelectedOwnerId(id); // 클릭한 아이템의 id 저장
     setIsApproveModalOpen(true);
   };
 
+  // 모달 내 확인 버튼 클릭 시 호출되는 함수
+  const handleApproveClick = () => {
+    if (selectedOwnerId) {
+      // 데이터 업데이트
+      setData((prevData) =>
+        prevData.map((owner) =>
+          owner.id === selectedOwnerId ? { ...owner, isAuth: true } : owner
+        )
+      );
+      approveOwner(selectedOwnerId); // 승인 요청
+      closeApproveModal(); // 모달 닫기
+    }
+  };
+
+  // 승인 모달 close
   const closeApproveModal = () => setIsApproveModalOpen(false);
 
-  const openDenyModal = (name: string) => {
+  // 취소 모달 open
+  const openDenyModal = (name: string, id: number) => {
     setSelectedOwnerName(name); // 클릭한 아이템의 이름 저장
+    setSelectedOwnerId(id); // 클릭한 아이템의 id 저장
     setIsDenyModalOpen(true);
   };
 
+  // 취소 모달 close
   const closeDenyModal = () => setIsDenyModalOpen(false);
+
+  // 사장님 승인 API
+  const approveOwner = async (id: number) => {
+    try {
+      const response = await axios.put(`/api/admin/owner/auth/${id}`, {
+        headers: { accept: "application/json" },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error("사장님 승인 요청을 실패하였습니다.", error);
+    }
+  };
 
   return (
     <div className={styles.table_container}>
@@ -117,11 +151,11 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
               <td className={styles.text_center}>
                 <ApproveButton
                   isApprove={item.isAuth}
-                  onClick={() => openApproveModal(item.name)}
+                  onClick={() => openApproveModal(item.name, item.id)}
                 />
               </td>
               <td className={styles.text_center}>
-                <DenyButton onClick={() => openDenyModal(item.name)} />
+                <DenyButton onClick={() => openDenyModal(item.name, item.id)} />
               </td>
               <td className={styles.td_right_black}></td>
             </tr>
@@ -139,7 +173,12 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
           className={styles.modal_text_1}
         >{`"${selectedOwnerName}" 님을 승인하시겠습니까?`}</p>
         <div className={styles.modal_button_box}>
-          <button className={styles.modal_blue_button}>확인</button>
+          <button
+            className={styles.modal_blue_button}
+            onClick={handleApproveClick}
+          >
+            확인
+          </button>
           <button
             className={styles.modal_gray_button}
             onClick={closeApproveModal}
