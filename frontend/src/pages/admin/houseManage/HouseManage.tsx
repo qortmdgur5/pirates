@@ -1,6 +1,5 @@
 import styles from "./styles/houseManage.module.scss";
 import { useState } from "react";
-import { useNavigation } from "../../../utils/navigation";
 
 // 컴포넌트
 import Header from "../../../components/common/header/Header";
@@ -11,9 +10,6 @@ import GuestHouseTable from "./components/GuestHoustTable";
 import NameSearch from "../../../components/common/search/NameSearch";
 
 function HouseManage() {
-  // 네비게이션 함수
-  const navigation = useNavigation();
-
   // 메뉴 탭 데이터
   const adminMenuTabs = [
     { text: "게스트 하우스 관리", isActive: true, path: "/admin/houseManage" },
@@ -21,7 +17,11 @@ function HouseManage() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  const [selectedOption, setSelectedOption] = useState("manyReviews");
+  const [selectedOption, setSelectedOption] = useState<boolean>(true);
+
+  const handleRadioChange = (value: boolean) => {
+    setSelectedOption(value);
+  };
 
   return (
     <>
@@ -41,24 +41,24 @@ function HouseManage() {
             <div className={styles.manage_box}>
               <div className={styles.search_box}>
                 <div className={styles.radio_box}>
-                  <RadioButton
+                <RadioButton
                     label="많은 리뷰 순"
                     name="reviewOrder"
-                    value="manyReviews"
-                    checked={selectedOption === "manyReviews"}
-                    onChange={setSelectedOption}
+                    value={true}
+                    checked={selectedOption === true}
+                    onChange={handleRadioChange}
                   />
                   <RadioButton
                     label="최근 등록 순"
                     name="reviewOrder"
-                    value="recentlyRegistered"
-                    checked={selectedOption === "recentlyRegistered"}
-                    onChange={setSelectedOption}
+                    value={false}
+                    checked={selectedOption === false}
+                    onChange={handleRadioChange}
                   />
                 </div>
                 <NameSearch />
               </div>
-              <GuestHouseTable />
+              <GuestHouseTable isMostReviews={selectedOption} />
             </div>
           </div>
         </div>

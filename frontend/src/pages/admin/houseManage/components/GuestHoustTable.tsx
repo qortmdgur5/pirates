@@ -1,29 +1,44 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import styles from "./styles/guestHouseTable.module.scss";
 
-function GuestHouseTable() {
-  const data = [
-    {
-      no: "01",
-      name: "부산 게스트 하우스",
-      address: "부산광역시 어디어디",
-      contact: "051-123-4567",
-      registrationDate: "21.09.15",
-    },
-    {
-      no: "02",
-      name: "서울 게스트 하우스",
-      address: "서울특별시 어디어디",
-      contact: "02-111-2222",
-      registrationDate: "23.01.04",
-    },
-    {
-      no: "03",
-      name: "인천 게스트 하우스",
-      address: "인천광역시 어디어디",
-      contact: "031-111-3333",
-      registrationDate: "24.10.29",
-    },
-  ];
+// API 응답 데이터 타입 정의
+interface GuestHouseAPIResponse {
+  id: number;
+  name: string;
+  address: string;
+  number: string;
+  date: string;
+}
+
+interface GuestHouseTableProps {
+  isMostReviews: boolean;
+}
+
+function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
+  const [data, setData] = useState<GuestHouseAPIResponse[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get<GuestHouseAPIResponse[]>(
+          "/api/admin/accomodations",
+          {
+            params: { isMostReviews, skip: 0, limit: 10 },
+            headers: { accept: "application/json" },
+          }
+        );
+
+        console.log(response);
+
+        setData(response.data);
+      } catch (error) {
+        console.error("데이터를 불러오는데 실패했습니다.", error);
+      }
+    };
+
+    fetchData();
+  }, [isMostReviews]); // isMostReviews가 변경될 때마다 데이터 갱신
 
   return (
     <div className={styles.table_container}>
@@ -41,13 +56,15 @@ function GuestHouseTable() {
         </thead>
         <tbody>
           {data.map((item, index) => (
-            <tr key={index}>
+            <tr key={item.id}>
               <td className={styles.td_left_black}></td>
-              <td className={styles.text_left}>{item.no}</td>
+              <td className={styles.text_left}>
+                {String(index + 1).padStart(2, "0")}
+              </td>
               <td className={styles.text_left}>{item.name}</td>
               <td className={styles.text_left}>{item.address}</td>
-              <td className={styles.text_left}>{item.contact}</td>
-              <td className={styles.text_left}>{item.registrationDate}</td>
+              <td className={styles.text_left}>{item.number}</td>
+              <td className={styles.text_left}>{item.date}</td>
               <td className={styles.td_right_black}></td>
             </tr>
           ))}

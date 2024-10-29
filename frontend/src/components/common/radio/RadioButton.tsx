@@ -4,9 +4,9 @@ import styles from "./styles/radioButton.module.scss";
 interface RadioButtonProps {
   label: string;
   name: string;
-  value: string;
+  value: boolean;
   checked: boolean;
-  onChange: (value: string) => void;
+  onChange: (value: boolean) => void;
 }
 
 const RadioButton: React.FC<RadioButtonProps> = ({
@@ -21,7 +21,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
       <input
         type="radio"
         name={name}
-        value={value}
+        value={String(value)}
         checked={checked}
         onChange={() => onChange(value)}
         className={styles.radioInput}
