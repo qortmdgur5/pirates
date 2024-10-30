@@ -141,15 +141,16 @@ async def update_deny_ownerOwners(id: int, db: AsyncSession = Depends(database.g
 @app.get("/manager/parties/{id}", response_model=list[schemas.managerParties], summary="매니저용 파티방 관리 페이지 - 파티방 리스트 가져오기 API", tags=["owner , manager"])
 async def read_managerParties(
     id: int, 
+    isOldestOrders: bool = Query(True),
     skip: int = Query(0),
     limit: int = Query(10), 
     db: AsyncSession = Depends(database.get_db)):
     try:
-        data = await crud.get_managerParties(id=id, db=db, skip=skip, limit=limit)
+        data = await crud.get_managerParties(id, db, isOldestOrders, skip, limit)
         return data
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  # 에러 로그 저장
+        await crud.log_error(db, error_message) 
         raise HTTPException(status_code=500, detail={"msg": "fail"})
 
 
@@ -183,6 +184,60 @@ async def delete_managerParty(
     db: AsyncSession = Depends(database.get_db)):
     try:
         return await crud.del_managerParty(db, id)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+    
+    
+    
+    
+@app.get("/manager/party/{id}", response_model=list[schemas.managerParticipant], summary="매니저용 파티 상세 페이지 - 파티 상세 정보 가져오기 API", tags=["owner , manager"])
+async def read_managerParty(
+    id: int, 
+    skip: int = Query(0),
+    limit: int = Query(10), 
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        data = await crud.get_managerParty(id=id, db=db, skip=skip, limit=limit)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+
+
+@app.post("/manager/participant", response_model=schemas.SimpleResponse, summary="매니저용 파티 상세 페이지 - 참석자 추가 API", tags=["owner , manager"])
+async def create_managerParticipant(
+    party: schemas.managerParticipantPost,
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.post_managerParticipant(db, party)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+    
+    
+@app.delete("/manager/participant/{id}", summary="매니저용 파티 상세 페이지 - 참석자 삭제 API, 요청시 해당 참석자 삭제", tags=["owner , manager"])
+async def delete_managerParticipant(
+    id: int,
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.del_managerParticipant(db, id)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+    
+    
+@app.put("/manager/partyOn/{id}", summary="매니저용 파티 상세 페이지 - 파티 ON/OFF API, 요청시 요청값에 따른 파티방 ON/OFF 처리", tags=["owner , manager"])
+async def update_managerPartyOn(
+    id: int,
+    party: schemas.managerPartyOn,
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        return await crud.put_managerPartyOn(db, id, party)
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  

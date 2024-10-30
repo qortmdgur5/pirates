@@ -69,7 +69,7 @@ class Party(Base):
     number = Column(Integer, index=True)
     partyOn = Column(Integer, index=True)
     partys = relationship("Accomodation", back_populates="party") 
-    
+    participant = relationship("Participant", back_populates="participants") 
     
 class Manager(Base):
     __tablename__ = "Manager"
@@ -83,3 +83,16 @@ class Manager(Base):
     name = Column(String(100))
     phoneNumber =Column(String(100))
     managers = relationship("Owner", back_populates="manager")
+
+class Participant(Base):
+    __tablename__ = "Participant"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    party_id = Column(Integer, ForeignKey('Party.id'))
+    name = Column(String(255))
+    phone = Column(String(255))
+    mbti = Column(String(255))
+    age = Column(Integer)
+    region = Column(String(255))
+    gender = Column(Boolean)
+    participants = relationship("Party", back_populates="participant") 

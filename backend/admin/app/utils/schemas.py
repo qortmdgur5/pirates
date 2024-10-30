@@ -81,6 +81,25 @@ class managerPartyUpdate(BaseModel):
     partyOpen: bool
     partyTime: str
     
-    
-    
-    
+class managerParticipant(BaseModel):
+    id: int
+    partyDate: str
+    number: int
+    partyTime: str
+    name: str
+    phone: str
+    age: int
+    gender: str
+
+
+class managerParticipantPost(BaseModel):
+    id: int
+    name: str
+    phone: str
+    age: int
+    gender: bool
+    mbti: str
+    region: str
+
+class managerPartyOn(BaseModel):
+    partyOn: bool

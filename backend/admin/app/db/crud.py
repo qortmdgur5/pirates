@@ -82,7 +82,7 @@ async def get_adminOwners(db: AsyncSession, isOldestOrders: Optional[bool] = Fal
                 "name": owner.name,
                 "username": owner.username,
                 "phoneNumber": owner.phoneNumber,
-                "isAuth": owner.role == "ROLE_AUTH_OWNER"
+                "isAuth": True if owner.role == "ROLE_AUTH_OWNER" else False
             }
             for owner in owners
         ]
@@ -226,13 +226,13 @@ async def get_ownermanagers(
             query = (
                     select(models.Manager)
                     .filter(models.Manager.owner_id == id) 
-                    .order_by(desc(models.Manager.date))
+                    .order_by(asc(models.Manager.id))
                 )
         else:
             query = (
                     select(models.Manager)
                     .filter(models.Manager.owner_id == id) 
-                    .order_by(asc(models.Manager.date))
+                    .order_by(desc(models.Manager.id))
                 )
 
         result = await db.execute(query.offset(skip).limit(limit))
@@ -245,7 +245,7 @@ async def get_ownermanagers(
                     "username": manager.username,
                     "phoneNumber": manager.phoneNumber,
                     "date": format_date(manager.date),
-                    "isAuth": manager.role == "ROLE_AUTH_OWNER"
+                    "isAuth": True if manager.role == "ROLE_AUTH_MANAGER" else False 
                 }
                 for manager in managers
             ]
@@ -396,6 +396,111 @@ async def del_managerParty(db: AsyncSession, id: int):
         try:
             await db.delete(db_party) 
             await db.commit() 
+            return {"msg": "ok"}  
+        
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
+    else:
+        return {"msg": "fail"}
+    
+    
+async def get_managerParty(
+    id: int,
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 10
+) -> List[dict]:
+    try:
+        query = (
+            select(models.Participant, models.Party)
+            .outerjoin(models.Party, models.Participant.party_id == models.Party.id)
+            .filter(models.Participant.party_id == id)
+            .offset(skip)
+            .limit(limit)
+        )
+        
+        result = await db.execute(query)
+        managerParties = result.fetchall()
+
+        print("managerParties : ", managerParties)
+        response = [
+            {
+                "id": participant.id,
+                "partyDate": format_date(party.partyDate) if party.partyDate else None,
+                "number": party.number if party else 0,
+                "partyTime": format_party_time(party.partyTime) if party.partyTime else None,
+                "name": participant.name,
+                "phone": participant.phone,
+                "age": participant.age,
+                "gender": "남자" if participant.gender else "여자" 
+            }
+            for participant, party in managerParties
+        ]
+        
+        return response
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+    
+async def post_managerParticipant(db: AsyncSession, participants: schemas.managerParticipantPost):
+    try:
+        db_participant = models.Participant(
+            party_id=participants.id,
+            name=participants.name,
+            phone=participants.phone,
+            age=participants.age,
+            gender=participants.gender,
+            mbti=participants.mbti,
+            region=participants.region
+        )
+        db.add(db_participant)
+        await db.commit()
+        await db.refresh(db_participant)
+        
+        return {"msg": "ok"}  
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+
+    
+async def del_managerParticipant(db: AsyncSession, id: int):
+    result = await db.execute(
+        select(models.Participant).filter(models.Participant.id == id)
+    )
+    
+    db_participant = result.scalar_one_or_none()
+    if db_participant:
+        try:
+            await db.delete(db_participant) 
+            await db.commit() 
+            return {"msg": "ok"}  
+        
+        except ValueError as e:
+            error_message = f"Date/Time parsing error: {str(e)}"
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": "fail"})
+    else:
+        return {"msg": "fail"}
+    
+    
+async def put_managerPartyOn(db: AsyncSession, id: int, party: schemas.managerPartyOn):
+    result = await db.execute(
+        select(models.Party).filter(models.Party.id == id)
+    )
+    
+    db_party = result.scalar_one_or_none()
+    if db_party:
+        try:
+            db_party.partyOn = party.partyOn
+            await db.commit()
+            await db.refresh(db_party)
             return {"msg": "ok"}  
         
         except ValueError as e:
