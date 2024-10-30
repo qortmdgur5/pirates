@@ -100,7 +100,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
             : manager
         )
       );
-      // approveManager(selectedOwnerId); // 승인 요청
+      approveManager(selectedManagerId); // 승인 요청
       closeApproveModal(); // 모달 닫기
     }
   };
@@ -126,13 +126,35 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
             : manager
         )
       );
-      // denyOwner(selectedManagerId); // 거절 요청
+      denyManager(selectedManagerId); // 거절 요청
       closeDenyModal(); // 모달 닫기
     }
   };
 
   // 취소 모달 close
   const closeDenyModal = () => setIsDenyModalOpen(false);
+
+  // 매니저 승인 API
+  const approveManager = async (id: number) => {
+    try {
+      const response = await axios.put(`/api/owner/manager/auth/${id}`, {
+        headers: { accept: "application/json" },
+      });
+    } catch (error) {
+      console.error("매니저 승인 요청을 실패하였습니다.", error);
+    }
+  };
+
+  // 매니저 취소 API
+  const denyManager = async (id: number) => {
+    try {
+      const response = await axios.put(`/api/owner/manager/deny/${id}`, {
+        headers: { accept: "application/json" },
+      });
+    } catch (error) {
+      console.error("매니저 취소 요청을 실패하였습니다.", error);
+    }
+  };
 
   return (
     <div className={styles.table_container}>
