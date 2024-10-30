@@ -17,7 +17,7 @@ function HouseApprove() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  const [selectedOption, setSelectedOption] = useState<boolean>(true);
+  const [selectedOption, setSelectedOption] = useState<boolean>(false);
 
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);

@@ -14,6 +14,7 @@ interface Manager {
   name: string;
   username: string;
   phoneNumber: string;
+  date: string;
   isAuth: boolean;
 }
 
@@ -28,7 +29,8 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   const [isApproveModalOpen, setIsApproveModalOpen] = useState<boolean>(false);
   const [isDenyModalOpen, setIsDenyModalOpen] = useState<boolean>(false);
   const [selectedManagerName, setSelectedManagerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
-  const [selectedManagerId, setSelectedManagerId] = useState<number>(1); // 클릭한 아이템의 id 저장, 일단 현재 기본값 1로 두고 추후 로그인하면 아톰으로 관리
+  const [selectedManagerId, setSelectedManagerId] = useState<number>(); // 클릭한 아이템의 id 저장
+  const ownerId = 1; // 임시 사장님 번호 추후 로그인 구현하면 아톰으로 관리
 
   const customModalStyles: ReactModal.Styles = {
     // overlay 모달 창 외부 영역 디자인
@@ -72,14 +74,13 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
             headers: { accept: "application/json" },
           }
         );
-
         setData(response.data);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }
     };
 
-    selectedManagerId && fetchData(selectedManagerId);
+    fetchData(ownerId);
   }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
@@ -181,6 +182,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
               <td className={styles.text_left}>{item.name}</td>
               <td className={styles.text_left}>{item.username}</td>
               <td className={styles.text_left}>{item.phoneNumber}</td>
+              <td className={styles.text_left}>{item.date}</td>
               <td className={styles.text_center}>
                 {item.isAuth ? "Yes" : "No"}
               </td>
@@ -212,7 +214,12 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
           className={styles.modal_text_1}
         >{`"${selectedManagerName}" 님을 승인하시겠습니까?`}</p>
         <div className={styles.modal_button_box}>
-          <button className={styles.modal_blue_button}>확인</button>
+          <button
+            className={styles.modal_blue_button}
+            onClick={handleApproveClick}
+          >
+            확인
+          </button>
           <button
             className={styles.modal_gray_button}
             onClick={closeApproveModal}
