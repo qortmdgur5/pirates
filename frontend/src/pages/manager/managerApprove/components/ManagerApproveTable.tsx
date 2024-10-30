@@ -1,41 +1,34 @@
-import styles from "./styles/managerApproveTable.module.scss"
+import styles from "./styles/managerApproveTable.module.scss";
 import Modal from "react-modal";
 
 // 컴포넌트
 import ApproveButton from "../../../../components/common/button/ApproveButton";
 import DenyButton from "../../../../components/common/button/DenyButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
+interface Manager {
+  id: number;
+  name: string;
+  username: string;
+  phoneNumber: string;
+  isAuth: boolean;
+}
 
-function ManagerApproveTable() {
-  const data = [
-    {
-      no: "01",
-      name: "백승혁",
-      id: "qortmdgur",
-      phone: "010-3345-7789",
-      date: "23.02.21",
-      isApprove: true,
-    },
-    {
-      no: "02",
-      name: "김철수",
-      id: "rlacjftn",
-      phone: "010-3345-7789",
-      date: "23.02.21",
-      isApprove: false,
-    },
-    {
-      no: "03",
-      name: "백찬영",
-      id: "qorcksdud",
-      phone: "010-3345-7789",
-      date: "23.02.21",
-      isApprove: true,
-    },
-  ];
+interface ManagerApproveTableProps {
+  isOldestOrders: boolean;
+}
+
+const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
+  isOldestOrders,
+}) => {
+  const [data, setData] = useState<Manager[]>([]);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState<boolean>(false);
+  const [isDenyModalOpen, setIsDenyModalOpen] = useState<boolean>(false);
+  const [selectedManagerName, setSelectedManagerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
+  const [selectedManagerId, setSelectedManagerId] = useState<number>(1); // 클릭한 아이템의 id 저장, 일단 현재 기본값 1로 두고 추후 로그인하면 아톰으로 관리
 
   const customModalStyles: ReactModal.Styles = {
     // overlay 모달 창 외부 영역 디자인
@@ -68,16 +61,77 @@ function ManagerApproveTable() {
     },
   };
 
-  // 승인 확인 모달 상태 관리
-  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  // 매니저 리스트 가져오기 API
+  useEffect(() => {
+    const fetchData = async (id: number) => {
+      try {
+        const response = await axios.get<Manager[]>(
+          `/api/owner/managers/${id}`,
+          {
+            params: { isOldestOrders, skip: 0, limit: 10 },
+            headers: { accept: "application/json" },
+          }
+        );
 
-  const openApproveModal = () => setIsApproveModalOpen(true);
+        setData(response.data);
+      } catch (error) {
+        console.error("데이터를 불러오는데 실패했습니다.", error);
+      }
+    };
+
+    selectedManagerId && fetchData(selectedManagerId);
+  }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
+
+  // 승인 모달 open
+  const openApproveModal = (name: string, id: number) => {
+    setSelectedManagerName(name); // 클릭한 아이템의 이름 저장
+    setSelectedManagerId(id); // 클릭한 아이템의 id 저장
+    setIsApproveModalOpen(true);
+  };
+
+  // 승인 모달 내 확인 버튼 클릭 시 호출되는 함수
+  const handleApproveClick = () => {
+    if (selectedManagerId) {
+      // 데이터 업데이트
+      setData((prevData) =>
+        prevData.map((manager) =>
+          manager.id === selectedManagerId
+            ? { ...manager, isAuth: true }
+            : manager
+        )
+      );
+      // approveManager(selectedOwnerId); // 승인 요청
+      closeApproveModal(); // 모달 닫기
+    }
+  };
+
+  // 승인 모달 close
   const closeApproveModal = () => setIsApproveModalOpen(false);
 
-  // 승인 취소 모달 상태 관리
-  const [isDenyModalOpen, setIsDenyModalOpen] = useState(false);
+  // 취소 모달 open
+  const openDenyModal = (name: string, id: number) => {
+    setSelectedManagerName(name); // 클릭한 아이템의 이름 저장
+    setSelectedManagerId(id); // 클릭한 아이템의 id 저장
+    setIsDenyModalOpen(true);
+  };
 
-  const openDenyModal = () => setIsDenyModalOpen(true);
+  // 취소 모달 내 확인 버튼 클릭 시 호출되는 함수
+  const handleDenyClick = () => {
+    if (selectedManagerId) {
+      // 데이터 업데이트
+      setData((prevData) =>
+        prevData.map((manager) =>
+          manager.id === selectedManagerId
+            ? { ...manager, isAuth: false }
+            : manager
+        )
+      );
+      // denyOwner(selectedManagerId); // 거절 요청
+      closeDenyModal(); // 모달 닫기
+    }
+  };
+
+  // 취소 모달 close
   const closeDenyModal = () => setIsDenyModalOpen(false);
 
   return (
@@ -101,14 +155,25 @@ function ManagerApproveTable() {
           {data.map((item, index) => (
             <tr key={index}>
               <td className={styles.td_left_black}></td>
-              <td className={styles.text_left}>{item.no}</td>
+              <td className={styles.text_left}>{index + 1}</td>
               <td className={styles.text_left}>{item.name}</td>
-              <td className={styles.text_left}>{item.id}</td>
-              <td className={styles.text_left}>{item.phone}</td>
-              <td className={styles.text_left}>{item.date}</td>
-              <td className={styles.text_center}>{item.isApprove ? "Yes" : "No"}</td>
-              <td className={styles.text_center}><ApproveButton isApprove={item.isApprove} onClick={openApproveModal} /></td>
-              <td className={styles.text_center}><DenyButton onClick={openDenyModal} /></td>
+              <td className={styles.text_left}>{item.username}</td>
+              <td className={styles.text_left}>{item.phoneNumber}</td>
+              <td className={styles.text_center}>
+                {item.isAuth ? "Yes" : "No"}
+              </td>
+              <td className={styles.text_center}>
+                <ApproveButton
+                  isApprove={item.isAuth}
+                  onClick={() => openApproveModal(item.name, item.id)}
+                />
+              </td>
+              <td className={styles.text_center}>
+                <DenyButton
+                  isApprove={item.isAuth}
+                  onClick={() => openDenyModal(item.name, item.id)}
+                />
+              </td>
               <td className={styles.td_right_black}></td>
             </tr>
           ))}
@@ -121,10 +186,17 @@ function ManagerApproveTable() {
         style={customModalStyles}
         ariaHideApp={false}
       >
-        <p className={styles.modal_text_1}>"김철수" 님을 승인하시겠습니까?</p>
+        <p
+          className={styles.modal_text_1}
+        >{`"${selectedManagerName}" 님을 승인하시겠습니까?`}</p>
         <div className={styles.modal_button_box}>
           <button className={styles.modal_blue_button}>확인</button>
-          <button className={styles.modal_gray_button} onClick={closeApproveModal}>취소</button>
+          <button
+            className={styles.modal_gray_button}
+            onClick={closeApproveModal}
+          >
+            취소
+          </button>
         </div>
       </Modal>
       <Modal
@@ -134,14 +206,23 @@ function ManagerApproveTable() {
         style={customModalStyles}
         ariaHideApp={false}
       >
-        <p className={styles.modal_text_1}>"김철수" 님을 취소하시겠습니까?</p>
+        <p
+          className={styles.modal_text_1}
+        >{`"${selectedManagerName}" 님을 취소하시겠습니까?`}</p>
         <div className={styles.modal_button_box}>
-          <button className={styles.modal_blue_button}>확인</button>
-          <button className={styles.modal_gray_button} onClick={closeDenyModal}>취소</button>
+          <button
+            className={styles.modal_blue_button}
+            onClick={handleDenyClick}
+          >
+            확인
+          </button>
+          <button className={styles.modal_gray_button} onClick={closeDenyModal}>
+            취소
+          </button>
         </div>
       </Modal>
     </div>
   );
-}
+};
 
-export default ManagerApproveTable
+export default ManagerApproveTable;

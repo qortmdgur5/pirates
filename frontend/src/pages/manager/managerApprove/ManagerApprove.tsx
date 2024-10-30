@@ -1,4 +1,4 @@
-import styles from "./styles/managerApprove.module.scss"
+import styles from "./styles/managerApprove.module.scss";
 import { useState } from "react";
 
 // 컴포넌트
@@ -12,13 +12,25 @@ import NameSearch from "../../../components/common/search/NameSearch";
 function ManagerApprove() {
   // 메뉴 탭 데이터
   const managerMenuTabs = [
-    { text: "게스트 하우스 관리", isActive: false, path: "/manager/houseRegister" },
-    { text: "매니저 등록 관리", isActive: true, path: "/manager/managerApprove" },
+    {
+      text: "게스트 하우스 관리",
+      isActive: false,
+      path: "/manager/houseRegister",
+    },
+    {
+      text: "매니저 등록 관리",
+      isActive: true,
+      path: "/manager/managerApprove",
+    },
     { text: "파티방 관리", isActive: false, path: "/manager/manageParty" },
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  const [selectedOption, setSelectedOption] = useState("asdOrders");
+  const [selectedOption, setSelectedOption] = useState<boolean>(true);
+
+  const handleRadioChange = (value: boolean) => {
+    setSelectedOption(value);
+  };
 
   return (
     <>
@@ -39,23 +51,23 @@ function ManagerApprove() {
               <div className={styles.search_box}>
                 <div className={styles.radio_box}>
                   <RadioButton
-                    label="가나다 순"
-                    name="asdOrder"
-                    value="asdOrders"
-                    checked={selectedOption === "asdOrders"}
-                    onChange={setSelectedOption}
-                  />
-                  <RadioButton
                     label="최근 등록 순"
                     name="recentlyRegistered"
-                    value="recentlyRegistered"
-                    checked={selectedOption === "recentlyRegistered"}
-                    onChange={setSelectedOption}
+                    value={false}
+                    checked={selectedOption === false}
+                    onChange={handleRadioChange}
+                  />
+                  <RadioButton
+                    label="오래된 순"
+                    name="oldestOrders"
+                    value={true}
+                    checked={selectedOption === true}
+                    onChange={handleRadioChange}
                   />
                 </div>
                 <NameSearch />
               </div>
-              <ManagerApproveTable />
+              <ManagerApproveTable isOldestOrders={selectedOption} />
             </div>
           </div>
         </div>

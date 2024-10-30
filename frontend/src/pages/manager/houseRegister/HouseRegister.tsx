@@ -47,7 +47,6 @@ function HouseRegister() {
             headers: { accept: "application/json" },
           }
         );
-        console.log(response.data);
         setHouseInfo(response.data[0]); // 첫 번째 항목만 저장, 배열이지만 현재는 한명의 사장에게 하나의 게스트하우스라고 가정
       } catch (error) {
         console.error("데이터를 불러오지 못했습니다.", error);

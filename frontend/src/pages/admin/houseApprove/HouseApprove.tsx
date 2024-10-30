@@ -44,15 +44,15 @@ function HouseApprove() {
                   <RadioButton
                     label="최근 등록 순"
                     name="recentlyRegistered"
-                    value={true}
-                    checked={selectedOption === true}
+                    value={false}
+                    checked={selectedOption === false}
                     onChange={handleRadioChange}
                   />
                   <RadioButton
                     label="오래된 순"
                     name="oldestOrders"
-                    value={false}
-                    checked={selectedOption === false}
+                    value={true}
+                    checked={selectedOption === true}
                     onChange={handleRadioChange}
                   />
                 </div>
