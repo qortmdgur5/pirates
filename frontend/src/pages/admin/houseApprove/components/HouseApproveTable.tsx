@@ -82,7 +82,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     setIsApproveModalOpen(true);
   };
 
-  // 모달 내 확인 버튼 클릭 시 호출되는 함수
+  // 승인 모달 내 확인 버튼 클릭 시 호출되는 함수
   const handleApproveClick = () => {
     if (selectedOwnerId) {
       // 데이터 업데이트
@@ -106,6 +106,20 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     setIsDenyModalOpen(true);
   };
 
+  // 취소 모달 내 확인 버튼 클릭 시 호출되는 함수
+  const handleDenyClick = () => {
+    if (selectedOwnerId) {
+      // 데이터 업데이트
+      setData((prevData) =>
+        prevData.map((owner) =>
+          owner.id === selectedOwnerId ? { ...owner, isAuth: false } : owner
+        )
+      );
+      denyOwner(selectedOwnerId); // 거절 요청
+      closeDenyModal(); // 모달 닫기
+    }
+  };
+
   // 취소 모달 close
   const closeDenyModal = () => setIsDenyModalOpen(false);
 
@@ -115,9 +129,19 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
       const response = await axios.put(`/api/admin/owner/auth/${id}`, {
         headers: { accept: "application/json" },
       });
-      console.log(response.data);
     } catch (error) {
       console.error("사장님 승인 요청을 실패하였습니다.", error);
+    }
+  };
+
+  // 사장님 취소 API
+  const denyOwner = async (id: number) => {
+    try {
+      const response = await axios.put(`/api/admin/owner/deny/${id}`, {
+        headers: { accept: "application/json" },
+      });
+    } catch (error) {
+      console.error("사장님 취소 요청을 실패하였습니다.", error);
     }
   };
 
@@ -155,7 +179,10 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
                 />
               </td>
               <td className={styles.text_center}>
-                <DenyButton onClick={() => openDenyModal(item.name, item.id)} />
+                <DenyButton
+                  isApprove={item.isAuth}
+                  onClick={() => openDenyModal(item.name, item.id)}
+                />
               </td>
               <td className={styles.td_right_black}></td>
             </tr>
@@ -198,7 +225,12 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
           className={styles.modal_text_1}
         >{`"${selectedOwnerName}" 님을 취소하시겠습니까?`}</p>
         <div className={styles.modal_button_box}>
-          <button className={styles.modal_blue_button}>확인</button>
+          <button
+            className={styles.modal_blue_button}
+            onClick={handleDenyClick}
+          >
+            확인
+          </button>
           <button className={styles.modal_gray_button} onClick={closeDenyModal}>
             취소
           </button>

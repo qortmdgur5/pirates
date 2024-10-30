@@ -14,12 +14,13 @@ const DenyButtonBox = styled.button`
 `;
 
 interface DenyButtonInterface {
-  onClick: () => void; // 클릭 핸들러 타입 정의
+  isApprove: boolean;
+  onClick: () => void;
 }
 
-function DenyButton({ onClick }: DenyButtonInterface) {
+function DenyButton({ isApprove, onClick }: DenyButtonInterface) {
   return (
-    <DenyButtonBox onClick={onClick}>
+    <DenyButtonBox onClick={onClick} disabled={!isApprove}>
       <img src="/src/assets/image/denyButton.png" alt="denyButton_img" />
     </DenyButtonBox>
   );
