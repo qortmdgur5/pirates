@@ -21,7 +21,11 @@ function ManageParty() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  const [selectedOption, setSelectedOption] = useState("recentlyRegistered");
+  const [selectedOption, setSelectedOption] = useState(false);
+
+  const handleRadioChange = (value: boolean) => {
+    setSelectedOption(value);
+  };
 
   const customModalStyles: ReactModal.Styles = {
     // overlay 모달 창 외부 영역 디자인
@@ -81,21 +85,21 @@ function ManageParty() {
                   <RadioButton
                     label="최근 등록 순"
                     name="recentlyRegistered"
-                    value="recentlyRegistered"
-                    checked={selectedOption === "recentlyRegistered"}
-                    onChange={setSelectedOption}
+                    value={false}
+                    checked={selectedOption === false}
+                    onChange={handleRadioChange}
                   />
                   <RadioButton
                     label="오래된 순"
-                    name="oldRegistered"
-                    value="oldRegistered"
-                    checked={selectedOption === "oldRegistered"}
-                    onChange={setSelectedOption}
+                    name="oldestOrders"
+                    value={true}
+                    checked={selectedOption === true}
+                    onChange={handleRadioChange}
                   />
                 </div>
                 <NameSearch />
               </div>
-              <ManagePartyTable />
+              <ManagePartyTable isOldestOrders={selectedOption} />
               <button className={styles.blue_button} onClick={openModal}>
                 파티방 개설하기
               </button>

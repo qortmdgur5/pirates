@@ -1,35 +1,44 @@
-import styles from "./styles/managePartyTable.module.scss"
+import { useEffect, useState } from "react";
+import styles from "./styles/managePartyTable.module.scss";
+import axios from "axios";
 
-// 컴포넌트
+interface Party {
+  id: number;
+  partyDate: string;
+  number: number;
+  partyOpen: boolean;
+  partyTime: string;
+}
 
-function ManagePartyTable() {
-  const data = [
-    {
-      no: "01",
-      date: "24.09.29",
-      participant: "99",
-      max:"100",
-      isActive: true,
-      time: "8:00 PM",
-    },
-    {
-      no: "02",
-      date: "24.09.29",
-      participant: "99",
-      max:"100",
-      isActive: false,
-      time: "8:00 PM",
-    },
-    {
-      no: "03",
-      date: "24.09.29",
-      participant: "99",
-      max:"100",
-      isActive: true,
-      time: "8:00 PM",
-    },
-  ];
+interface ManagePartyTableProps {
+  isOldestOrders: boolean;
+}
 
+const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
+  isOldestOrders,
+}) => {
+  const [data, setData] = useState<Party[]>([]);
+  const accomodationId = 1; // 임시 숙소 id
+
+  // 매니저 리스트 가져오기 API
+  useEffect(() => {
+    const fetchData = async (id: number) => {
+      try {
+        const response = await axios.get<Party[]>(
+          `/api/manager/parties/${id}`,
+          {
+            params: { isOldestOrders, skip: 0, limit: 10 },
+            headers: { accept: "application/json" },
+          }
+        );
+        setData(response.data);
+      } catch (error) {
+        console.error("데이터를 불러오는데 실패했습니다.", error);
+      }
+    };
+
+    fetchData(accomodationId);
+  }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
   return (
     <div className={styles.table_container}>
       <table className={styles.guest_house_table}>
@@ -48,11 +57,15 @@ function ManagePartyTable() {
           {data.map((item, index) => (
             <tr key={index}>
               <td className={styles.td_left_black}></td>
-              <td className={styles.text_center}>{item.no}</td>
-              <td className={styles.text_center}>{item.date}</td>
-              <td className={styles.text_center}>{item.participant}/{item.max}</td>
-              <td className={styles.text_center}>{item.isActive ? `O` : `X`}</td>
-              <td className={styles.text_center}>{item.time}</td>
+              <td className={styles.text_center}>{index + 1}</td>
+              <td className={styles.text_center}>{item.partyDate}</td>
+              <td className={styles.text_center}>
+                5/{item.number}
+              </td>
+              <td className={styles.text_center}>
+                {item.partyOpen ? `O`+item.partyOpen : `X`+ item.partyOpen}
+              </td>
+              <td className={styles.text_center}>{item.partyTime}</td>
               <td className={styles.td_right_black}></td>
             </tr>
           ))}
@@ -60,6 +73,6 @@ function ManagePartyTable() {
       </table>
     </div>
   );
-}
+};
 
-export default ManagePartyTable
+export default ManagePartyTable;
