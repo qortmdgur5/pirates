@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Header from "../../../components/common/header/Header";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
-import HouseInfoBox, { HouseInfo } from "./components/HouseInfoBox";
+import HouseInfoBox from "./components/HouseInfoBox";
 import styles from "./styles/houseRegister.module.scss";
 import axios from "axios";
 
@@ -16,7 +16,7 @@ interface Accommodation {
   loveCount: number | null;
 }
 
-function HouseRegister() {
+function ManageHouse() {
   const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null); // 게스트 하우스 정보 상태
   const ownerId = 1; // 추후 아톰으로 관리하여 로그인한 사장님의 id 값 저장해서 사용
 
@@ -25,7 +25,7 @@ function HouseRegister() {
     {
       text: "게스트 하우스 관리",
       isActive: true,
-      path: "/manager/houseRegister",
+      path: "/manager/manageHouse",
     },
     {
       text: "매니저 등록 관리",
@@ -79,4 +79,4 @@ function HouseRegister() {
   );
 }
 
-export default HouseRegister;
+export default ManageHouse;

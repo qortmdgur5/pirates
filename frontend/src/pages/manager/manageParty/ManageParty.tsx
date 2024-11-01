@@ -15,8 +15,16 @@ Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 function ManageParty() {
   // 메뉴 탭 데이터
   const managerMenuTabs = [
-    { text: "게스트 하우스 관리", isActive: false, path: "/manager/houseRegister" },
-    { text: "매니저 등록 관리", isActive: false, path: "/manager/managerApprove" },
+    {
+      text: "게스트 하우스 관리",
+      isActive: false,
+      path: "/manager/manageHouse",
+    },
+    {
+      text: "매니저 등록 관리",
+      isActive: false,
+      path: "/manager/managerApprove",
+    },
     { text: "파티방 관리", isActive: true, path: "/manager/manageParty" },
     { text: "마이페이지", isActive: false, path: "#" },
   ];
@@ -169,12 +177,23 @@ function ManageParty() {
                       최대인원
                     </p>
                     <div className={styles.party_register_form_input_right}>
-                      <input className={styles.party_register_max_input} type="text" />
+                      <input
+                        className={styles.party_register_max_input}
+                        type="text"
+                      />
                     </div>
                   </div>
                   <div className={styles.button_box}>
-                    <button type="button" className={styles.blue_button}>등록</button>
-                    <button type="button" onClick={closeModal} className={styles.gray_button}>취소</button>
+                    <button type="button" className={styles.blue_button}>
+                      등록
+                    </button>
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className={styles.gray_button}
+                    >
+                      취소
+                    </button>
                   </div>
                 </form>
               </Modal>

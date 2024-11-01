@@ -15,7 +15,7 @@ function ManagerApprove() {
     {
       text: "게스트 하우스 관리",
       isActive: false,
-      path: "/manager/houseRegister",
+      path: "/manager/manageHouse",
     },
     {
       text: "매니저 등록 관리",

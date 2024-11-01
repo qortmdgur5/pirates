@@ -13,8 +13,16 @@ Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 function ManagePartyDetail() {
   // 메뉴 탭 데이터
   const managerMenuTabs = [
-    { text: "게스트 하우스 관리", isActive: false, path: "/manager/houseRegister" },
-    { text: "매니저 등록 관리", isActive: false, path: "/manager/managerApprove" },
+    {
+      text: "게스트 하우스 관리",
+      isActive: false,
+      path: "/manager/manageHouse",
+    },
+    {
+      text: "매니저 등록 관리",
+      isActive: false,
+      path: "/manager/managerApprove",
+    },
     { text: "파티방 관리", isActive: true, path: "/manager/manageParty" },
     { text: "마이페이지", isActive: false, path: "#" },
   ];
@@ -46,7 +54,7 @@ function ManagePartyDetail() {
       backgroundColor: "transparent",
       border: "none",
       padding: "0",
-      overflow: "visible"
+      overflow: "visible",
     },
   };
 
