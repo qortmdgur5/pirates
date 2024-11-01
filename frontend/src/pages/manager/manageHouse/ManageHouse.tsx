@@ -18,7 +18,7 @@ interface Accommodation {
 
 function ManageHouse() {
   const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null); // 게스트 하우스 정보 상태
-  const ownerId = 1; // 추후 아톰으로 관리하여 로그인한 사장님의 id 값 저장해서 사용
+  const ownerId = 100; // 추후 아톰으로 관리하여 로그인한 사장님의 id 값 저장해서 사용
 
   // 메뉴 탭 데이터
   const managerMenuTabs = [
@@ -71,7 +71,7 @@ function ManageHouse() {
         <div className={styles.manage_right_box}>
           <div className={styles.manage_container}>
             <p className={styles.manage_title}>게스트하우스 관리</p>
-            {houseInfo && <HouseInfoBox houseInfo={houseInfo} />}
+            <HouseInfoBox houseInfo={houseInfo} />
           </div>
         </div>
       </div>
