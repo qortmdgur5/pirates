@@ -304,7 +304,7 @@ async def get_managerParties(
     limit: int = 10
 ) -> List[dict]:
     try:
-        order_by_field = models.Party.id.asc() if isOldestOrders else models.Party.id.desc()
+        order_by_field = models.Party.partyDate.asc() if isOldestOrders else models.Party.partyDate.desc()
 
         query = (
             select(models.Party)
