@@ -1,22 +1,24 @@
 import { useEffect, useState } from "react";
 import styles from "./styles/houseInfoBox.module.scss";
 
-// Props로 받을 타입 정의
 interface HouseInfo {
   name: string;
   address: string;
-  number: string;
+  number?: string; // 전화번호는 선택사항으로 처리
   introduction: string;
-  score: number | null;
-  loveCount: number | null;
+  score?: number | null;
+  loveCount?: number | null;
 }
 
 interface HouseInfoBoxProps {
   houseInfo: HouseInfo | null;
+  onSave: (newData: HouseInfo) => Promise<void>;
+  onUpdate: (updatedData: HouseInfo) => Promise<void>;
 }
 
-function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
+function HouseInfoBox({ houseInfo, onSave, onUpdate }: HouseInfoBoxProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
   const [editedInfo, setEditedInfo] = useState<HouseInfo>({
     name: "",
     address: "",
@@ -26,28 +28,15 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
     loveCount: null,
   });
 
-  // houseInfo가 변경될 때 editedInfo를 업데이트
   useEffect(() => {
     if (houseInfo) {
-      setEditedInfo({
-        name: houseInfo.name,
-        address: houseInfo.address,
-        number: houseInfo.number,
-        introduction: houseInfo.introduction,
-        score: houseInfo.score,
-        loveCount: houseInfo.loveCount,
-      });
-      setIsEditing(false); // houseInfo가 있을 때는 수정 모드가 아닙니다.
+      setEditedInfo(houseInfo);
+      setIsEditing(false);
+      setIsEnrolling(false);
     } else {
-      setEditedInfo({
-        name: "",
-        address: "",
-        number: "",
-        introduction: "",
-        score: null,
-        loveCount: null,
-      });
-      setIsEditing(true); // houseInfo가 없을 때는 수정 모드로 설정합니다.
+      // 게스트하우스 정보가 없는 사장님이 등록하러 들어왔을때
+      setIsEditing(true);
+      setIsEnrolling(true);
     }
   }, [houseInfo]);
 
@@ -55,8 +44,31 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
     setEditedInfo((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSave = async () => {
+    if (!editedInfo.name || !editedInfo.address || !editedInfo.introduction) {
+      alert("필수 입력창을 입력하세요.");
+      return;
+    }
+    await onSave(editedInfo);
+    setIsEditing(false);
+    setIsEnrolling(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!editedInfo.name || !editedInfo.address || !editedInfo.introduction) {
+      alert("필수 입력창을 입력하세요.");
+      return;
+    }
+    await onUpdate(editedInfo);
+    setIsEditing(false);
+  };
+
   const toggleEditMode = () => {
-    setIsEditing((prev) => !prev);
+    if (isEnrolling) {
+      alert("게스트 하우스 등록을 해주세요.");
+    } else {
+      setIsEditing((prev) => !prev);
+    }
   };
 
   return (
@@ -69,7 +81,7 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
               value={editedInfo.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               className={styles.house_name_input}
-              placeholder="게스트하우스 이름"
+              placeholder="게스트하우스 이름 (필수)"
             />
             <div className={styles.house_info_box}>
               <div className={styles.house_info}>
@@ -81,7 +93,7 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
                     handleInputChange("introduction", e.target.value)
                   }
                   className={styles.house_right_input}
-                  placeholder="소개"
+                  placeholder="소개 (필수)"
                 />
               </div>
               <div className={styles.house_info}>
@@ -91,28 +103,28 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
                   value={editedInfo.address}
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   className={styles.house_right_input}
-                  placeholder="주소"
+                  placeholder="주소 (필수)"
                 />
               </div>
               <div className={styles.house_info}>
                 <p className={styles.house_info_left_text}>전화번호</p>
                 <input
                   type="text"
-                  value={editedInfo.number}
+                  value={editedInfo.number || ""}
                   onChange={(e) => handleInputChange("number", e.target.value)}
                   className={styles.house_right_input}
-                  placeholder="게스트하우스 전화번호"
+                  placeholder="전화번호 (선택사항)"
                 />
               </div>
             </div>
             <div className={styles.button_container}>
-              <button onClick={toggleEditMode} className={styles.save_button}>
+              <button
+                onClick={isEnrolling ? handleSave : handleUpdate}
+                className={styles.save_button}
+              >
                 저장
               </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className={styles.cancel_button}
-              >
+              <button onClick={toggleEditMode} className={styles.cancel_button}>
                 취소
               </button>
             </div>
@@ -136,7 +148,7 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
               <div className={styles.house_info}>
                 <p className={styles.house_info_left_text}>전화번호</p>
                 <p className={styles.house_info_right_text}>
-                  {houseInfo?.number}
+                  {houseInfo?.number || "없음"}
                 </p>
               </div>
               <div className={styles.house_info}>
@@ -153,7 +165,7 @@ function HouseInfoBox({ houseInfo }: HouseInfoBoxProps) {
               </div>
             </div>
             <div className={styles.button_container}>
-              <button className={styles.modify_button} onClick={toggleEditMode}>
+              <button onClick={toggleEditMode} className={styles.modify_button}>
                 수정
               </button>
             </div>

@@ -1,26 +1,25 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import Header from "../../../components/common/header/Header";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import HouseInfoBox from "./components/HouseInfoBox";
 import styles from "./styles/houseRegister.module.scss";
-import axios from "axios";
 
 interface Accommodation {
-  id: number;
   name: string;
   address: string;
-  number: string;
+  number?: string;
   introduction: string;
-  score: number | null;
-  loveCount: number | null;
+  score?: number | null;
+  loveCount?: number | null;
 }
 
 function ManageHouse() {
-  const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null); // 게스트 하우스 정보 상태
-  const ownerId = 100; // 추후 아톰으로 관리하여 로그인한 사장님의 id 값 저장해서 사용
+  const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null);
+  const ownerId = 14; // 로그인된 사장님 id 값
+  const accomodationId = 38; // 수정할 숙소 id 값 
 
-  // 메뉴 탭 데이터
   const managerMenuTabs = [
     {
       text: "게스트 하우스 관리",
@@ -36,25 +35,42 @@ function ManageHouse() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  // 사장님 & 매니저 게스트 하우스 정보 가져오기 API 호출
-  useEffect(() => {
-    const fetchAccommodation = async (id: number) => {
-      try {
-        const response = await axios.get<Accommodation[]>(
-          `/api/owner/accomodation/${id}`,
-          {
-            params: { skip: 0, limit: 10 },
-            headers: { accept: "application/json" },
-          }
-        );
-        setHouseInfo(response.data[0]); // 첫 번째 항목만 저장, 배열이지만 현재는 한명의 사장에게 하나의 게스트하우스라고 가정
-      } catch (error) {
-        console.error("데이터를 불러오지 못했습니다.", error);
-      }
-    };
+  const fetchAccommodation = async (id: number) => {
+    try {
+      const response = await axios.get<Accommodation[]>(
+        `/api/owner/accomodation/${id}`,
+        {
+          params: { skip: 0, limit: 10 },
+          headers: { accept: "application/json" },
+        }
+      );
+      setHouseInfo(response.data[0]);
+    } catch (error) {
+      console.error("데이터를 불러오지 못했습니다.", error);
+    }
+  };
 
+  useEffect(() => {
     fetchAccommodation(ownerId);
   }, []);
+
+  const saveAccommodation = async (newData: Accommodation) => {
+    try {
+      await axios.post("/api/owner/accomodation", { ...newData, id: ownerId });
+      fetchAccommodation(ownerId);
+    } catch (error) {
+      console.error("데이터 저장에 실패했습니다.", error);
+    }
+  };
+
+  const updateAccommodation = async (updatedData: Accommodation) => {
+    try {
+      await axios.put(`/api/owner/accomodation/${accomodationId}`, updatedData);
+      fetchAccommodation(ownerId);
+    } catch (error) {
+      console.error("데이터 수정에 실패했습니다.", error);
+    }
+  };
 
   return (
     <>
@@ -71,7 +87,11 @@ function ManageHouse() {
         <div className={styles.manage_right_box}>
           <div className={styles.manage_container}>
             <p className={styles.manage_title}>게스트하우스 관리</p>
-            <HouseInfoBox houseInfo={houseInfo} />
+            <HouseInfoBox
+              houseInfo={houseInfo}
+              onSave={saveAccommodation}
+              onUpdate={updateAccommodation}
+            />
           </div>
         </div>
       </div>
