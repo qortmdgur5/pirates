@@ -1,4 +1,4 @@
-
+import os
 from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy import func, select, desc, asc
@@ -9,6 +9,7 @@ from ..service.admin import hash_password
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+import qrcode
 
 async def log_error(db: AsyncSession, message: str):
     error_log = models.ErrorLog(message=message)
@@ -170,13 +171,25 @@ async def get_ownerAccomodation(
 
 async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAccomodationsPost):
     try:
+        qr_directory = "/home/qr_directory"
+        os.makedirs(qr_directory, exist_ok=True)
+        
+        base_url = "https://www.naver.com"
+        qr_data = f"{base_url}"
+        
+        qr_img = qrcode.make(qr_data)
+        qr_filename = f"{accomodation.id}_{accomodation.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+        qr_path = os.path.join(qr_directory, qr_filename)
+        qr_img.save(qr_path) 
+        
         db_accomodation = models.Accomodation(
             owner_id=accomodation.id,
             name=accomodation.name,
             address=accomodation.address,
             introduction=accomodation.introduction,
             number=accomodation.number,
-            date = format_dates(datetime.now())
+            date = format_dates(datetime.now()),
+            directory = qr_path 
         )
         db.add(db_accomodation)
         await db.commit()
@@ -509,3 +522,28 @@ async def put_managerPartyOn(db: AsyncSession, id: int, party: schemas.managerPa
             raise HTTPException(status_code=400, detail={"msg": "fail"})
     else:
         return {"msg": "fail"}
+    
+async def get_managerAccomodationQR(
+    id: int,
+    db: AsyncSession
+) -> List[dict]:
+    try:
+        query = (
+                select(models.Accomodation)
+                .filter(models.Accomodation.id == id) 
+            )
+
+        result = await db.execute(query)
+        accomodation = result.scalar_one_or_none()
+        
+        if not accomodation:
+            raise HTTPException(status_code=404, detail={"msg": "Accommodation not found"})
+        
+        qr_code_path = accomodation.directory
+        if not qr_code_path or not os.path.exists(qr_code_path):
+            raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
+        
+        return qr_code_path  
+    except Exception  as e:
+        await log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": "fail"})

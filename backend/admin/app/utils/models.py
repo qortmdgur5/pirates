@@ -44,6 +44,7 @@ class Accomodation(Base):
     score = Column(Float, index=True, nullable=True)
     loveCount = Column(Integer, index=True, nullable=True)
     number = Column(String(100))
+    directory = Column(String(255))
     owner = relationship("Owner", back_populates="accomodations")
     reviews = relationship("Review", back_populates="accomodation")
     party = relationship("Party", back_populates="partys")

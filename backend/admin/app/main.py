@@ -1,4 +1,7 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from .db import crud, database
 from .utils import schemas
@@ -6,6 +9,13 @@ import logging
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -73,7 +83,7 @@ async def read_ownerAccomodation(
         raise HTTPException(status_code=500, detail={"msg": "fail"})
 
 
-@app.post("/owner/accomodation", summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API", tags=["owner"])
+@app.post("/owner/accomodation", summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API, QR 주소 컬럼 추가", tags=["owner"])
 async def create_ownerAccomdation(
     accomodation: schemas.OwnerAccomodationsPost,
     db: AsyncSession = Depends(database.get_db)):
@@ -238,6 +248,22 @@ async def update_managerPartyOn(
     db: AsyncSession = Depends(database.get_db)):
     try:
         return await crud.put_managerPartyOn(db, id, party)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": "fail"})
+    
+@app.get("/manager/accomodation/qr/{id}", response_model=schemas.SimpleResponse, summary="QR 코드 주소 데이터 요청", tags=["owner , manager"])
+async def read_managerAccomodationQR(
+    id: int, 
+    db: AsyncSession = Depends(database.get_db)):
+    try:
+        file_path  = await crud.get_managerAccomodationQR(id=id, db=db)
+        
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
+        
+        return FileResponse(file_path )
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
