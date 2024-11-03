@@ -3,13 +3,15 @@ from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..utils import models
-from ..utils import schemas
+from ..utils import models, schemas
+from ..utils.utils import load_config
 from ..service.admin import hash_password
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 import qrcode
+
+config = load_config("config.yaml")
 
 async def log_error(db: AsyncSession, message: str):
     error_log = models.ErrorLog(message=message)
@@ -174,8 +176,7 @@ async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAc
         qr_directory = "/home/qr_directory"
         os.makedirs(qr_directory, exist_ok=True)
         
-        base_url = "https://www.naver.com"
-        qr_data = f"{base_url}"
+        qr_data = config['qr_code']
         
         qr_img = qrcode.make(qr_data)
         qr_filename = f"{accomodation.id}_{accomodation.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
