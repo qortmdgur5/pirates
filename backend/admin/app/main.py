@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
+import urllib.parse
 from .db import crud, database
 from .utils import schemas
 import logging
@@ -253,17 +254,30 @@ async def update_managerPartyOn(
         await crud.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": "fail"})
     
-@app.get("/manager/accomodation/qr/{id}", response_model=schemas.SimpleResponse, summary="QR 코드 주소 데이터 요청", tags=["owner , manager"])
+@app.get("/manager/accomodation/qr/{id}", summary="QR 코드 주소 데이터 요청", tags=["owner , manager"])
 async def read_managerAccomodationQR(
     id: int, 
     db: AsyncSession = Depends(database.get_db)):
     try:
         file_path  = await crud.get_managerAccomodationQR(id=id, db=db)
-        
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
+
+        filename = os.path.basename(file_path)
+        encoded_filename = urllib.parse.quote(filename)
         
-        return FileResponse(file_path )
+        headers = {
+            "Content-Disposition": f"attachment; filename=\"{encoded_filename}\"",
+            "Cache-Control": "no-store"
+        }
+        
+        return FileResponse(
+            path=file_path, 
+            media_type='image/png',
+            headers=headers
+        )
+    except HTTPException as http_exc:
+        raise http_exc 
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  

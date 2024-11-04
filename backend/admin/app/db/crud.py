@@ -527,7 +527,7 @@ async def put_managerPartyOn(db: AsyncSession, id: int, party: schemas.managerPa
 async def get_managerAccomodationQR(
     id: int,
     db: AsyncSession
-) -> List[dict]:
+) -> str:
     try:
         query = (
                 select(models.Accomodation)
@@ -543,7 +543,6 @@ async def get_managerAccomodationQR(
         qr_code_path = accomodation.directory
         if not qr_code_path or not os.path.exists(qr_code_path):
             raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
-        
         return qr_code_path  
     except Exception  as e:
         await log_error(db, str(e))
