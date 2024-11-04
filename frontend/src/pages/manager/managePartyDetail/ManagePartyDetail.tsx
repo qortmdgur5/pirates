@@ -7,12 +7,14 @@ import ReservationStatusTable from "./components/ReservationStatusTable";
 import styles from "./styles/managePartyDetail.module.scss";
 import Modal from "react-modal";
 import ParticipantModalTable from "./components/ParticipantModalTable";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
 function ManagePartyDetail() {
   const { id } = useParams<{ id: string }>(); // URL 파라미터에서 id 값을 가져옵니다
+  const { state } = useLocation(); // 전달된 state를 가져옵니다
+  const partyData = state; // state에 담긴 데이터를 partyData로 할당
 
   // 메뉴 탭 데이터
   const managerMenuTabs = [
@@ -83,7 +85,7 @@ function ManagePartyDetail() {
           <div className={styles.manage_container}>
             <p className={styles.manage_title}>예약 현황</p>
             <div className={styles.manage_box}>
-              <ReservationStatusTable />
+              <ReservationStatusTable data={partyData} />
             </div>
             <p className={styles.manage_title}>참석자 명단</p>
             <div className={styles.manage_box}>
@@ -93,7 +95,7 @@ function ManagePartyDetail() {
               <Modal
                 isOpen={isModalOpen}
                 onRequestClose={closeModal}
-                contentLabel="파티방 개설 모달"
+                contentLabel="참석자 관리 모달"
                 style={customModalStyles}
                 ariaHideApp={false}
               >

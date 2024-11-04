@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // 추가
 import styles from "./styles/managePartyTable.module.scss";
 import axios from "axios";
 
@@ -8,6 +9,7 @@ interface Party {
   number: number;
   partyOpen: boolean;
   partyTime: string;
+  participant: number;
 }
 
 interface ManagePartyTableProps {
@@ -19,6 +21,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
 }) => {
   const [data, setData] = useState<Party[]>([]);
   const accomodationId = 1; // 임시 숙소 id
+  const navigate = useNavigate(); // navigate 추가
 
   // 매니저 리스트 가져오기 API
   useEffect(() => {
@@ -38,7 +41,13 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
     };
 
     fetchData(accomodationId);
-  }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
+  }, [isOldestOrders]);
+
+  // 행 클릭 시 상세 페이지로 이동
+  const handleRowClick = (item: Party) => {
+    navigate(`/manager/managePartyDetail/${item.id}`, { state: item });
+  };
+
   return (
     <div className={styles.table_container}>
       <table className={styles.guest_house_table}>
@@ -55,13 +64,16 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
         </thead>
         <tbody>
           {data.map((item, index) => (
-            <tr key={index}>
+            <tr
+              key={index}
+              onClick={() => handleRowClick(item)}
+              style={{ cursor: "pointer" }}
+            >
               <td className={styles.td_left_black}></td>
               <td className={styles.text_center}>{index + 1}</td>
               <td className={styles.text_center}>{item.partyDate}</td>
-              <td className={styles.text_center}>
-                5/{item.number}
-              </td>
+              <td className={styles.text_center}>5/{item.number}</td>{" "}
+              {/* 예약인원 데이터 추가 */}
               <td className={styles.text_center}>
                 {item.partyOpen ? `O` : `X`}
               </td>

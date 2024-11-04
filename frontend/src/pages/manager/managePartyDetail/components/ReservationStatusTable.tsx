@@ -1,16 +1,17 @@
-import styles from './styles/reservationStatusTable.module.scss'
+import styles from './styles/reservationStatusTable.module.scss';
 
-function ReservationStatusTable() {
-  const data = [
-    {
-      no: "01",
-      date: "24.09.29",
-      time: "8:00PM",
-      max:"100",
-      participant: "72",
-    },
-  ];
+interface ReservationStatusTableProps {
+  data: {
+    id: number;
+    partyDate: string;
+    number: number;
+    partyOpen: boolean;
+    partyTime: string;
+    participant: number;
+  };
+}
 
+function ReservationStatusTable({ data }: ReservationStatusTableProps) {
   return (
     <div className={styles.table_container}>
       <table className={styles.guest_house_table}>
@@ -26,21 +27,19 @@ function ReservationStatusTable() {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
-            <tr key={index}>
-              <td className={styles.td_left_black}></td>
-              <td className={styles.text_center}>{item.no}</td>
-              <td className={styles.text_center}>{item.date}</td>
-              <td className={styles.text_center}>{item.time}</td>
-              <td className={styles.text_center}>{item.max + `명`}</td>
-              <td className={styles.text_center}>{item.participant + `명`}</td>
-              <td className={styles.td_right_black}></td>
-            </tr>
-          ))}
+          <tr>
+            <td className={styles.td_left_black}></td>
+            <td className={styles.text_center}>{data.id}</td>
+            <td className={styles.text_center}>{data.partyDate}</td>
+            <td className={styles.text_center}>{data.partyTime}</td>
+            <td className={styles.text_center}>{data.number}명</td>
+            <td className={styles.text_center}>{data.participant}명</td>
+            <td className={styles.td_right_black}></td>
+          </tr>
         </tbody>
       </table>
     </div>
   );
 }
 
-export default ReservationStatusTable
+export default ReservationStatusTable;
