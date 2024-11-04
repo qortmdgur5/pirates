@@ -56,7 +56,7 @@ function ManageParty() {
     };
 
     try {
-      const response = await axios.post("/manager/party", postData, {
+      const response = await axios.post("/api/manager/party", postData, {
         headers: { "Content-Type": "application/json" },
       });
       console.log("파티방 개설 성공:", response.data);

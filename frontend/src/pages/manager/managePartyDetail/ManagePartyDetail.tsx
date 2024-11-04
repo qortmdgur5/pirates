@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../../components/common/header/Header";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
@@ -8,12 +8,22 @@ import styles from "./styles/managePartyDetail.module.scss";
 import Modal from "react-modal";
 import ParticipantModalTable from "./components/ParticipantModalTable";
 import { useLocation, useParams } from "react-router-dom";
+import axios from "axios";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
+interface Participant {
+  id: number;      // ID
+  name: string;    // 이름
+  phone: string;   // 연락처
+  age: number;     // 나이
+  gender: string;  // 성별
+}
+
 function ManagePartyDetail() {
-  const { id } = useParams<{ id: string }>(); // URL 파라미터에서 id 값을 가져옵니다
-  const { state } = useLocation(); // 전달된 state를 가져옵니다
+  const { id } = useParams<{ id: string }>(); // Accomodation PK
+  const { state } = useLocation(); // 전달된 state를 가져옵니다, 파티방 상세페이지 예약현황 데이터, 이전 manageParty 페이지에서 넘어온 데이터
+  const [participants, setParticipants] = useState<Participant[]>([]); // 참석자 명단 데이터
   const partyData = state; // state에 담긴 데이터를 partyData로 할당
 
   // 메뉴 탭 데이터
@@ -69,6 +79,23 @@ function ManagePartyDetail() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  useEffect(() => {
+    // API 호출하여 참석자 데이터를 가져옴
+    axios
+      .get(`/api/manager/party/${id}`)
+      .then((response) => {
+        const filteredData = response.data.map((item: Participant) => ({
+          id: item.id,
+          name: item.name,
+          phone: item.phone,
+          age: item.age,
+          gender: item.gender,
+        }));
+        setParticipants(filteredData);
+      })
+      .catch((error) => console.error("API 호출 실패:", error));
+  }, [id]);
+
   return (
     <>
       <Header />
@@ -108,7 +135,7 @@ function ManagePartyDetail() {
 
                 <ParticipantModalTable />
               </Modal>
-              <ParticipantTable />
+              <ParticipantTable data={participants} />
             </div>
           </div>
         </div>

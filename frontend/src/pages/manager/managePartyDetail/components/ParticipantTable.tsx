@@ -1,30 +1,20 @@
-import styles from './styles/reservationStatusTable.module.scss'
+import styles from "./styles/reservationStatusTable.module.scss";
 
-function ParticipantTable() {
-  const data = [
-    {
-      no: "01",
-      name: "백승혁",
-      phone: "010-0000-1122",
-      age:"100",
-      sex: true,
-    },
-    {
-      no: "02",
-      name: "김철수",
-      phone: "010-0000-1122",
-      age:"100",
-      sex: false,
-    },
-    {
-      no: "03",
-      name: "백찬영",
-      phone: "010-0000-1122",
-      age:"22",
-      sex: false,
-    },
-  ];
+// 참석자 정보를 정의하는 인터페이스
+interface Participant {
+  id: number;      // ID
+  name: string;    // 이름
+  phone: string;   // 연락처
+  age: number;     // 나이
+  gender: string;  // 성별
+}
 
+// ParticipantTable의 props 타입 정의
+interface ParticipantTableProps {
+  data: Participant[]; // 참석자 리스트
+}
+
+function ParticipantTable({ data }: ParticipantTableProps) {
   return (
     <div className={styles.table_container}>
       <table className={styles.guest_house_table}>
@@ -44,12 +34,14 @@ function ParticipantTable() {
           {data.map((item, index) => (
             <tr key={index}>
               <td className={styles.td_left_black}></td>
-              <td className={styles.text_center}>{item.no}</td>
+              <td className={styles.text_center}>{item.id}</td>
               <td className={styles.text_center}>{item.name}</td>
               <td className={styles.text_center}>{item.phone}</td>
               <td className={styles.text_center}>{item.age}</td>
-              <td className={styles.text_center}>{item.sex ? `남` : `여`}</td>
-              <td className={styles.text_center}><button className={styles.red_button}>삭제</button></td>
+              <td className={styles.text_center}>{item.gender}</td>
+              <td className={styles.text_center}>
+                <button className={styles.red_button}>삭제</button>
+              </td>
               <td className={styles.td_right_black}></td>
             </tr>
           ))}
@@ -59,4 +51,4 @@ function ParticipantTable() {
   );
 }
 
-export default ParticipantTable
+export default ParticipantTable;
