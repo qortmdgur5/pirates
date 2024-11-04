@@ -63,7 +63,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
                 5/{item.number}
               </td>
               <td className={styles.text_center}>
-                {item.partyOpen ? `O`+item.partyOpen : `X`+ item.partyOpen}
+                {item.partyOpen ? `O` : `X`}
               </td>
               <td className={styles.text_center}>{item.partyTime}</td>
               <td className={styles.td_right_black}></td>

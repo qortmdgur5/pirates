@@ -7,10 +7,13 @@ import ReservationStatusTable from "./components/ReservationStatusTable";
 import styles from "./styles/managePartyDetail.module.scss";
 import Modal from "react-modal";
 import ParticipantModalTable from "./components/ParticipantModalTable";
+import { useParams } from "react-router-dom";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
 function ManagePartyDetail() {
+  const { id } = useParams<{ id: string }>(); // URL 파라미터에서 id 값을 가져옵니다
+
   // 메뉴 탭 데이터
   const managerMenuTabs = [
     {

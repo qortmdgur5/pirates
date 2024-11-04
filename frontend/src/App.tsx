@@ -20,7 +20,7 @@ function App() {
         <Route path="/manager/manageHouse" element={<ManageHousePage />}></Route>
         <Route path="/manager/managerApprove" element={<ManagerApprovePage />}></Route>
         <Route path="/manager/manageParty" element={<ManagePartyPage />}></Route>
-        <Route path="/manager/managePartyDetail" element={<ManagePartyDetailPage />}></Route>
+        <Route path="/manager/managePartyDetail/:id" element={<ManagePartyDetailPage />}></Route>
         <Route path="/owner/signup" element={<OwnerSignupPage />}></Route>
       </Routes>
     </BrowserRouter>

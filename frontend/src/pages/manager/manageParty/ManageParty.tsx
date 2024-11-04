@@ -9,6 +9,7 @@ import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/manageParty.module.scss";
 import NameSearch from "../../../components/common/search/NameSearch";
 import ManagePartyTable from "./components/ManagePartyTable";
+import axios from "axios";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -29,10 +30,40 @@ function ManageParty() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
+  // 폼 데이터 상태
+  const [id, setId] = useState<number>(1); // 초기 숙소 PK 키 임시 1로 지정
+  const [partyDate, setPartyDate] = useState<string>("");
+  const [partyOpen, setPartyOpen] = useState<boolean>(false);
+  const [partyTime, setPartyTime] = useState<string>("");
+  const [number, setNumber] = useState<number | null>(null);
+
   const [selectedOption, setSelectedOption] = useState(false);
 
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    // 서버로 보낼 데이터
+    const postData = {
+      id,
+      partyDate,
+      partyOpen,
+      partyTime,
+      number,
+    };
+
+    try {
+      const response = await axios.post("/manager/party", postData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log("파티방 개설 성공:", response.data);
+      closeModal(); // 모달 닫기
+    } catch (error) {
+      console.error("파티방 개설 실패:", error);
+    }
   };
 
   const customModalStyles: ReactModal.Styles = {
@@ -132,14 +163,19 @@ function ManageParty() {
                   회원정보는 개인정보취급방침에 따라 안전하게 보호되며 회원님의
                   명확한 동의 없이 공개 또는 제 3자에게 제공되지 않습니다.
                 </p>
-                <form className={styles.party_register_form}>
+                <form onSubmit={handleSubmit} className={styles.party_register_form}>
                   <div className={styles.party_register_form_input_box}>
                     <p className={styles.party_register_form_input_left}>
                       파티 날짜
                     </p>
                     <div className={styles.party_register_form_input_right}>
                       <p className={styles.date_input_text}>24.09.29</p>
-                      <button className={styles.date_calendar_emoji}>🗓️</button>
+                      <button
+                        type="button"
+                        className={styles.date_calendar_emoji}
+                      >
+                        🗓️
+                      </button>
                     </div>
                   </div>
                   <div className={styles.party_register_form_input_box}>
@@ -150,16 +186,24 @@ function ManageParty() {
                       <div className={styles.party_exist_check_box}>
                         <p className={styles.party_register_input_text}>유</p>
                         <input
-                          type="checkbox"
+                          type="radio"
                           className={styles.party_register_check_box}
-                        ></input>
+                          name="partyExist"
+                          value="유"
+                          checked={partyOpen === true}
+                          onChange={() => setPartyOpen(true)}
+                        />
                       </div>
                       <div className={styles.party_not_exist_check_box}>
                         <p className={styles.party_register_input_text}>무</p>
                         <input
-                          type="checkbox"
+                          type="radio"
                           className={styles.party_register_check_box}
-                        ></input>
+                          name="partyExist"
+                          value="무"
+                          checked={partyOpen === false}
+                          onChange={() => setPartyOpen(false)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -169,7 +213,9 @@ function ManageParty() {
                     </p>
                     <div className={styles.party_register_form_input_right}>
                       <p className={styles.time_input_text}>8:00PM</p>
-                      <button className={styles.time_clock_emoji}>🕜</button>
+                      <button type="button" className={styles.time_clock_emoji}>
+                        🕜
+                      </button>
                     </div>
                   </div>
                   <div className={styles.party_register_form_input_box}>
