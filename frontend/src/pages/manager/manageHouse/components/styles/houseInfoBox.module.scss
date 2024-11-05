@@ -18,6 +18,7 @@
     .house_name {
       font-size: 40px;
       font-weight: bold;
+      font-family: 'NanumSquareEB', sans-serif;
       padding: 20px 40px 20px 40px;
       border-radius: 18px;
       background-color: $color-blue-200;
@@ -26,6 +27,7 @@
     .house_name_input {
       font-size: 40px;
       font-weight: bold;
+      font-family: 'NanumSquareB', sans-serif;
       padding: 20px 40px 20px 40px;
       border-radius: 18px;
       text-align: center;
@@ -53,11 +55,13 @@
         .house_info_left_text {
           font-size: 38px;
           font-weight: bold;
+          font-family: 'NanumSquareEB', sans-serif;
           color: $color-black-100;
         }
 
         .house_info_right_text {
           font-size: 33px;
+          font-family: 'NanumSquareB', sans-serif;
           color: $color-black-400;
         }
 
@@ -65,6 +69,7 @@
           width: 400px;
           font-size: 38px;
           font-weight: bold;
+          font-family: 'NanumSquareB', sans-serif;
           color: $color-black-100;
           padding: 10px 25px 10px 25px;
           border-radius: 18px;
@@ -92,6 +97,7 @@
         width: 211px;
         height: 58px;
         font-size: 34px;
+        font-family: 'NanumSquareR', sans-serif;
         color: $color-white-000;
         border-radius: 16px;
         box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
@@ -106,6 +112,7 @@
         width: 211px;
         height: 58px;
         font-size: 34px;
+        font-family: 'NanumSquareR', sans-serif;
         color: $color-black-100;
         border-radius: 16px;
         box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);

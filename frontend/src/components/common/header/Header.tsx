@@ -11,7 +11,7 @@ function Header() {
       </div>
       <button className={styles.logout_button}>
         로그아웃
-        <img src="/src/assets/image/naver_login_button.png" alt="logout_img" />
+        <img src="/src/assets/image/logout_button.png" alt="logout_img" />
       </button>
     </header>
   )

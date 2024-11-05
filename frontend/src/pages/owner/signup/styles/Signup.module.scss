@@ -36,17 +36,20 @@
         background-clip: text;
         font-size: 35px;
         font-weight: bold;
+        font-family: 'VITROCORE', sans-serif;
       }
     }
 
     .signup_text_1 {
       font-size: 27px;
+      font-family: 'NanumSquareR', sans-serif;
       color: $color-black-100;
       margin-top: 54px;
     }
 
     .signup_text_2 {
       font-size: 18px;
+      font-family: 'NanumSquareR', sans-serif;
       color: $color-black-100;
       margin-top: 24px;
       padding: 0 18% 0 18%;
@@ -72,6 +75,7 @@
         .signup_input_label {
           flex-grow: 1;
           font-size: 22px;
+          font-family: 'NanumSquareR', sans-serif;
           color: $color-black-100;
         }
 
@@ -84,6 +88,7 @@
             border: 1px solid $color-gray-400;
             padding: 0 16px 0 16px;
             font-size: 14px;
+            font-family: 'NanumSquareR', sans-serif;
           }
         }
 
@@ -98,6 +103,7 @@
             border: 1px solid $color-gray-400;
             padding: 0 16px 0 16px;
             font-size: 14px;
+            font-family: 'NanumSquareR', sans-serif;
           }
 
           .duplicate_button {
@@ -107,6 +113,7 @@
             width: 87px;
             height: 39px;
             font-size: 16px;
+            font-family: 'NanumSquareR', sans-serif;
             color: $color-white-000;
             background-color: $color-gray-400;
           }
@@ -124,6 +131,7 @@
             border: 1px solid $color-gray-400;
             padding: 0 16px 0 16px;
             font-size: 14px;
+            font-family: 'NanumSquareR', sans-serif;
           }
         }
 
@@ -144,6 +152,7 @@
 
       .danger_message {
         font-size: 14px;
+        font-family: 'NanumSquareR', sans-serif;
         color: $color-red-000;
         margin-top: 6px;
         padding-left: 35%;
@@ -164,6 +173,7 @@
         border-radius: 16px;
         box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
         font-size: 29px;
+        font-family: 'NanumSquareR', sans-serif;
       }
 
       .signup_button{

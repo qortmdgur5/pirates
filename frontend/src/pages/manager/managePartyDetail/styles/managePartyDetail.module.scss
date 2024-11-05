@@ -20,6 +20,7 @@
       .manage_title {
         display: flex;
         font-size: 40px;
+        font-family: 'NanumSquareB', sans-serif;
         color: $color-black-100;
         padding: 32px 0 0 37px;
 
@@ -56,6 +57,7 @@
           box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
           background-color: $color-blue-000;
           font-size: 19px;
+          font-family: 'NanumSquareEB', sans-serif;
           color: $color-white-000;
           margin: auto 32px 20px auto;
         }
@@ -69,6 +71,7 @@
   top: -32px;
   right: 38px;
   font-size: 18px;
+  font-family: 'NanumSquareEB', sans-serif;
   color: $color-white-000;
   background-color: transparent;
 }

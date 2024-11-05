@@ -14,6 +14,7 @@
   height: 97px;
   vertical-align: middle;
   font-size: 28px;
+  font-family: 'NanumSquareEB', sans-serif;
   color: $color-black-100;
   background-color: $color-blue-200;
   font-weight: bold;
@@ -33,6 +34,7 @@
   height: 90px;
   vertical-align: middle;
   font-size: 26px;
+  font-family: 'NanumSquareB', sans-serif;
   color: $color-black-400;
   border-bottom: 1px solid $color-gray-200;
   background-color: $color-white-000;
@@ -53,6 +55,7 @@
 
 .modal_text_1 {
   font-size: 41px;
+  font-family: 'NanumSquareR', sans-serif;
   color: $color-black-100;
 }
 
@@ -69,6 +72,7 @@
     border-radius: 16px;
     box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
     font-size: 34px;
+    font-family: 'NanumSquareR', sans-serif;
   }
 
   .modal_blue_button{

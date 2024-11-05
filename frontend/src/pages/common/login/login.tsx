@@ -74,10 +74,10 @@ function Login() {
               SNS 계정으로 로그인
             </div>
             <div className={styles.sns_login_button_box}>
+              <RoundButton iconUrl="/src/assets/image/kakao_login_button.png" />
+              <RoundButton iconUrl="/src/assets/image/facebook_login_button.png" />
               <RoundButton iconUrl="/src/assets/image/naver_login_button.png" />
-              <RoundButton iconUrl="/src/assets/image/naver_login_button.png" />
-              <RoundButton iconUrl="/src/assets/image/naver_login_button.png" />
-              <RoundButton iconUrl="/src/assets/image/naver_login_button.png" />
+              <RoundButton iconUrl="/src/assets/image/insta_login_button.png" />
             </div>
           </div>
         </div>
