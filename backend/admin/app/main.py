@@ -167,7 +167,7 @@ async def read_managerParties(
 
 @app.post("/manager/party", summary="매니저용 파티방 관리 페이지 - 파티방 개설 API", tags=["owner , manager"])
 async def create_managerParty(
-    party: schemas.managerParties,
+    party: schemas.managerPartiesPost,
     db: AsyncSession = Depends(database.get_db)):
     try:
         return await crud.post_managerParty(db, party)

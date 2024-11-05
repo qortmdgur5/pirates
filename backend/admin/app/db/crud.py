@@ -321,15 +321,24 @@ async def get_managerParties(
         order_by_field = models.Party.partyDate.asc() if isOldestOrders else models.Party.partyDate.desc()
 
         query = (
-            select(models.Party)
+            select(
+                models.Party.id,
+                models.Party.partyDate,
+                models.Party.number,
+                models.Party.partyOpen,
+                models.Party.partyTime,
+                func.count(models.Participant.id).label("participant_count")
+            )
+            .join(models.Participant, models.Party.id == models.Participant.party_id, isouter=True)
             .filter(models.Party.accomodation_id == id)
+            .group_by(models.Party.id)
             .order_by(order_by_field)
             .offset(skip)
             .limit(limit)
         )
         
         result = await db.execute(query)
-        managerParties = result.scalars().all()
+        managerParties = result.all()
         
         # Format the response
         response = [
@@ -338,7 +347,8 @@ async def get_managerParties(
                 "partyDate": format_date(managerParty.partyDate),
                 "number": managerParty.number,
                 "partyOpen": managerParty.partyOpen,
-                "partyTime": format_party_time(managerParty.partyTime)
+                "partyTime": format_party_time(managerParty.partyTime),
+                "participant": managerParty.participant_count  
             }
             for managerParty in managerParties
         ]
@@ -352,10 +362,10 @@ async def get_managerParties(
 
 
 
-async def post_managerParty(db: AsyncSession, party: schemas.managerParties):
+async def post_managerParty(db: AsyncSession, party: schemas.managerPartiesPost):
     try:
-        formatted_date = datetime.strptime(party.partyDate, "%Y-%m-%d").strftime("%Y.%m.%d")
-        formatted_time = datetime.strptime(party.partyTime, "%H-%M-%S").strftime("%H:%M:%S")
+        formatted_date = datetime.strptime(party.partyDate, "%Y-%m-%d")
+        formatted_time = datetime.strptime(party.partyTime, "%H-%M-%S").time()
         
         db_party = models.Party(
             accomodation_id=party.id,
@@ -383,8 +393,9 @@ async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerPart
     db_party = result.scalar_one_or_none()
     if db_party:
         try:
-            formatted_date = datetime.strptime(party.partyDate, "%Y-%m-%d").strftime("%Y.%m.%d")
-            formatted_time = datetime.strptime(party.partyTime, "%H-%M-%S").strftime("%H:%M:%S")
+            formatted_date = datetime.strptime(party.partyDate, "%Y-%m-%d")
+            formatted_time = datetime.strptime(party.partyTime, "%H-%M-%S").time()
+            
             db_party.partyDate = formatted_date
             db_party.number = party.number
             db_party.partyOpen = party.partyOpen
@@ -428,29 +439,27 @@ async def get_managerParty(
 ) -> List[dict]:
     try:
         query = (
-            select(models.Participant, models.Party)
-            .outerjoin(models.Party, models.Participant.party_id == models.Party.id)
+            select(models.Participant)
             .filter(models.Participant.party_id == id)
             .offset(skip)
             .limit(limit)
         )
         
         result = await db.execute(query)
-        managerParties = result.fetchall()
+        managerParties = result.scalars().all()
 
         print("managerParties : ", managerParties)
         response = [
             {
                 "id": participant.id,
-                "partyDate": format_date(party.partyDate) if party.partyDate else None,
-                "number": party.number if party else 0,
-                "partyTime": format_party_time(party.partyTime) if party.partyTime else None,
                 "name": participant.name,
                 "phone": participant.phone,
                 "age": participant.age,
-                "gender": "남자" if participant.gender else "여자" 
+                "gender": "남자" if participant.gender else "여자",
+                "mbti": participant.mbti,
+                "region": participant.region
             }
-            for participant, party in managerParties
+            for participant in managerParties
         ]
         
         return response
