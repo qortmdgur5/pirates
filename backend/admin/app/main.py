@@ -1,11 +1,13 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, status
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 import urllib.parse
 from .db import crud, database
 from .utils import schemas
+from .oauth import oauth
 import logging
 
 app = FastAPI()
@@ -20,13 +22,61 @@ app.add_middleware(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-## admim (관리자 사용 API)
+@app.post("/admin/password", summary="Admin 로그인 후 토큰 발급", tags=["token"])
+async def login_adminpassword(username: str, db: AsyncSession = Depends(database.get_db)):
+    password = await crud.get_admin_by_password(db, username)
+
+    return {"password": password}
+
+# Admin 로그인 API
+@app.post("/admin/token", summary="Admin 로그인 후 토큰 발급", tags=["token"])
+async def login_admin(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await crud.authenticate_admin(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = oauth.create_access_token(data={"sub": user.id})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# Owner 로그인 API
+@app.post("/owner/token", summary="Owner 로그인 후 토큰 발급", tags=["token"])
+async def login_owner(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await crud.authenticate_owner(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = oauth.create_access_token(data={"sub": user.id})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# Manager 로그인 API
+@app.post("/manager/token", summary="Manager 로그인 후 토큰 발급", tags=["token"])
+async def login_manager(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await crud.authenticate_manager(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = oauth.create_access_token(data={"sub": user.id})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+## admin (관리자 사용 API)
 @app.get("/admin/accomodations", response_model=list[schemas.AdminAccomodations], summary="관리자용 게스트 하우스 관리 페이지 - 게스트 하우스 리스트 정보 가져오기 API", tags=["admin"])
 async def read_adminAccomodations(
     isMostReviews: bool = Query(True), 
     skip: int = Query(0),
     limit: int = Query(10), 
-    db: AsyncSession = Depends(database.get_db)):
+    db: AsyncSession = Depends(database.get_db),
+    # token: str = Depends(oauth.verify_token)
+):
     try:
         data = await crud.get_adminAccomodations(db, isMostReviews=isMostReviews, skip=skip, limit=limit)
         return data

@@ -5,10 +5,9 @@ from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models, schemas
 from ..utils.utils import load_config
-from ..service.admin import hash_password
-from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+from ..oauth.password import hash_password, pwd_context, get_password_hash
 import qrcode
 
 config = load_config("config.yaml")
@@ -30,7 +29,45 @@ def format_party_time(party_time: str) -> str:
     time_obj = datetime.combine(datetime.today(), party_time)
     return time_obj.strftime('%I:%M %p') 
 
-## admim (관리자 사용 API)
+async def get_admin_by_password(db: AsyncSession, username: str):
+    query = await db.execute(select(models.Admin).where(models.Admin.username == username))
+    result = query.scalars().one()
+    password = get_password_hash(result.password)
+    return password
+
+async def get_admin_by_username(db: AsyncSession, username: str):
+    result = await db.execute(select(models.Admin).where(models.Admin.username == username))
+    return result.scalars().first()
+
+async def get_owner_by_username(db: AsyncSession, username: str):
+    result = await db.execute(select(models.Owner).where(models.Owner.username == username))
+    return result.scalars().first()
+
+async def get_manager_by_username(db: AsyncSession, username: str):
+    result = await db.execute(select(models.Manager).where(models.Manager.username == username))
+    return result.scalars().first()
+
+
+async def authenticate_admin(db: AsyncSession, username: str, password: str):
+    admin = await get_admin_by_username(db, username)
+    if not admin or not pwd_context.verify(password, admin.hash_password):
+        return None
+    return admin
+
+async def authenticate_owner(db: AsyncSession, username: str, password: str):
+    owner = await get_owner_by_username(db, username)
+    if not owner or not pwd_context.verify(password, owner.hash_password):
+        return None
+    return owner
+
+async def authenticate_manager(db: AsyncSession, username: str, password: str):
+    manager = await get_manager_by_username(db, username)
+    if not manager or not pwd_context.verify(password, manager.hash_password):
+        return None
+    return manager
+
+
+## admin (관리자 사용 API)
 async def get_adminAccomodations(
     db: AsyncSession,
     isMostReviews: Optional[bool] = False,
