@@ -4,7 +4,7 @@ import Header from "../../../components/common/header/Header";
 import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import HouseInfoBox from "./components/HouseInfoBox";
-import styles from "./styles/houseRegister.module.scss";
+import styles from "./styles/manageHouse.module.scss";
 
 interface Accommodation {
   name: string;

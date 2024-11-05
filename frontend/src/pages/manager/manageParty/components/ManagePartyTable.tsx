@@ -72,7 +72,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
               <td className={styles.td_left_black}></td>
               <td className={styles.text_center}>{index + 1}</td>
               <td className={styles.text_center}>{item.partyDate}</td>
-              <td className={styles.text_center}>5/{item.number}</td>{" "}
+              <td className={styles.text_center}>{item.participant}/{item.number}</td>{" "}
               {/* 예약인원 데이터 추가 */}
               <td className={styles.text_center}>
                 {item.partyOpen ? `O` : `X`}
