@@ -71,8 +71,8 @@ async def authenticate_manager(db: AsyncSession, username: str, password: str):
 async def get_adminAccomodations(
     db: AsyncSession,
     isMostReviews: Optional[bool] = False,
-    skip: int = 0,
-    limit: int = 10
+    page: int = 0,
+    pageSize: int = 10
 ) -> List[dict]:
     try:
         if isMostReviews:
@@ -88,7 +88,9 @@ async def get_adminAccomodations(
                 .order_by(asc(models.Accomodation.id))
             )
         
-        result = await db.execute(query.offset(skip).limit(limit))
+        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
+        offset = max((page - 1) * pageSize, 0)
+        result = await db.execute(query.offset(offset).limit(pageSize))
         accomodations = result.scalars().all()
         
         response = [
@@ -102,18 +104,30 @@ async def get_adminAccomodations(
             for accomodation in accomodations
         ]
         
-        return response
+        return  {
+            "data": response,
+            "totalCount": totalCount
+        }
     except ValueError as e:
         error_message = f"Date/Time parsing error: {str(e)}"
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": "fail"})
     
-async def get_adminOwners(db: AsyncSession, isOldestOrders: Optional[bool] = False, skip: int = 0, limit: int = 10):
+async def get_adminOwners(
+    db: AsyncSession, 
+    isOldestOrders: Optional[bool] = False, 
+    page: int = 0, 
+    pageSize: int = 10
+):
     try:
-        query = select(models.Owner).offset(skip).limit(limit)
-        query = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
-
-        result = await db.execute(query)
+        total_count_query = select(func.count()).select_from(models.Owner)
+        totalCount = await db.scalar(total_count_query)
+        
+        offset = max((page - 1) * pageSize, 0)
+        query = select(models.Owner)
+        sql = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date)).offset(offset).limit(pageSize)
+        
+        result = await db.execute(sql)
         owners = result.scalars().all()
 
         response = [
@@ -126,7 +140,10 @@ async def get_adminOwners(db: AsyncSession, isOldestOrders: Optional[bool] = Fal
             }
             for owner in owners
         ]
-        return response
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
     except ValueError as e:
         error_message = f"Date/Time parsing error: {str(e)}"
         await log_error(db, error_message)
@@ -177,8 +194,8 @@ async def put_deny_adminOwners(db: AsyncSession, id: int):
 async def get_ownerAccomodation(
     id: int,
     db: AsyncSession,
-    skip: int = 0,
-    limit: int = 10
+    page: int = 0,
+    pageSize: int = 10
 ) -> List[dict]:
     try:
         query = (
@@ -187,7 +204,10 @@ async def get_ownerAccomodation(
                 .order_by(asc(models.Accomodation.date))
             )
 
-        result = await db.execute(query.offset(skip).limit(limit))
+        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
+        offset = max((page - 1) * pageSize, 0)
+        
+        result = await db.execute(query.offset(offset).limit(pageSize))
         accomodations = result.scalars().all()
         
         response = [
@@ -202,7 +222,10 @@ async def get_ownerAccomodation(
                 }
                 for accomodation in accomodations
             ]
-        return response
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
     except ValueError as e:
         error_message = f"Date/Time parsing error: {str(e)}"
         await log_error(db, error_message)
@@ -269,8 +292,8 @@ async def get_ownermanagers(
     id: int,
     db: AsyncSession,
     isOldestOrders: Optional[bool] = False,
-    skip: int = 0,
-    limit: int = 10
+    page: int = 0,
+    pageSize: int = 10
 ) -> List[dict]:
     try:
         if isOldestOrders:
@@ -286,7 +309,10 @@ async def get_ownermanagers(
                     .order_by(desc(models.Manager.id))
                 )
 
-        result = await db.execute(query.offset(skip).limit(limit))
+        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
+        offset = max((page - 1) * pageSize, 0)
+        
+        result = await db.execute(query.offset(offset).limit(pageSize))
         managers = result.scalars().all()
         
         response = [
@@ -300,7 +326,10 @@ async def get_ownermanagers(
                 }
                 for manager in managers
             ]
-        return response
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
     except ValueError as e:
         error_message = f"Date/Time parsing error: {str(e)}"
         await log_error(db, error_message)
@@ -351,8 +380,8 @@ async def get_managerParties(
     id: int,
     db: AsyncSession,
     isOldestOrders: Optional[bool] = False,
-    skip: int = 0,
-    limit: int = 10
+    page: int = 0,
+    pageSize: int = 10
 ) -> List[dict]:
     try:
         order_by_field = models.Party.partyDate.asc() if isOldestOrders else models.Party.partyDate.desc()
@@ -370,11 +399,14 @@ async def get_managerParties(
             .filter(models.Party.accomodation_id == id)
             .group_by(models.Party.id)
             .order_by(order_by_field)
-            .offset(skip)
-            .limit(limit)
+            .offset(page)
+            .limit(pageSize)
         )
         
-        result = await db.execute(query)
+        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
+        offset = max((page - 1) * pageSize, 0)
+        
+        result = await db.execute(query.offset(offset).limit(pageSize))
         managerParties = result.all()
         
         # Format the response
@@ -390,7 +422,10 @@ async def get_managerParties(
             for managerParty in managerParties
         ]
         
-        return response
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
     
     except ValueError as e:
         error_message = f"Date/Time parsing error: {str(e)}"
@@ -471,21 +506,23 @@ async def del_managerParty(db: AsyncSession, id: int):
 async def get_managerParty(
     id: int,
     db: AsyncSession,
-    skip: int = 0,
-    limit: int = 10
+    page: int = 0,
+    pageSize: int = 10
 ) -> List[dict]:
     try:
         query = (
             select(models.Participant)
             .filter(models.Participant.party_id == id)
-            .offset(skip)
-            .limit(limit)
+            .offset(page)
+            .limit(pageSize)
         )
         
-        result = await db.execute(query)
+        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
+        offset = max((page - 1) * pageSize, 0)
+        
+        result = await db.execute(query.offset(offset).limit(pageSize))
         managerParties = result.scalars().all()
 
-        print("managerParties : ", managerParties)
         response = [
             {
                 "id": participant.id,
@@ -499,7 +536,10 @@ async def get_managerParty(
             for participant in managerParties
         ]
         
-        return response
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
     
     except ValueError as e:
         error_message = f"Date/Time parsing error: {str(e)}"

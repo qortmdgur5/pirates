@@ -15,7 +15,8 @@ class AdminAccomodations(BaseModel):
     date: str
     
 class AdminAccomodation(BaseModel):
-    accomodations: List[AdminAccomodations]
+    data: List[AdminAccomodations]
+    totalCount: int
   
 class AdminOwners(BaseModel):
     id: int
@@ -25,7 +26,8 @@ class AdminOwners(BaseModel):
     isAuth: bool 
 
 class AdminOwner(BaseModel):
-    owners: List[AdminOwners]
+    data: List[AdminOwners]
+    totalCount: int
 
 
 ## owner (사장님 사용 API)
@@ -39,7 +41,8 @@ class OwnerAccomodationsWithoutDates(BaseModel):
     loveCount: Optional[int] = None
     
 class OwnerAccomodationsWithoutDate(BaseModel):
-    accomodations: List[OwnerAccomodationsWithoutDates]   
+    data: List[OwnerAccomodationsWithoutDates] 
+    totalCount: int  
     
 class OwnerAccomodationsPost(BaseModel):
     id: int
@@ -64,7 +67,8 @@ class OwnerManagers(BaseModel):
     isAuth: bool 
 
 class OwnerManager(BaseModel):
-    ownerManagers: List[OwnerManagers]    
+    data: List[OwnerManagers]    
+    totalCount: int  
     
 
 ## owner , manager(사장님 And 매니저 사용 API)
@@ -75,6 +79,10 @@ class managerParties(BaseModel):
     partyOpen: bool
     partyTime: str
     participant: int
+
+class managerParty(BaseModel):
+    data: List[managerParties]    
+    totalCount: int  
  
 class managerPartiesPost(BaseModel):
     id: int
@@ -98,6 +106,10 @@ class managerParticipant(BaseModel):
     mbti: str
     region: str
 
+class managerParticipants(BaseModel):
+    data: List[managerParticipant]    
+    totalCount: int  
+    
 class managerParticipantPost(BaseModel):
     id: int
     name: str
