@@ -658,6 +658,7 @@ async def get_managerParty(
         query = (
             select(models.Participant)
             .filter(models.Participant.party_id == id)
+            .order_by(models.Participant.id.desc())
             .offset(page)
             .limit(pageSize)
         )
