@@ -40,12 +40,59 @@ function ManageParty() {
     return today;
   };
 
+  // 날짜를 'yyyy-MM-dd' 형식으로 변환하는 함수
+  const formatDate = (date: Date | null) => {
+    if (date === null) {
+      date = calendarDate as Date;
+    }
+    // 로컬 시간대의 연, 월, 일 가져오기
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // 월은 0부터 시작하므로 +1 필요
+    const day = String(date.getDate()).padStart(2, "0");
+
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate; // YYYY-MM-DD 형식
+  };
+
+  // 시간 노출 포맷팅 함수 8:00 PM 형식으로
+  const formatTime = (date: Date | undefined): string => {
+    if (!date) {
+      return "8:00 PM"; // date가 undefined인 경우 기본값 처리
+    }
+    // date를 12시간 형식으로 포맷
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    // 오전/오후 판단
+    const period = hours >= 12 ? "PM" : "AM";
+
+    // 12시간 형식으로 시간 변환 (12시일 때는 0시로, 24시를 12시로 변환)
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = String(minutes).padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes} ${period}`; // 예시: "8:00 PM"
+  };
+
+  // 폼 데이터로 보낼 시간 변수 포맷팅
+  const formatTimeToHHMM00 = (date: Date): string => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    // 24시간 형식으로 시간 변환 (2자리로 표현)
+    const formattedHours = String(hours).padStart(2, "0");
+    const formattedMinutes = String(minutes).padStart(2, "0");
+
+    return `${formattedHours}-${formattedMinutes}-00`; // 예시: "08-00-00"
+  };
+
+  const [calendarDate, setCalendarDate] = useState<Date | null>(getTodayDate);
+  const [AMPMTime, setAMPMTime] = useState<Date>();
   // 폼 데이터 상태
   const [id, setId] = useState<number>(1); // 초기 숙소 PK 키 임시 1로 지정
-  const [partyDate, setPartyDate] = useState<Date>(getTodayDate);
+  const [partyDate, setPartyDate] = useState<string>(formatDate(calendarDate));
   const [partyOpen, setPartyOpen] = useState<boolean>(false);
-  const [partyTime, setPartyTime] = useState<string>("");
-  const [number, setNumber] = useState<number | null>(null);
+  const [partyTime, setPartyTime] = useState<string>("20-00-00");
+  const [number, setNumber] = useState<number>(100);
 
   // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState(false);
@@ -53,7 +100,8 @@ function ManageParty() {
   const [page, setPage] = useState<number>(0);
   // 페이지 사이즈 상태 기본 10 사이즈로 설정
   const [pageSize, setSageSize] = useState<number>(10);
-
+  // 컴포넌트 안의 fetch 함수 트리거 상태
+  const [fetchTrigger, setFetchTriger] = useState<boolean>(false);
 
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
@@ -77,6 +125,8 @@ function ManageParty() {
       });
       console.log("파티방 개설 성공:", response.data);
       closeModal(); // 모달 닫기
+      setPage(0);
+      setFetchTriger(prev => !prev);
     } catch (error) {
       console.error("파티방 개설 실패:", error);
     }
@@ -119,13 +169,10 @@ function ManageParty() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  // 달력 오픈 상태
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  // 시계 오픈 상태
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
-
-  // 날짜를 'yyyy-MM-dd' 형식으로 변환하는 함수
-  const formatDate = (date: Date) => {
-    return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식
-  };
 
   return (
     <>
@@ -162,7 +209,12 @@ function ManageParty() {
                 </div>
                 <NameSearch />
               </div>
-              <ManagePartyTable isOldestOrders={selectedOption} page={page} pageSize={pageSize} />
+              <ManagePartyTable
+                isOldestOrders={selectedOption}
+                page={page}
+                pageSize={pageSize}
+                fetchTrigger={fetchTrigger}
+              />
               <button className={styles.blue_button} onClick={openModal}>
                 파티방 개설하기
               </button>
@@ -199,10 +251,10 @@ function ManageParty() {
                       className={styles.party_register_form_input_right}
                       style={{ position: "relative" }}
                     >
-                      <p className={styles.date_input_text}>{formatDate(partyDate)}</p>
+                      <p className={styles.date_input_text}>{partyDate}</p>
                       <button
                         type="button"
-                        onClick={() => setIsDatePickerOpen(true)}
+                        onClick={() => setIsDatePickerOpen((prev) => !prev)}
                         className={styles.date_calendar_emoji}
                       >
                         🗓️
@@ -217,9 +269,10 @@ function ManageParty() {
                           }}
                         >
                           <DatePicker
-                            selected={partyDate}
+                            selected={calendarDate}
                             onChange={(date: Date | null) => {
-                              setPartyDate(date || getTodayDate());
+                              setPartyDate(formatDate(date));
+                              setCalendarDate(date);
                               setIsDatePickerOpen(false);
                             }}
                             dateFormat="yyyy-MM-dd"
@@ -263,11 +316,47 @@ function ManageParty() {
                     <p className={styles.party_register_form_input_left}>
                       시작시간
                     </p>
-                    <div className={styles.party_register_form_input_right}>
-                      <p className={styles.time_input_text}>8:00PM</p>
-                      <button type="button" className={styles.time_clock_emoji}>
+                    <div
+                      className={styles.party_register_form_input_right}
+                      style={{ position: "relative" }}
+                    >
+                      <p className={styles.time_input_text}>
+                        {formatTime(AMPMTime)}
+                      </p>
+                      <button
+                        type="button"
+                        className={styles.time_clock_emoji}
+                        onClick={() => setIsTimePickerOpen((prev) => !prev)}
+                      >
                         🕜
                       </button>
+                      {isTimePickerOpen && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            zIndex: 10,
+                          }}
+                        >
+                          <DatePicker
+                            onChange={(date: Date | null) => {
+                              if (date) {
+                                setPartyTime(formatTimeToHHMM00(date)); // 포맷된 시간 문자열을 상태로 업데이트
+                                setAMPMTime(date);
+                                setIsTimePickerOpen(false);
+                              }
+                            }} // 날짜가 선택되면 상태 업데이트
+                            showTimeSelect // 시간 선택 가능
+                            showTimeSelectOnly // 날짜를 숨기고 시간만 선택
+                            timeIntervals={15} // 시간 간격 설정 (15분 간격)
+                            timeCaption="시간" // 시간 캡션
+                            dateFormat="HH:mm" // 시간 형식 (날짜는 제외)
+                            timeFormat="HH:mm" // 시간 형식
+                            placeholderText="시간을 선택하세요" // 기본 텍스트
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={styles.party_register_form_input_box}>
@@ -277,12 +366,18 @@ function ManageParty() {
                     <div className={styles.party_register_form_input_right}>
                       <input
                         className={styles.party_register_max_input}
-                        type="text"
+                        type="number"
+                        value={number} // 상태를 input 값에 연결
+                        onChange={(e) => setNumber(Number(e.target.value))} // 입력값을 숫자로 변환 후 상태 업데이트
                       />
                     </div>
                   </div>
                   <div className={styles.button_box}>
-                    <button type="button" className={styles.blue_button}>
+                    <button
+                      type="button"
+                      className={styles.blue_button}
+                      onClick={handleSubmit}
+                    >
                       등록
                     </button>
                     <button

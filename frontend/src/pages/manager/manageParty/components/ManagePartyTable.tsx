@@ -21,11 +21,13 @@ interface ManagePartyTableProps {
   isOldestOrders: boolean;
   page: number;
   pageSize: number;
+  fetchTrigger: boolean;
 }
 
 const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   isOldestOrders,
   page,
+  fetchTrigger,
 }) => {
   const [data, setData] = useState<Party[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -51,7 +53,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
     };
 
     fetchData(accomodationId);
-  }, [isOldestOrders, page]);
+  }, [isOldestOrders, page, fetchTrigger]);
 
   // 행 클릭 시 상세 페이지로 이동
   const handleRowClick = (item: Party) => {
