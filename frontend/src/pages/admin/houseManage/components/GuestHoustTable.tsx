@@ -3,7 +3,7 @@ import axios from "axios";
 import styles from "./styles/guestHouseTable.module.scss";
 
 // API 응답 데이터 타입 정의
-interface GuestHouseAPIResponse {
+interface GuestHouse {
   id: number;
   name: string;
   address: string;
@@ -11,18 +11,26 @@ interface GuestHouseAPIResponse {
   date: string;
 }
 
+interface GuestHouseAPIResponse {
+  data: GuestHouse[];
+  totalCount: number;
+}
+
 // 테이블 많은 리뷰 순, 최근 등록 순 Props, true 리뷰 많은 순 false 최근 등록 순
 interface GuestHouseTableProps {
   isMostReviews: boolean;
+  page: number;
+  pageSize: number;
 }
 
-function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
-  const [data, setData] = useState<GuestHouseAPIResponse[]>([]);
+function GuestHouseTable({ isMostReviews, page }: GuestHouseTableProps) {
+  const [data, setData] = useState<GuestHouse[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<GuestHouseAPIResponse[]>(
+        const response = await axios.get<GuestHouseAPIResponse>(
           "/api/admin/accomodations",
           {
             params: { isMostReviews, skip: 0, limit: 10 },
@@ -30,14 +38,15 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
           }
         );
 
-        setData(response.data);
+        setData(response.data.data);
+        setTotalCount(response.data.totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }
     };
 
     fetchData();
-  }, [isMostReviews]); // isMostReviews가 변경될 때마다 데이터 갱신
+  }, [isMostReviews, page]); // isMostReviews가 변경될 때마다 데이터 갱신
 
   return (
     <div className={styles.table_container}>

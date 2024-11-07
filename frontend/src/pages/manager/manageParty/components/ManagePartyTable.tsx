@@ -12,14 +12,23 @@ interface Party {
   participant: number;
 }
 
+interface PartyAPIResponse {
+  data: Party[];
+  totalCount: number;
+}
+
 interface ManagePartyTableProps {
   isOldestOrders: boolean;
+  page: number;
+  pageSize: number;
 }
 
 const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   isOldestOrders,
+  page,
 }) => {
   const [data, setData] = useState<Party[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const accomodationId = 1; // 임시 숙소 id
   const navigate = useNavigate(); // navigate 추가
 
@@ -27,21 +36,22 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   useEffect(() => {
     const fetchData = async (id: number) => {
       try {
-        const response = await axios.get<Party[]>(
+        const response = await axios.get<PartyAPIResponse>(
           `/api/manager/parties/${id}`,
           {
             params: { isOldestOrders, skip: 0, limit: 10 },
             headers: { accept: "application/json" },
           }
         );
-        setData(response.data);
+        setData(response.data.data);
+        setTotalCount(response.data.totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }
     };
 
     fetchData(accomodationId);
-  }, [isOldestOrders]);
+  }, [isOldestOrders, page]);
 
   // 행 클릭 시 상세 페이지로 이동
   const handleRowClick = (item: Party) => {
@@ -72,7 +82,9 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
               <td className={styles.td_left_black}></td>
               <td className={styles.text_center}>{index + 1}</td>
               <td className={styles.text_center}>{item.partyDate}</td>
-              <td className={styles.text_center}>{item.participant}/{item.number}</td>{" "}
+              <td className={styles.text_center}>
+                {item.participant}/{item.number}
+              </td>{" "}
               {/* 예약인원 데이터 추가 */}
               <td className={styles.text_center}>
                 {item.partyOpen ? `O` : `X`}

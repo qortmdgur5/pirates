@@ -18,14 +18,22 @@ interface Manager {
   isAuth: boolean;
 }
 
+interface ManagerAPIResponse {
+  data: Manager[];
+  totalCount: number;
+}
+
 interface ManagerApproveTableProps {
   isOldestOrders: boolean;
+  page: number;
+  pageSize: number;
 }
 
 const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
-  isOldestOrders,
+  isOldestOrders, page
 }) => {
   const [data, setData] = useState<Manager[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState<boolean>(false);
   const [isDenyModalOpen, setIsDenyModalOpen] = useState<boolean>(false);
   const [selectedManagerName, setSelectedManagerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
@@ -67,21 +75,22 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   useEffect(() => {
     const fetchData = async (id: number) => {
       try {
-        const response = await axios.get<Manager[]>(
+        const response = await axios.get<ManagerAPIResponse>(
           `/api/owner/managers/${id}`,
           {
             params: { isOldestOrders, skip: 0, limit: 10 },
             headers: { accept: "application/json" },
           }
         );
-        setData(response.data);
+        setData(response.data.data);
+        setTotalCount(response.data.totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }
     };
 
     fetchData(ownerId);
-  }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
+  }, [isOldestOrders, page]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
   const openApproveModal = (name: string, id: number) => {

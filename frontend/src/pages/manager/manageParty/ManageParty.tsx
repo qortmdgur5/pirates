@@ -1,5 +1,8 @@
 import { useState } from "react";
 import Modal from "react-modal";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ko } from "date-fns/locale"; // 한국어 로케일 추가
 
 // 컴포넌트
 import Header from "../../../components/common/header/Header";
@@ -30,14 +33,27 @@ function ManageParty() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
+  // 현재 날짜 yyyy-MM-dd 형식으로 설정
+  const getTodayDate = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 시간 제거
+    return today;
+  };
+
   // 폼 데이터 상태
   const [id, setId] = useState<number>(1); // 초기 숙소 PK 키 임시 1로 지정
-  const [partyDate, setPartyDate] = useState<string>("");
+  const [partyDate, setPartyDate] = useState<Date>(getTodayDate);
   const [partyOpen, setPartyOpen] = useState<boolean>(false);
   const [partyTime, setPartyTime] = useState<string>("");
   const [number, setNumber] = useState<number | null>(null);
 
+  // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState(false);
+  // 페이지 상태
+  const [page, setPage] = useState<number>(0);
+  // 페이지 사이즈 상태 기본 10 사이즈로 설정
+  const [pageSize, setSageSize] = useState<number>(10);
+
 
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
@@ -103,6 +119,14 @@ function ManageParty() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+
+  // 날짜를 'yyyy-MM-dd' 형식으로 변환하는 함수
+  const formatDate = (date: Date) => {
+    return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+  };
+
   return (
     <>
       <Header />
@@ -138,7 +162,7 @@ function ManageParty() {
                 </div>
                 <NameSearch />
               </div>
-              <ManagePartyTable isOldestOrders={selectedOption} />
+              <ManagePartyTable isOldestOrders={selectedOption} page={page} pageSize={pageSize} />
               <button className={styles.blue_button} onClick={openModal}>
                 파티방 개설하기
               </button>
@@ -163,19 +187,47 @@ function ManageParty() {
                   회원정보는 개인정보취급방침에 따라 안전하게 보호되며 회원님의
                   명확한 동의 없이 공개 또는 제 3자에게 제공되지 않습니다.
                 </p>
-                <form onSubmit={handleSubmit} className={styles.party_register_form}>
+                <form
+                  onSubmit={handleSubmit}
+                  className={styles.party_register_form}
+                >
                   <div className={styles.party_register_form_input_box}>
                     <p className={styles.party_register_form_input_left}>
                       파티 날짜
                     </p>
-                    <div className={styles.party_register_form_input_right}>
-                      <p className={styles.date_input_text}>24.09.29</p>
+                    <div
+                      className={styles.party_register_form_input_right}
+                      style={{ position: "relative" }}
+                    >
+                      <p className={styles.date_input_text}>{formatDate(partyDate)}</p>
                       <button
                         type="button"
+                        onClick={() => setIsDatePickerOpen(true)}
                         className={styles.date_calendar_emoji}
                       >
                         🗓️
                       </button>
+                      {isDatePickerOpen && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            zIndex: 10,
+                          }}
+                        >
+                          <DatePicker
+                            selected={partyDate}
+                            onChange={(date: Date | null) => {
+                              setPartyDate(date || getTodayDate());
+                              setIsDatePickerOpen(false);
+                            }}
+                            dateFormat="yyyy-MM-dd"
+                            locale={ko} // 한글 설정
+                            inline
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={styles.party_register_form_input_box}>
@@ -189,7 +241,7 @@ function ManageParty() {
                           type="radio"
                           className={styles.party_register_check_box}
                           name="partyExist"
-                          value="유"
+                          value="true"
                           checked={partyOpen === true}
                           onChange={() => setPartyOpen(true)}
                         />
@@ -200,7 +252,7 @@ function ManageParty() {
                           type="radio"
                           className={styles.party_register_check_box}
                           name="partyExist"
-                          value="무"
+                          value="false"
                           checked={partyOpen === false}
                           onChange={() => setPartyOpen(false)}
                         />

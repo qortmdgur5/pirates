@@ -26,7 +26,13 @@ function ManagerApprove() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
+  // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState<boolean>(false);
+  // 페이지 상태
+  const [page, setPage] = useState<number>(0);
+  // 페이지 사이즈 상태 기본 10 사이즈로 설정
+  const [pageSize, setSageSize] = useState<number>(10);
+
 
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
@@ -67,7 +73,7 @@ function ManagerApprove() {
                 </div>
                 <NameSearch />
               </div>
-              <ManagerApproveTable isOldestOrders={selectedOption} />
+              <ManagerApproveTable isOldestOrders={selectedOption} page={page} pageSize={pageSize} />
             </div>
           </div>
         </div>

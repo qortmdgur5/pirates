@@ -15,14 +15,22 @@ interface Owner {
   isAuth: boolean;
 }
 
+interface OwnerAPIResponse {
+  data: Owner[];
+  totalCount: number;
+}
+
 interface HouseApproveTableProps {
   isOldestOrders: boolean;
+  page: number;
+  pageSize: number;
 }
 
 const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
-  isOldestOrders,
+  isOldestOrders, page
 }) => {
   const [data, setData] = useState<Owner[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDenyModalOpen, setIsDenyModalOpen] = useState(false);
   const [selectedOwnerName, setSelectedOwnerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
@@ -61,12 +69,13 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<Owner[]>("/api/admin/owners", {
+        const response = await axios.get<OwnerAPIResponse>("/api/admin/owners", {
           params: { isOldestOrders, skip: 0, limit: 10 },
           headers: { accept: "application/json" },
         });
 
-        setData(response.data);
+        setData(response.data.data);
+        setTotalCount(response.data.totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }
