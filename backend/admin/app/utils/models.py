@@ -13,8 +13,8 @@ class Admin(Base):
     __tablename__ = "Admin"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(255), index=True)
-    password = Column(String(255), index=True)
+    username = Column(String(255), unique=True, nullable=False, index=True)
+    password = Column(String(255), nullable=False)
     role = Column(String(255), index=True)
 
 
@@ -22,8 +22,8 @@ class Owner(Base):
     __tablename__ = "Owner"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(255), index=True)
-    password = Column(String(255), index=True)
+    username = Column(String(255), unique=True, nullable=False, index=True)
+    password = Column(String(255), nullable=False)
     role = Column(String(50)) 
     date = Column(DateTime, default=func.now())
     name = Column(String(100))

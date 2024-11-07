@@ -121,3 +121,21 @@ class managerParticipantPost(BaseModel):
 
 class managerPartyOn(BaseModel):
     partyOn: bool
+    
+    
+class signupOwner(BaseModel):
+    username: str
+    password: str
+    name: str
+    phoneNumber: str
+    
+class signupManager(BaseModel):
+    username: str
+    password: str
+    name: str
+    phoneNumber: str
+    owner_id: int
+    
+class loginResponse(BaseModel):
+    access_token: str
+    token_type: str

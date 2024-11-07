@@ -6,17 +6,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models, schemas
 from ..utils.utils import load_config
 from datetime import datetime, timedelta, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
-from ..oauth.password import hash_password, pwd_context, get_password_hash
+from ..oauth.password import hash_password, pwd_context, get_password_hash, verify_password
 import qrcode
 
 config = load_config("config.yaml")
 
 async def log_error(db: AsyncSession, message: str):
-    error_log = models.ErrorLog(message=message)
-    db.add(error_log)
-    await db.commit()
-
+    try:
+        error_log = models.ErrorLog(message=message)
+        db.add(error_log)
+        await db.commit()
+    except Exception as log_error:
+        print(f"Error while logging: {log_error}")
+        
 def format_date(date_obj):
     kst_date = date_obj + timedelta(hours=9)
     return kst_date.strftime("%y.%m.%d")
@@ -29,42 +31,38 @@ def format_party_time(party_time: str) -> str:
     time_obj = datetime.combine(datetime.today(), party_time)
     return time_obj.strftime('%I:%M %p') 
 
-async def get_admin_by_password(db: AsyncSession, username: str):
-    query = await db.execute(select(models.Admin).where(models.Admin.username == username))
-    result = query.scalars().one()
-    password = get_password_hash(result.password)
-    return password
-
-async def get_admin_by_username(db: AsyncSession, username: str):
-    result = await db.execute(select(models.Admin).where(models.Admin.username == username))
-    return result.scalars().first()
-
-async def get_owner_by_username(db: AsyncSession, username: str):
-    result = await db.execute(select(models.Owner).where(models.Owner.username == username))
-    return result.scalars().first()
-
-async def get_manager_by_username(db: AsyncSession, username: str):
-    result = await db.execute(select(models.Manager).where(models.Manager.username == username))
-    return result.scalars().first()
 
 
-async def authenticate_admin(db: AsyncSession, username: str, password: str):
-    admin = await get_admin_by_username(db, username)
-    if not admin or not pwd_context.verify(password, admin.hash_password):
-        return None
-    return admin
+# async def get_admin_by_password(db: AsyncSession, username: str):
+#     query = await db.execute(select(models.Admin).where(models.Admin.username == username))
+#     result = query.scalars().one()
+#     password = get_password_hash(result.password)
+#     return password
 
-async def authenticate_owner(db: AsyncSession, username: str, password: str):
-    owner = await get_owner_by_username(db, username)
-    if not owner or not pwd_context.verify(password, owner.hash_password):
-        return None
-    return owner
+# async def get_admin_by_username(db: AsyncSession, username: str):
+#     result = await db.execute(select(models.Admin).where(models.Admin.username == username))
+#     return result.scalars().first()
 
-async def authenticate_manager(db: AsyncSession, username: str, password: str):
-    manager = await get_manager_by_username(db, username)
-    if not manager or not pwd_context.verify(password, manager.hash_password):
-        return None
-    return manager
+
+
+# async def get_manager_by_username(db: AsyncSession, username: str):
+#     result = await db.execute(select(models.Manager).where(models.Manager.username == username))
+#     return result.scalars().first()
+
+
+# async def authenticate_admin(db: AsyncSession, username: str, password: str):
+#     admin = await get_admin_by_username(db, username)
+#     if not admin or not pwd_context.verify(password, admin.hash_password):
+#         return None
+#     return admin
+
+
+
+# async def authenticate_manager(db: AsyncSession, username: str, password: str):
+#     manager = await get_manager_by_username(db, username)
+#     if not manager or not pwd_context.verify(password, manager.hash_password):
+#         return None
+#     return manager
 
 
 ## admin (관리자 사용 API)
@@ -191,6 +189,59 @@ async def put_deny_adminOwners(db: AsyncSession, id: int):
 
 
 ## owner (사장님 사용 API)
+async def create_signup_owner(db: AsyncSession, data: schemas.signupOwner):
+    try:
+        db_owner = models.Owner(
+            username=data.username,
+            password=hash_password(data.password),
+            role="ROLE_NOTAUTH_OWNER",
+            name=data.name,
+            phoneNumber=data.phoneNumber,
+            date=format_dates(datetime.now()),
+        )
+        db.add(db_owner)
+        await db.commit()
+        await db.refresh(db_owner)
+        
+        return {"msg": "ok"}  
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+async def create_duplicate_owner(db: AsyncSession, username: str):
+    try:
+        query = await db.execute(select(models.Owner).where(models.Owner.username == username))
+        result = query.scalars().one_or_none()
+
+        is_duplicate = result is not None
+        return {"duplicate": is_duplicate}
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+
+async def authenticate_owner(db: AsyncSession, username: str, password: str):
+    try:
+        query = select(models.Owner).filter(models.Owner.username == username)
+        result = await db.execute(query)
+        user = result.scalar_one_or_none()
+        
+        pw = verify_password(password, user.password)
+        
+        accomodations = await db.execute(select(models.Accomodation).filter(models.Accomodation.owner_id == user.id))
+        accomodation = accomodations.scalar_one_or_none()
+        accomodation_id = accomodation.id if accomodation else None
+        
+        return user, pw, accomodation_id
+    except Exception as e:  
+        error_message = f"Unexpected error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 async def get_ownerAccomodation(
     id: int,
     db: AsyncSession,
@@ -376,6 +427,101 @@ async def put_deny_ownerOwners(db: AsyncSession, id: int):
 
 
 ## owner , manager(사장님 And 매니저 사용 API)
+async def get_managerGetAccomodation(
+    db: AsyncSession,
+    page: int = 0,
+    pageSize: int = 10
+) -> List[dict]:
+    try:
+        query = (
+            select(
+                models.Accomodation.owner_id,
+                models.Accomodation.name
+            )
+            .order_by(models.Accomodation.owner_id)
+            .offset(page)
+            .limit(pageSize)
+        )
+        
+        totalCount = await db.scalar(select(func.count()).select_from(models.Accomodation))
+        offset = max((page - 1) * pageSize, 0)
+        
+        result = await db.execute(query.offset(offset).limit(pageSize))
+        managerAccomodations = result.all()
+        
+        response = [
+            {
+                "owner_id": managerAccomodation.owner_id,
+                "accomodationName": managerAccomodation.name
+            }
+            for managerAccomodation in managerAccomodations
+        ]
+        
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+    
+    
+async def create_signup_mananger(db: AsyncSession, data: schemas.signupManager):
+    try:
+        db_manager = models.Manager(
+            owner_id=data.owner_id,
+            username=data.username,
+            password=hash_password(data.password),
+            role="ROLE_NOTAUTH_OWNER",
+            name=data.name,
+            phoneNumber=data.phoneNumber,
+            date=format_dates(datetime.now()),
+        )
+        db.add(db_manager)
+        await db.commit()
+        await db.refresh(db_manager)
+        
+        return {"msg": "ok"}  
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+async def create_duplicate_mananger(db: AsyncSession, username: str):
+    try:
+        query = await db.execute(select(models.Manager).where(models.Manager.username == username))
+        result = query.scalars().one_or_none()
+
+        is_duplicate = result is not None
+        return {"duplicate": is_duplicate}
+    
+    except ValueError as e:
+        error_message = f"Date/Time parsing error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": "fail"})
+
+
+async def authenticate_mananger(db: AsyncSession, username: str, password: str):
+    try:
+        query = select(models.Manager).filter(models.Manager.username == username)
+        result = await db.execute(query)
+        user = result.scalar_one_or_none()
+        
+        pw = verify_password(password, user.password)
+        
+        accomodations = await db.execute(select(models.Accomodation).filter(models.Accomodation.owner_id == user.id))
+        accomodation = accomodations.scalar_one_or_none()
+        accomodation_id = accomodation.id if accomodation else None
+        
+        return user, pw, accomodation_id
+    except Exception as e:  
+        error_message = f"Unexpected error: {str(e)}"
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 async def get_managerParties(
     id: int,
     db: AsyncSession,
@@ -409,7 +555,6 @@ async def get_managerParties(
         result = await db.execute(query.offset(offset).limit(pageSize))
         managerParties = result.all()
         
-        # Format the response
         response = [
             {
                 "id": managerParty.id,
