@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Float, Time, func, Boolean, Text, ForeignKey
+from sqlalchemy import Column, Index, Integer, String, DateTime, Float, Time, func, Boolean, Text, ForeignKey
 from ..db.database import Base
 from sqlalchemy.orm import relationship
 
@@ -13,9 +13,9 @@ class Admin(Base):
     __tablename__ = "Admin"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(255), unique=True, nullable=False, index=True)
+    username = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    role = Column(String(255), index=True)
+    role = Column(String(255))
 
 
 class Owner(Base):
@@ -37,12 +37,12 @@ class Accomodation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey('Owner.id'))
-    name = Column(String(255), index=True)
-    address = Column(String(255), index=True)
-    introduction =Column(String(255), index=True)
+    name = Column(String(255))
+    address = Column(String(255))
+    introduction =Column(String(255))
     date = Column(DateTime, default=func.now())
-    score = Column(Float, index=True, nullable=True)
-    loveCount = Column(Integer, index=True, nullable=True)
+    score = Column(Float, nullable=True)
+    loveCount = Column(Integer, nullable=True)
     number = Column(String(100))
     directory = Column(String(255))
     owner = relationship("Owner", back_populates="accomodations")
@@ -54,9 +54,9 @@ class Review(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     accomodation_id = Column(Integer, ForeignKey('Accomodation.id'))
-    user_id = Column(Integer, index=True)
-    contents = Column(Text, index=True)
-    score = Column(Float, index=True)
+    user_id = Column(Integer)
+    contents = Column(Text)
+    score = Column(Float)
     accomodation = relationship("Accomodation", back_populates="reviews") 
 
 class Party(Base):
@@ -65,10 +65,10 @@ class Party(Base):
     id = Column(Integer, primary_key=True, index=True)
     accomodation_id = Column(Integer, ForeignKey('Accomodation.id'))
     partyDate = Column(DateTime, default=func.now())
-    partyOpen = Column(Integer, index=True)
+    partyOpen = Column(Integer)
     partyTime = Column(Time, default=func.now())
-    number = Column(Integer, index=True)
-    partyOn = Column(Integer, index=True)
+    number = Column(Integer)
+    partyOn = Column(Integer)
     partys = relationship("Accomodation", back_populates="party") 
     participant = relationship("Participant", back_populates="participants") 
     

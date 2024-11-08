@@ -8,11 +8,16 @@ from ..utils.utils import load_config
 from datetime import datetime, timedelta, timezone
 from ..oauth.password import hash_password, pwd_context, get_password_hash, verify_password
 import qrcode
+import logging
 
 config = load_config("config.yaml")
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 async def log_error(db: AsyncSession, message: str):
     try:
+        logging.error(f"Error: {message}") 
         error_log = models.ErrorLog(message=message)
         db.add(error_log)
         await db.commit()
@@ -33,38 +38,6 @@ def format_party_time(party_time: str) -> str:
 
 
 
-# async def get_admin_by_password(db: AsyncSession, username: str):
-#     query = await db.execute(select(models.Admin).where(models.Admin.username == username))
-#     result = query.scalars().one()
-#     password = get_password_hash(result.password)
-#     return password
-
-# async def get_admin_by_username(db: AsyncSession, username: str):
-#     result = await db.execute(select(models.Admin).where(models.Admin.username == username))
-#     return result.scalars().first()
-
-
-
-# async def get_manager_by_username(db: AsyncSession, username: str):
-#     result = await db.execute(select(models.Manager).where(models.Manager.username == username))
-#     return result.scalars().first()
-
-
-# async def authenticate_admin(db: AsyncSession, username: str, password: str):
-#     admin = await get_admin_by_username(db, username)
-#     if not admin or not pwd_context.verify(password, admin.hash_password):
-#         return None
-#     return admin
-
-
-
-# async def authenticate_manager(db: AsyncSession, username: str, password: str):
-#     manager = await get_manager_by_username(db, username)
-#     if not manager or not pwd_context.verify(password, manager.hash_password):
-#         return None
-#     return manager
-
-
 ## admin (관리자 사용 API)
 async def get_adminAccomodations(
     db: AsyncSession,
@@ -73,23 +46,25 @@ async def get_adminAccomodations(
     pageSize: int = 10
 ) -> List[dict]:
     try:
+        query = select(models.Accomodation)
         if isMostReviews:
-            query = (
-                select(models.Accomodation)
-                .outerjoin(models.Review)
-                .group_by(models.Accomodation.id)
-                .order_by(func.count(models.Review.id).desc())
-            )
+            query = query.outerjoin(models.Review)
+            query = query.group_by(models.Accomodation.id)
+            query = query.add_columns(func.count(models.Review.id).label("review_count"))
+            query = query.order_by(desc("review_count"))
         else:
-            query = (
-                select(models.Accomodation)
-                .order_by(asc(models.Accomodation.id))
-            )
+            query = query.order_by(models.Accomodation.date.desc())
         
-        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
         offset = max((page - 1) * pageSize, 0)
-        result = await db.execute(query.offset(offset).limit(pageSize))
+        query = query.offset(offset).limit(pageSize)
+        
+        totalCount_query = select(func.count()).select_from(models.Accomodation)
+        totalCount = await db.scalar(totalCount_query)
+        
+        result = await db.execute(query)
+        print("Result:", result)
         accomodations = result.scalars().all()
+        print("Accommodations:", accomodations) 
         
         response = [
             {
@@ -97,7 +72,7 @@ async def get_adminAccomodations(
                 "name": accomodation.name,
                 "address": accomodation.address,
                 "number": accomodation.number,
-                "date": format_date(accomodation.date)
+                "date": format_date(accomodation.date) if accomodation.date else None
             }
             for accomodation in accomodations
         ]
@@ -107,9 +82,15 @@ async def get_adminAccomodations(
             "totalCount": totalCount
         }
     except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+        error_message = str(e)
+        print("Logging error:", error_message)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Logging error:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 async def get_adminOwners(
     db: AsyncSession, 
@@ -118,16 +99,22 @@ async def get_adminOwners(
     pageSize: int = 10
 ):
     try:
-        total_count_query = select(func.count()).select_from(models.Owner)
-        totalCount = await db.scalar(total_count_query)
-        
         offset = max((page - 1) * pageSize, 0)
-        query = select(models.Owner)
-        sql = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date)).offset(offset).limit(pageSize)
+        query = select(
+            models.Owner.id,
+            models.Owner.name,
+            models.Owner.username,
+            models.Owner.phoneNumber,
+            models.Owner.role
+        ).order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))\
+         .offset(offset).limit(pageSize)
+         
+        totalCount_query = select(func.count()).select_from(models.Owner)
+        totalCount = await db.scalar(totalCount_query)
         
-        result = await db.execute(sql)
-        owners = result.scalars().all()
-
+        result = await db.execute(query)
+        owners = result.all()
+        
         response = [
             {
                 "id": owner.id,
@@ -142,10 +129,10 @@ async def get_adminOwners(
             "data": response,
             "totalCount": totalCount
         }
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
     
 async def put_auth_adminOwners(db: AsyncSession, id: int):
     
@@ -159,10 +146,10 @@ async def put_auth_adminOwners(db: AsyncSession, id: int):
             await db.commit()
             await db.refresh(db_owner)
             return {"msg": "ok"}  
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -178,10 +165,10 @@ async def put_deny_adminOwners(db: AsyncSession, id: int):
             await db.commit()
             await db.refresh(db_owner)
             return {"msg": "ok"}  
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -205,10 +192,10 @@ async def create_signup_owner(db: AsyncSession, data: schemas.signupOwner):
         
         return {"msg": "ok"}  
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 async def create_duplicate_owner(db: AsyncSession, username: str):
     try:
@@ -218,25 +205,31 @@ async def create_duplicate_owner(db: AsyncSession, username: str):
         is_duplicate = result is not None
         return {"duplicate": is_duplicate}
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 
 async def authenticate_owner(db: AsyncSession, username: str, password: str):
     try:
-        query = select(models.Owner).filter(models.Owner.username == username)
+        query = (
+            select(models.Owner, models.Accomodation)
+            .join(models.Accomodation, models.Accomodation.owner_id == models.Owner.id, isouter=True)
+            .filter(models.Owner.username == username)
+        )
+        
         result = await db.execute(query)
-        user = result.scalar_one_or_none()
+        owner, accomodation = result.scalar_one_or_none()
+
+        if not owner:
+            raise HTTPException(status_code=404, detail="Owner not found")
+
+        pw = verify_password(password, owner.password)
         
-        pw = verify_password(password, user.password)
-        
-        accomodations = await db.execute(select(models.Accomodation).filter(models.Accomodation.owner_id == user.id))
-        accomodation = accomodations.scalar_one_or_none()
         accomodation_id = accomodation.id if accomodation else None
         
-        return user, pw, accomodation_id
+        return owner, pw, accomodation_id
     except Exception as e:  
         error_message = f"Unexpected error: {str(e)}"
         await log_error(db, error_message)
@@ -249,16 +242,20 @@ async def get_ownerAccomodation(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        query = (
-                select(models.Accomodation)
-                .filter(models.Accomodation.owner_id == id) 
-                .order_by(asc(models.Accomodation.date))
-            )
-
-        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
         offset = max((page - 1) * pageSize, 0)
         
-        result = await db.execute(query.offset(offset).limit(pageSize))
+        query = (
+            select(models.Accomodation)
+            .filter(models.Accomodation.owner_id == id) 
+            .order_by(asc(models.Accomodation.date))
+            .offset(offset)
+            .limit(pageSize)
+        )
+
+        totalCount_query = select(func.count()).select_from(models.Accomodation).filter(models.Accomodation.owner_id == id)
+        totalCount = await db.scalar(totalCount_query)
+        
+        result = await db.execute(query)
         accomodations = result.scalars().all()
         
         response = [
@@ -277,10 +274,10 @@ async def get_ownerAccomodation(
             "data": response,
             "totalCount": totalCount
         }
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAccomodationsPost):
     try:
@@ -308,10 +305,10 @@ async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAc
         await db.refresh(db_accomodation)
         
         return {"msg": "ok"}  
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 async def put_ownerAccomodation(db: AsyncSession, id: int, accomodation: schemas.OwnerAccomodationsPut):
     
@@ -331,10 +328,10 @@ async def put_ownerAccomodation(db: AsyncSession, id: int, accomodation: schemas
             await db.refresh(db_accomodation)
             
             return {"msg": "ok"}  
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -347,23 +344,18 @@ async def get_ownermanagers(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        if isOldestOrders:
-            query = (
-                    select(models.Manager)
-                    .filter(models.Manager.owner_id == id) 
-                    .order_by(asc(models.Manager.id))
-                )
-        else:
-            query = (
-                    select(models.Manager)
-                    .filter(models.Manager.owner_id == id) 
-                    .order_by(desc(models.Manager.id))
-                )
-
-        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
         offset = max((page - 1) * pageSize, 0)
-        
-        result = await db.execute(query.offset(offset).limit(pageSize))
+
+        query = select(models.Manager).filter(models.Manager.owner_id == id)
+
+        query = query.offset(offset).limit(pageSize)
+
+        query = query.order_by(asc(models.Manager.id) if isOldestOrders else desc(models.Manager.id))
+
+        totalCount_query = select(func.count()).select_from(models.Manager).filter(models.Manager.owner_id == id)
+        totalCount = await db.scalar(totalCount_query)
+
+        result = await db.execute(query)
         managers = result.scalars().all()
         
         response = [
@@ -381,10 +373,10 @@ async def get_ownermanagers(
             "data": response,
             "totalCount": totalCount
         }
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 
 
@@ -400,9 +392,9 @@ async def put_auth_ownerOwners(db: AsyncSession, id: int):
             await db.refresh(db_manager)
             return {"msg": "ok"}  
         except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -418,10 +410,10 @@ async def put_deny_ownerOwners(db: AsyncSession, id: int):
             await db.refresh(db_manager)
             return {"msg": "ok"}  
 
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -433,20 +425,18 @@ async def get_managerGetAccomodation(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        query = (
-            select(
-                models.Accomodation.owner_id,
-                models.Accomodation.name
-            )
-            .order_by(models.Accomodation.owner_id)
-            .offset(page)
-            .limit(pageSize)
-        )
-        
-        totalCount = await db.scalar(select(func.count()).select_from(models.Accomodation))
         offset = max((page - 1) * pageSize, 0)
         
-        result = await db.execute(query.offset(offset).limit(pageSize))
+        query = (
+            select(models.Accomodation.owner_id, models.Accomodation.name)
+            .order_by(models.Accomodation.owner_id)
+            .offset(offset)
+            .limit(pageSize)
+        )
+
+        totalCount = await db.scalar(select(func.count()).select_from(models.Accomodation))
+
+        result = await db.execute(query)
         managerAccomodations = result.all()
         
         response = [
@@ -462,10 +452,10 @@ async def get_managerGetAccomodation(
             "totalCount": totalCount
         }
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
     
     
 async def create_signup_mananger(db: AsyncSession, data: schemas.signupManager):
@@ -485,10 +475,10 @@ async def create_signup_mananger(db: AsyncSession, data: schemas.signupManager):
         
         return {"msg": "ok"}  
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 async def create_duplicate_mananger(db: AsyncSession, username: str):
     try:
@@ -498,22 +488,28 @@ async def create_duplicate_mananger(db: AsyncSession, username: str):
         is_duplicate = result is not None
         return {"duplicate": is_duplicate}
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 
 async def authenticate_mananger(db: AsyncSession, username: str, password: str):
     try:
-        query = select(models.Manager).filter(models.Manager.username == username)
+        query = (
+            select(models.Manager, models.Accomodation)
+            .outerjoin(models.Accomodation, models.Accomodation.owner_id == models.Manager.id)
+            .filter(models.Manager.username == username)
+        )
+        
         result = await db.execute(query)
-        user = result.scalar_one_or_none()
+        user, accomodation = result.scalar_one_or_none()  
+        
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
         
         pw = verify_password(password, user.password)
-        
-        accomodations = await db.execute(select(models.Accomodation).filter(models.Accomodation.owner_id == user.id))
-        accomodation = accomodations.scalar_one_or_none()
+
         accomodation_id = accomodation.id if accomodation else None
         
         return user, pw, accomodation_id
@@ -545,16 +541,20 @@ async def get_managerParties(
             .filter(models.Party.accomodation_id == id)
             .group_by(models.Party.id)
             .order_by(order_by_field)
-            .offset(page)
+            .offset((page - 1) * pageSize)  
             .limit(pageSize)
         )
         
-        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
-        offset = max((page - 1) * pageSize, 0)
-        
-        result = await db.execute(query.offset(offset).limit(pageSize))
+        result = await db.execute(query)
         managerParties = result.all()
         
+        totalCount_query = (
+            select(func.count(models.Party.id))
+            .join(models.Participant, models.Party.id == models.Participant.party_id, isouter=True)
+            .filter(models.Party.accomodation_id == id)
+        )
+        totalCount = await db.scalar(totalCount_query)
+
         response = [
             {
                 "id": managerParty.id,
@@ -572,10 +572,10 @@ async def get_managerParties(
             "totalCount": totalCount
         }
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 
 
@@ -597,10 +597,10 @@ async def post_managerParty(db: AsyncSession, party: schemas.managerPartiesPost)
         
         return {"msg": "ok"}  
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerParties):
     result = await db.execute(
@@ -621,10 +621,10 @@ async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerPart
             await db.refresh(db_party)
             return {"msg": "ok"}  
         
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -640,10 +640,10 @@ async def del_managerParty(db: AsyncSession, id: int):
             await db.commit() 
             return {"msg": "ok"}  
         
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -659,16 +659,18 @@ async def get_managerParty(
             select(models.Participant)
             .filter(models.Participant.party_id == id)
             .order_by(models.Participant.id.desc())
-            .offset(page)
+            .offset((page - 1) * pageSize)  
             .limit(pageSize)
         )
-        
-        totalCount = await db.scalar(select(func.count()).select_from(query.subquery()))
-        offset = max((page - 1) * pageSize, 0)
-        
-        result = await db.execute(query.offset(offset).limit(pageSize))
-        managerParties = result.scalars().all()
 
+        result = await db.execute(query)
+        participants = result.scalars().all()
+
+        totalCount_query = (
+            select(func.count(models.Participant.id))
+            .filter(models.Participant.party_id == id)
+        )
+        totalCount = await db.scalar(totalCount_query)
         response = [
             {
                 "id": participant.id,
@@ -679,7 +681,7 @@ async def get_managerParty(
                 "mbti": participant.mbti,
                 "region": participant.region
             }
-            for participant in managerParties
+            for participant in participants
         ]
         
         return {
@@ -687,10 +689,10 @@ async def get_managerParty(
             "totalCount": totalCount
         }
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
     
 async def post_managerParticipant(db: AsyncSession, participants: schemas.managerParticipantPost):
     try:
@@ -709,10 +711,10 @@ async def post_managerParticipant(db: AsyncSession, participants: schemas.manage
         
         return {"msg": "ok"}  
     
-    except ValueError as e:
-        error_message = f"Date/Time parsing error: {str(e)}"
+    except Exception as e:
+        error_message = str(e)
         await log_error(db, error_message)
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        raise HTTPException(status_code=400, detail={"msg": error_message})
 
 
     
@@ -728,10 +730,10 @@ async def del_managerParticipant(db: AsyncSession, id: int):
             await db.commit() 
             return {"msg": "ok"}  
         
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -749,10 +751,10 @@ async def put_managerPartyOn(db: AsyncSession, id: int, party: schemas.managerPa
             await db.refresh(db_party)
             return {"msg": "ok"}  
         
-        except ValueError as e:
-            error_message = f"Date/Time parsing error: {str(e)}"
+        except Exception as e:
+            error_message = str(e)
             await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": "fail"})
+            raise HTTPException(status_code=400, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -761,21 +763,19 @@ async def get_managerAccomodationQR(
     db: AsyncSession
 ) -> str:
     try:
-        query = (
-                select(models.Accomodation)
-                .filter(models.Accomodation.id == id) 
-            )
-
+        query = select(models.Accomodation).filter(models.Accomodation.id == id)
         result = await db.execute(query)
         accomodation = result.scalar_one_or_none()
-        
+
         if not accomodation:
-            raise HTTPException(status_code=404, detail={"msg": "Accommodation not found"})
+            raise HTTPException(status_code=404, detail="Accommodation not found")
         
         qr_code_path = accomodation.directory
         if not qr_code_path or not os.path.exists(qr_code_path):
-            raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
-        return qr_code_path  
+            raise HTTPException(status_code=404, detail="QR code file not found")
+        
+        return qr_code_path
     except Exception  as e:
-        await log_error(db, str(e))
-        raise HTTPException(status_code=400, detail={"msg": "fail"})
+        error_message = str(e)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})

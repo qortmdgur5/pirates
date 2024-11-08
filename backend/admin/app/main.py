@@ -1,5 +1,6 @@
+import time
 import os
-from fastapi import FastAPI, Depends, HTTPException, Query, status
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, status, APIRouter
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -8,7 +9,6 @@ import urllib.parse
 from .db import crud, database
 from .utils import schemas
 from .oauth import oauth
-import logging
 
 app = FastAPI()
 
@@ -19,52 +19,18 @@ app.add_middleware(
     allow_methods=["*"],  
     allow_headers=["*"],  
 )
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
+admin_router = APIRouter(prefix="/admin", tags=["admin"])
+owner_router = APIRouter(prefix="/owner", tags=["owner"])
+manager_router = APIRouter(prefix="/manager", tags=["owner , manager"])
 
-
-
-
-@app.post("/admin/password", summary="Admin 로그인 후 토큰 발급", tags=["login"])
-async def login_adminpassword(
-    username: str, 
-    db: AsyncSession = Depends(database.get_db)
-):
-    password = await crud.get_admin_by_password(db, username)
-
-    return {"password": password}
-
-# Admin 로그인 API
-@app.post("/admin/token", summary="Admin 로그인 후 토큰 발급", tags=["login"])
-async def login_admin(
-    form_data: OAuth2PasswordRequestForm = Depends()
-):
-    user = await crud.authenticate_admin(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = oauth.create_access_token(data={"sub": user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-# Manager 로그인 API
-@app.post("/manager/token", summary="Manager 로그인 후 토큰 발급", tags=["login"])
-async def login_manager(
-    form_data: OAuth2PasswordRequestForm = Depends()
-):
-    user = await crud.authenticate_manager(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = oauth.create_access_token(data={"sub": user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
-
+@app.middleware("http")
+async def log_request_time(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    print(f"Request {request.url.path} took {process_time:.4f} seconds")
+    return response
 
 ## admin (관리자 사용 API)
 @app.get("/admin/accomodations", response_model=schemas.AdminAccomodation, summary="관리자용 게스트 하우스 관리 페이지 - 게스트 하우스 리스트 정보 가져오기 API", tags=["admin"])
@@ -80,8 +46,9 @@ async def read_adminAccomodations(
         return data
     except Exception as e:
         error_message = str(e)
+        print("Logging error:", error_message)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 @app.get("/admin/owners", response_model=schemas.AdminOwner, summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 리스트 정보 가져오기 API", tags=["admin"])
 async def read_adminOwners(
@@ -96,7 +63,7 @@ async def read_adminOwners(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 @app.put("/admin/owner/auth/{id}", summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 승인 API , 승인 요청 시 해당 사장님 role 컬럼을 ROLE_AUTH_OWNER 로 변경", tags=["admin"])
 async def update_auth_adminOwners(
@@ -108,7 +75,7 @@ async def update_auth_adminOwners(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 @app.put("/admin/owner/deny/{id}", summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 취소 API, 요청 시 사장님 role 컬럼을 ROLE_NOTAUTH_OWNER 로 변경", tags=["admin"])
 async def update_deny_adminOwners(
@@ -120,7 +87,7 @@ async def update_deny_adminOwners(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 ## owner (사장님 사용 API)
@@ -135,7 +102,7 @@ async def post_signup_owner(
     except Exception as e:
             error_message = str(e)
             await crud.log_error(db, error_message) 
-            raise HTTPException(status_code=500, detail={"msg": "fail"})
+            raise HTTPException(status_code=500, detail={"msg": error_message})
 
       
 @app.post("/owner/duplicate", summary="사장님용 아아디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", tags=["owner"])
@@ -149,7 +116,7 @@ async def post_duplicate_owner(
     except Exception as e:
             error_message = str(e)
             await crud.log_error(db, error_message) 
-            raise HTTPException(status_code=500, detail={"msg": "fail"})
+            raise HTTPException(status_code=500, detail={"msg": error_message})
 
   
 @app.post("/owner/login", response_model=schemas.loginResponse, summary="Owner 로그인 후 토큰 발급", tags=["owner"])
@@ -177,7 +144,7 @@ async def login_owner(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=300, detail={"ㅁㄴ어ㅏ마ㅣㅓ녿;거ㅏㅣㅏㅓㅣ마": error_message})
        
 @app.get("/owner/accomodation/{id}", response_model=schemas.OwnerAccomodationsWithoutDate, summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
 async def read_ownerAccomodation(
@@ -192,7 +159,7 @@ async def read_ownerAccomodation(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 @app.post("/owner/accomodation", summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API, QR 주소 컬럼 추가", tags=["owner"])
@@ -205,7 +172,7 @@ async def create_ownerAccomdation(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 @app.put("/owner/accomodation/{id}", summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 수정 API", tags=["owner"])
@@ -219,7 +186,7 @@ async def update_ownerAccomodation(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 
@@ -237,7 +204,7 @@ async def read_ownermanagers(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 
 @app.put("/owner/manager/auth/{id}", summary="사장님용 매니저 등록 관리 페이지 - 매니저 승인 API , 승인 요청 시 해당 매니저 role 컬럼을 ROLE_AUTH_MANAGER 로 변경", tags=["owner"])
@@ -250,7 +217,7 @@ async def update_auth_ownerOwners(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 @app.put("/owner/manager/deny/{id}", summary="사장님용 매니저 등록 관리 페이지 - 매니저 삭제 API , 삭제 요청 시 해당 매니저 정보 삭제", tags=["owner"])
@@ -263,7 +230,7 @@ async def update_deny_ownerOwners(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 
@@ -281,7 +248,7 @@ async def read_managerGetAccomodation(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 @app.post("/mananger/signup", summary="매니저용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_MANAGER로 넣어주셈", tags=["owner , manager"])
@@ -295,7 +262,7 @@ async def post_signup_mananger(
     except Exception as e:
             error_message = str(e)
             await crud.log_error(db, error_message) 
-            raise HTTPException(status_code=500, detail={"msg": "fail"})
+            raise HTTPException(status_code=500, detail={"msg": error_message})
 
       
 @app.post("/mananger/duplicate", summary="매니저용 아이디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", tags=["owner , manager"])
@@ -309,7 +276,7 @@ async def post_duplicate_mananger(
     except Exception as e:
             error_message = str(e)
             await crud.log_error(db, error_message) 
-            raise HTTPException(status_code=500, detail={"msg": "fail"})
+            raise HTTPException(status_code=500, detail={"msg": error_message})
 
   
 @app.post("/mananger/login", response_model=schemas.loginResponse, summary="매니저용 로그인 API", tags=["owner , manager"])
@@ -337,7 +304,7 @@ async def login_mananger(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 @app.get("/manager/parties/{id}", response_model=schemas.managerParty, summary="매니저용 파티방 관리 페이지 - 파티방 리스트 가져오기 API", tags=["owner , manager"])
@@ -354,7 +321,7 @@ async def read_managerParties(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 @app.post("/manager/party", summary="매니저용 파티방 관리 페이지 - 파티방 개설 API", tags=["owner , manager"])
@@ -367,7 +334,7 @@ async def create_managerParty(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 @app.put("/manager/party/{id}", summary="매니저용 파티방 관리 페이지 - 파티방 수정 API", tags=["owner , manager"])
@@ -381,7 +348,7 @@ async def update_managerParty(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 @app.delete("/manager/party/{id}", summary="매니저용 파티방 관리 페이지 - 파티방 삭제 API, 요청시 해당 파티방 삭제", tags=["owner , manager"])
 async def delete_managerParty(
@@ -393,7 +360,7 @@ async def delete_managerParty(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
     
@@ -411,7 +378,7 @@ async def read_managerParty(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 @app.post("/manager/participant", response_model=schemas.SimpleResponse, summary="매니저용 파티 상세 페이지 - 참석자 추가 API", tags=["owner , manager"])
@@ -424,7 +391,7 @@ async def create_managerParticipant(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 @app.delete("/manager/participant/{id}", summary="매니저용 파티 상세 페이지 - 참석자 삭제 API, 요청시 해당 참석자 삭제", tags=["owner , manager"])
@@ -437,7 +404,7 @@ async def delete_managerParticipant(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 @app.put("/manager/partyOn/{id}", summary="매니저용 파티 상세 페이지 - 파티 ON/OFF API, 요청시 요청값에 따른 파티방 ON/OFF 처리", tags=["owner , manager"])
@@ -451,7 +418,7 @@ async def update_managerPartyOn(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 @app.get("/manager/accomodation/qr/{id}", summary="QR 코드 주소 데이터 요청", tags=["owner , manager"])
 async def read_managerAccomodationQR(
@@ -481,4 +448,4 @@ async def read_managerAccomodationQR(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": error_message})
