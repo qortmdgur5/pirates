@@ -9,13 +9,18 @@ from datetime import datetime, timedelta, timezone
 from ..oauth.password import hash_password, pwd_context, get_password_hash, verify_password
 import qrcode
 import logging
-import time
 from sqlalchemy.exc import SQLAlchemyError
 
 config = load_config("config.yaml")
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.ERROR, 
+    format="%(asctime)s - %(levelname)s - %(message)s",
+     handlers=[
+        logging.FileHandler("app_errors.log"),  
+        logging.StreamHandler()  
+    ])
+logger = logging.getLogger("uvicorn.access")
 
 async def log_error(db: AsyncSession, message: str):
     try:
@@ -25,6 +30,8 @@ async def log_error(db: AsyncSession, message: str):
         await db.commit()
     except Exception as log_error:
         print(f"Error while logging: {log_error}")
+        logging.error(f"Error while logging to DB: {log_error}")
+        
         
 def format_date(date_obj):
     kst_date = date_obj + timedelta(hours=9)
@@ -57,7 +64,7 @@ async def get_adminAccomodations(
         else:
             query = query.order_by(models.Accomodation.date.desc())
         
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
         query = query.offset(offset).limit(pageSize)
         
         totalCount_query = select(func.count()).select_from(models.Accomodation)
@@ -104,7 +111,7 @@ async def get_adminOwners(
     pageSize: int = 10
 ):
     try:
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
         query = select(
             models.Owner.id,
             models.Owner.name,
@@ -313,7 +320,7 @@ async def get_ownerAccomodation(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
         
         query = (
             select(models.Accomodation)
@@ -448,7 +455,7 @@ async def get_ownermanagers(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
 
         query = select(models.Manager).filter(models.Manager.owner_id == id)
 
@@ -562,7 +569,7 @@ async def get_managerGetAccomodation(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
         
         query = (
             select(models.Accomodation.owner_id, models.Accomodation.name)
@@ -707,7 +714,7 @@ async def get_managerParties(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
         order_by_field = models.Party.partyDate.asc() if isOldestOrders else models.Party.partyDate.desc()
 
         query = (
@@ -881,7 +888,7 @@ async def get_managerParty(
     pageSize: int = 10
 ) -> List[dict]:
     try:
-        offset = max((page - 1) * pageSize, 0)
+        offset = max(page * pageSize, 0)
         query = (
             select(models.Participant)
             .filter(models.Participant.party_id == id)
