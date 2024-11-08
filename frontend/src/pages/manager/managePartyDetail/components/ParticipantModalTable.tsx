@@ -1,26 +1,60 @@
+import React, { useState } from "react";
+import axios from "axios";
 import styles from "./styles/participantModalTable.module.scss";
 
-function ParticipantModalTable() {
-  const data = [
-    {
-      name: "백승혁",
-      phone: "010-0000-1122",
-      age: "100",
-      sex: true,
-    },
-    {
-      name: "김철수",
-      phone: "010-0000-1122",
-      age: "100",
-      sex: false,
-    },
-    {
-      name: "백찬영",
-      phone: "010-0000-1122",
-      age: "22",
-      sex: false,
-    },
-  ];
+interface ParticipantData {
+  id: number;
+  name: string;
+  phone: string;
+  age: number | null;      // 빈 값 허용
+  gender: boolean;          // 남성: true, 여성: false, 필수 값
+  mbti: string | null;      // 빈 값 허용
+  region: string | null;    // 빈 값 허용
+}
+
+interface ParticipantModalTableProps {
+  partyId: number;
+}
+
+function ParticipantModalTable({ partyId }: ParticipantModalTableProps) {
+  const [participantData, setParticipantData] = useState<ParticipantData>({
+    id: partyId,
+    name: "",
+    phone: "",
+    age: null,
+    gender: true, // 기본값 남성
+    mbti: null,
+    region: null,
+  });
+
+  // 입력값이 변경될 때 상태 업데이트 함수
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setParticipantData((prevData) => ({
+      ...prevData,
+      [name]: name === "age" ? (value ? Number(value) : null) : value || null, // age는 숫자, 나머지는 빈 문자열을 null로
+    }));
+  };
+
+  // 성별 선택을 위한 드롭다운 변경 함수
+  const handleGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setParticipantData((prevData) => ({
+      ...prevData,
+      gender: e.target.value === "true", // true는 남성, false는 여성
+    }));
+  };
+
+  // 등록하기 버튼 클릭 시 데이터 전송
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post("/api/manager/participant", participantData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log("참가자가 성공적으로 등록되었습니다:", response.data);
+    } catch (error) {
+      console.error("참가자 등록 실패:", error);
+    }
+  };
 
   return (
     <div className={styles.table_container}>
@@ -32,45 +66,77 @@ function ParticipantModalTable() {
             <th className={styles.text_center}>연락처</th>
             <th className={styles.text_center}>나이</th>
             <th className={styles.text_center}>성별</th>
-            <th className={styles.text_center}>삭제</th>
+            <th className={styles.text_center}>MBTI</th>
+            <th className={styles.text_center}>지역</th>
             <th className={styles.th_right_blank}></th>
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
-            <tr key={index}>
-              <td className={styles.td_left_black}></td>
-              <td className={styles.text_center}>{item.name}</td>
-              <td className={styles.text_center}>{item.phone}</td>
-              <td className={styles.text_center}>{item.age}</td>
-              <td className={styles.text_center}>{item.sex ? `남` : `여`}</td>
-              <td className={styles.text_center}>
-                <button className={styles.x_button}>X</button>
-              </td>
-              <td className={styles.td_right_black}></td>
-            </tr>
-          ))}
           <tr>
             <td className={styles.td_left_black}></td>
             <td className={styles.modal_input}>
-              <input type="text" placeholder="이름" />
+              <input
+                type="text"
+                name="name"
+                placeholder="이름"
+                value={participantData.name}
+                onChange={handleInputChange}
+              />
             </td>
             <td className={styles.modal_input}>
-              <input type="text" placeholder="연락처" />
+              <input
+                type="text"
+                name="phone"
+                placeholder="연락처"
+                value={participantData.phone}
+                onChange={handleInputChange}
+              />
             </td>
             <td className={styles.modal_input}>
-              <input type="text" placeholder="나이" />
+              <input
+                type="number"
+                name="age"
+                placeholder="나이"
+                value={participantData.age ?? ""}
+                onChange={handleInputChange}
+              />
             </td>
             <td className={styles.modal_input}>
-              <input type="text" placeholder="성별" />
+              <select
+                name="gender"
+                value={participantData.gender.toString()}
+                onChange={handleGenderChange}
+              >
+                <option value="true">남성</option>
+                <option value="false">여성</option>
+              </select>
             </td>
-            <td className={styles.modal_input}></td>
+            <td className={styles.modal_input}>
+              <input
+                type="text"
+                name="mbti"
+                placeholder="MBTI"
+                value={participantData.mbti ?? ""}
+                onChange={handleInputChange}
+              />
+            </td>
+            <td className={styles.modal_input}>
+              <input
+                type="text"
+                name="region"
+                placeholder="지역"
+                value={participantData.region ?? ""}
+                onChange={handleInputChange}
+              />
+            </td>
             <td className={styles.td_right_black}></td>
           </tr>
         </tbody>
       </table>
       <div className={styles.modal_blue_button_box}>
-        <button className={styles.blue_button}>등록하기</button>
+        <button className={styles.blue_button} onClick={handleSubmit}>
+          등록하기
+        </button>
       </div>
     </div>
   );

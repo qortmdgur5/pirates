@@ -41,6 +41,17 @@
         color: $color-black-400;
         text-align: center;
       }
+
+      select {
+        height: 60%;
+        border: 1px solid $color-gray-600;
+        display: block;
+        margin: 0 auto;
+        font-size: 22px;
+        font-family: 'NanumSquareB', sans-serif;
+        color: $color-black-400;
+        text-align: center;
+      }
     }
 
     .th_left_blank,
