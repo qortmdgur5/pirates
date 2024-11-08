@@ -707,6 +707,7 @@ async def get_managerParties(
     pageSize: int = 10
 ) -> List[dict]:
     try:
+        offset = max((page - 1) * pageSize, 0)
         order_by_field = models.Party.partyDate.asc() if isOldestOrders else models.Party.partyDate.desc()
 
         query = (
@@ -722,7 +723,7 @@ async def get_managerParties(
             .filter(models.Party.accomodation_id == id)
             .group_by(models.Party.id)
             .order_by(order_by_field)
-            .offset((page - 1) * pageSize)  
+            .offset(offset)  
             .limit(pageSize)
         )
         
