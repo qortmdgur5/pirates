@@ -37,7 +37,8 @@ function ManagePartyDetail() {
   ); // 참가자 수 상태
   const partyData = state;
   const [page, setPage] = useState<number>(0); // 페이지 상태
-  const [pageSize, setSageSize] = useState<number>(10); // 페이지 사이즈 상태 기본 10 사이즈로 설정
+  const [pageSize, setPageSize] = useState<number>(10); // 페이지 사이즈 상태 기본 10 사이즈로 설정
+  const [totalCount, setTotalCount] = useState<number>(0);
   // 메뉴 탭 데이터
   const managerMenuTabs = [
     {
@@ -105,13 +106,14 @@ function ManagePartyDetail() {
           region: item.region,
         }));
         setParticipants(filteredData);
+        setTotalCount(response.data.totalCount);
       })
       .catch((error) => console.error("API 호출 실패:", error));
   };
 
   useEffect(() => {
     fetchParticipants();
-  }, [id, page]);
+  }, [id, page, pageSize, totalCount]);
 
   return (
     <>
@@ -163,6 +165,11 @@ function ManagePartyDetail() {
               <ParticipantTable
                 data={participants}
                 setParticipantCount={setParticipantCount}
+                page={page}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                onPageChange={setPage} // 페이지 변경 시 호출
+                onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
               />
             </div>
           </div>

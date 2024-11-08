@@ -96,10 +96,6 @@ function ManageParty() {
 
   // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState(false);
-  // 페이지 상태
-  const [page, setPage] = useState<number>(0);
-  // 페이지 사이즈 상태 기본 10 사이즈로 설정
-  const [pageSize, setSageSize] = useState<number>(10);
   // 컴포넌트 안의 fetch 함수 트리거 상태
   const [fetchTrigger, setFetchTriger] = useState<boolean>(false);
 
@@ -125,8 +121,7 @@ function ManageParty() {
       });
       console.log("파티방 개설 성공:", response.data);
       closeModal(); // 모달 닫기
-      setPage(0);
-      setFetchTriger(prev => !prev);
+      setFetchTriger((prev) => !prev);
     } catch (error) {
       console.error("파티방 개설 실패:", error);
     }
@@ -211,8 +206,6 @@ function ManageParty() {
               </div>
               <ManagePartyTable
                 isOldestOrders={selectedOption}
-                page={page}
-                pageSize={pageSize}
                 fetchTrigger={fetchTrigger}
               />
               <button className={styles.blue_button} onClick={openModal}>

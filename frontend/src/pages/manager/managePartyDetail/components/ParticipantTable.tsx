@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "./styles/reservationStatusTable.module.scss";
+import Pagination from "../../../../components/common/pagination/Pagination";
 
 // 참석자 정보를 정의하는 인터페이스
 interface Participant {
@@ -16,11 +17,21 @@ interface Participant {
 interface ParticipantTableProps {
   data: Participant[];
   setParticipantCount: React.Dispatch<React.SetStateAction<number>>;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  onPageChange: (newPage: number) => void;
+  onPageSizeChange: (newPageSize: number) => void;
 }
 
 function ParticipantTable({
   data,
   setParticipantCount,
+  page,
+  pageSize,
+  totalCount,
+  onPageChange,
+  onPageSizeChange,
 }: ParticipantTableProps) {
   const [participants, setParticipants] = useState<Participant[]>([]);
 
@@ -90,6 +101,13 @@ function ParticipantTable({
           ))}
         </tbody>
       </table>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={onPageChange} // 페이지 변경 시 호출
+        onPageSizeChange={onPageSizeChange} // 페이지 사이즈 변경 시 호출
+      />
     </div>
   );
 }

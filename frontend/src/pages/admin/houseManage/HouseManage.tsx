@@ -19,10 +19,6 @@ function HouseManage() {
 
   // 리뷰 많은 순 최신등록 순 상태
   const [selectedOption, setSelectedOption] = useState<boolean>(true);
-  // 페이지 상태
-  const [page, setPage] = useState<number>(0);
-  // 페이지 사이즈 상태 기본 10 사이즈로 설정
-  const [pageSize, setSageSize] = useState<number>(10);
 
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
@@ -63,7 +59,7 @@ function HouseManage() {
                 </div>
                 <NameSearch />
               </div>
-              <GuestHouseTable isMostReviews={selectedOption} page={page} pageSize={pageSize} />
+              <GuestHouseTable isMostReviews={selectedOption} />
             </div>
           </div>
         </div>

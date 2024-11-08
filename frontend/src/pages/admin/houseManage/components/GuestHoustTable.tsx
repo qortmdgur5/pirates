@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import styles from "./styles/guestHouseTable.module.scss";
+import Pagination from "../../../../components/common/pagination/Pagination";
 
 // API 응답 데이터 타입 정의
 interface GuestHouse {
@@ -19,13 +20,13 @@ interface GuestHouseAPIResponse {
 // 테이블 많은 리뷰 순, 최근 등록 순 Props, true 리뷰 많은 순 false 최근 등록 순
 interface GuestHouseTableProps {
   isMostReviews: boolean;
-  page: number;
-  pageSize: number;
 }
 
-function GuestHouseTable({ isMostReviews, page, pageSize }: GuestHouseTableProps) {
+function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
   const [data, setData] = useState<GuestHouse[]>([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [page, setPage] = useState(0); // 페이지 상태 관리
+  const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
+  const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,7 +47,7 @@ function GuestHouseTable({ isMostReviews, page, pageSize }: GuestHouseTableProps
     };
 
     fetchData();
-  }, [isMostReviews, page]); // isMostReviews가 변경될 때마다 데이터 갱신
+  }, [isMostReviews, page, pageSize]); // isMostReviews가 변경될 때마다 데이터 갱신
 
   return (
     <div className={styles.table_container}>
@@ -78,6 +79,13 @@ function GuestHouseTable({ isMostReviews, page, pageSize }: GuestHouseTableProps
           ))}
         </tbody>
       </table>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage} // 페이지 변경 시 호출
+        onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
+      />
     </div>
   );
 }

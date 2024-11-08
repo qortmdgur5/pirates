@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // 추가
 import styles from "./styles/managePartyTable.module.scss";
 import axios from "axios";
+import Pagination from "../../../../components/common/pagination/Pagination";
 
 interface Party {
   id: number;
@@ -19,19 +20,17 @@ interface PartyAPIResponse {
 
 interface ManagePartyTableProps {
   isOldestOrders: boolean;
-  page: number;
-  pageSize: number;
   fetchTrigger: boolean;
 }
 
 const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   isOldestOrders,
-  page,
-  pageSize,
   fetchTrigger,
 }) => {
   const [data, setData] = useState<Party[]>([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [page, setPage] = useState(0); // 페이지 상태 관리
+  const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
+  const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
   const accomodationId = 1; // 임시 숙소 id
   const navigate = useNavigate(); // navigate 추가
 
@@ -48,13 +47,14 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
         );
         setData(response.data.data);
         setTotalCount(response.data.totalCount);
+        console.log(totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }
     };
 
     fetchData(accomodationId);
-  }, [isOldestOrders, page, fetchTrigger]);
+  }, [isOldestOrders, page, pageSize, fetchTrigger]);
 
   // 행 클릭 시 상세 페이지로 이동
   const handleRowClick = (item: Party) => {
@@ -98,6 +98,13 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
           ))}
         </tbody>
       </table>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage} // 페이지 변경 시 호출
+        onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
+      />
     </div>
   );
 };

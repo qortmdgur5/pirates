@@ -4,6 +4,7 @@ import ApproveButton from "../../../../components/common/button/ApproveButton";
 import DenyButton from "../../../../components/common/button/DenyButton";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Pagination from "../../../../components/common/pagination/Pagination";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -22,14 +23,14 @@ interface OwnerAPIResponse {
 
 interface HouseApproveTableProps {
   isOldestOrders: boolean;
-  page: number;
-  pageSize: number;
 }
 
 const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
-  isOldestOrders, page, pageSize
+  isOldestOrders
 }) => {
   const [data, setData] = useState<Owner[]>([]);
+  const [page, setPage] = useState(0); // 페이지 상태 관리
+  const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
   const [totalCount, setTotalCount] = useState<number>(0);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDenyModalOpen, setIsDenyModalOpen] = useState(false);
@@ -82,7 +83,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     };
 
     fetchData();
-  }, [isOldestOrders]); // isOldestOrders가 변경될 때마다 데이터 갱신
+  }, [isOldestOrders, page, pageSize]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
   const openApproveModal = (name: string, id: number) => {
@@ -198,6 +199,13 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
           ))}
         </tbody>
       </table>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage} // 페이지 변경 시 호출
+        onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
+      />
       <Modal
         isOpen={isApproveModalOpen}
         onRequestClose={closeApproveModal}

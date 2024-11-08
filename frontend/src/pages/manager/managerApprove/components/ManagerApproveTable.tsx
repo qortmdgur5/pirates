@@ -6,6 +6,7 @@ import ApproveButton from "../../../../components/common/button/ApproveButton";
 import DenyButton from "../../../../components/common/button/DenyButton";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Pagination from "../../../../components/common/pagination/Pagination";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -25,15 +26,15 @@ interface ManagerAPIResponse {
 
 interface ManagerApproveTableProps {
   isOldestOrders: boolean;
-  page: number;
-  pageSize: number;
 }
 
 const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
-  isOldestOrders, page, pageSize
+  isOldestOrders,
 }) => {
   const [data, setData] = useState<Manager[]>([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [page, setPage] = useState(0); // 페이지 상태 관리
+  const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
+  const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
   const [isApproveModalOpen, setIsApproveModalOpen] = useState<boolean>(false);
   const [isDenyModalOpen, setIsDenyModalOpen] = useState<boolean>(false);
   const [selectedManagerName, setSelectedManagerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
@@ -90,7 +91,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
     };
 
     fetchData(ownerId);
-  }, [isOldestOrders, page]); // isOldestOrders가 변경될 때마다 데이터 갱신
+  }, [isOldestOrders, page, pageSize]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
   const openApproveModal = (name: string, id: number) => {
@@ -212,6 +213,13 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
           ))}
         </tbody>
       </table>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage} // 페이지 변경 시 호출
+        onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
+      />
       <Modal
         isOpen={isApproveModalOpen}
         onRequestClose={closeApproveModal}
