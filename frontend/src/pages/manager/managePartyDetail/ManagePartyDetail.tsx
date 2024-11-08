@@ -89,12 +89,9 @@ function ManagePartyDetail() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  useEffect(() => {
-    // API 호출하여 참석자 데이터를 가져옴
+  const fetchParticipants = () => {
     axios
-    .get(`/api/manager/party/${id}`, {
-      params: { page, pageSize }, // page와 pageSize를 파라미터로 추가
-    })
+      .get(`/api/manager/party/${id}`, { params: { page, pageSize } })
       .then((response) => {
         const filteredData = response.data.data.map((item: Participant) => ({
           id: item.id,
@@ -108,6 +105,10 @@ function ManagePartyDetail() {
         setParticipants(filteredData);
       })
       .catch((error) => console.error("API 호출 실패:", error));
+  };
+
+  useEffect(() => {
+    fetchParticipants();
   }, [id, page]);
 
   return (
@@ -147,7 +148,10 @@ function ManagePartyDetail() {
                   닫기 X
                 </button>
 
-                <ParticipantModalTable partyId={partyId} />
+                <ParticipantModalTable
+                  partyId={partyId}
+                  onRegister={fetchParticipants}
+                />
               </Modal>
               <ParticipantTable data={participants} />
             </div>

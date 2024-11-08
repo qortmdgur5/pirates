@@ -6,26 +6,31 @@ interface ParticipantData {
   id: number;
   name: string;
   phone: string;
-  age: number | null;      // 빈 값 허용
-  gender: boolean;          // 남성: true, 여성: false, 필수 값
-  mbti: string | null;      // 빈 값 허용
-  region: string | null;    // 빈 값 허용
+  age: number | null; // 빈 값 허용
+  gender: boolean; // 남성: true, 여성: false, 필수 값
+  mbti: string | null; // 빈 값 허용
+  region: string | null; // 빈 값 허용
 }
 
 interface ParticipantModalTableProps {
   partyId: number;
+  onRegister: () => void;
 }
 
-function ParticipantModalTable({ partyId }: ParticipantModalTableProps) {
-  const [participantData, setParticipantData] = useState<ParticipantData>({
+function ParticipantModalTable({ partyId, onRegister }: ParticipantModalTableProps) {
+  const initialParticipantData: ParticipantData = {
     id: partyId,
     name: "",
     phone: "",
     age: null,
-    gender: true, // 기본값 남성
+    gender: true,
     mbti: null,
     region: null,
-  });
+  };
+
+  const [participantData, setParticipantData] = useState<ParticipantData>(
+    initialParticipantData
+  );
 
   // 입력값이 변경될 때 상태 업데이트 함수
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,10 +52,18 @@ function ParticipantModalTable({ partyId }: ParticipantModalTableProps) {
   // 등록하기 버튼 클릭 시 데이터 전송
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("/api/manager/participant", participantData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post(
+        "/api/manager/participant",
+        participantData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       console.log("참가자가 성공적으로 등록되었습니다:", response.data);
+
+      // 등록 후 초기값으로 리셋
+      setParticipantData(initialParticipantData);
+      onRegister();
     } catch (error) {
       console.error("참가자 등록 실패:", error);
     }
