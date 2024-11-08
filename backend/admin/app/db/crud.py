@@ -739,7 +739,6 @@ async def get_managerParties(
         
         totalCount_query = (
             select(func.count(models.Party.id))
-            .join(models.Participant, models.Party.id == models.Participant.party_id, isouter=True)
             .filter(models.Party.accomodation_id == id)
         )
         totalCount = await db.scalar(totalCount_query)
