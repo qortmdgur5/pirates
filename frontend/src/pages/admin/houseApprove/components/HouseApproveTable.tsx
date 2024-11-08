@@ -27,7 +27,7 @@ interface HouseApproveTableProps {
 }
 
 const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
-  isOldestOrders, page
+  isOldestOrders, page, pageSize
 }) => {
   const [data, setData] = useState<Owner[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -70,7 +70,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     const fetchData = async () => {
       try {
         const response = await axios.get<OwnerAPIResponse>("/api/admin/owners", {
-          params: { isOldestOrders, skip: 0, limit: 10 },
+          params: { isOldestOrders, page, pageSize },
           headers: { accept: "application/json" },
         });
 

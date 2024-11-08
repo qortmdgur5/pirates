@@ -13,18 +13,28 @@ import axios from "axios";
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
 interface Participant {
-  id: number;      // ID
-  name: string;    // 이름
-  phone: string;   // 연락처
-  age: number;     // 나이
-  gender: string;  // 성별
+  id: number; // ID
+  name: string; // 이름
+  phone: string; // 연락처
+  age: number; // 나이
+  gender: string; // 성별
+  mbti: string; // MBTI
+  region: string; // 지역
+}
+
+interface ParticipantAPIResponse {
+  data: Participant[];
+  totalCount: number;
 }
 
 function ManagePartyDetail() {
-  const { id } = useParams<{ id: string }>(); // Accomodation PK
+  const { id } = useParams<{ id: string }>(); // Party PK
+  const partyId = Number(id); // id를 number로 변환하여 사용
   const { state } = useLocation(); // 전달된 state를 가져옵니다, 파티방 상세페이지 예약현황 데이터, 이전 manageParty 페이지에서 넘어온 데이터
   const [participants, setParticipants] = useState<Participant[]>([]); // 참석자 명단 데이터
   const partyData = state; // state에 담긴 데이터를 partyData로 할당
+  const [page, setPage] = useState<number>(0); // 페이지 상태
+  const [pageSize, setSageSize] = useState<number>(10); // 페이지 사이즈 상태 기본 10 사이즈로 설정
 
   // 메뉴 탭 데이터
   const managerMenuTabs = [
@@ -82,19 +92,23 @@ function ManagePartyDetail() {
   useEffect(() => {
     // API 호출하여 참석자 데이터를 가져옴
     axios
-      .get(`/api/manager/party/${id}`)
+    .get(`/api/manager/party/${id}`, {
+      params: { page, pageSize }, // page와 pageSize를 파라미터로 추가
+    })
       .then((response) => {
-        const filteredData = response.data.map((item: Participant) => ({
+        const filteredData = response.data.data.map((item: Participant) => ({
           id: item.id,
           name: item.name,
           phone: item.phone,
           age: item.age,
           gender: item.gender,
+          mbti: item.mbti,
+          region: item.region,
         }));
         setParticipants(filteredData);
       })
       .catch((error) => console.error("API 호출 실패:", error));
-  }, [id]);
+  }, [id, page]);
 
   return (
     <>
@@ -133,7 +147,7 @@ function ManagePartyDetail() {
                   닫기 X
                 </button>
 
-                <ParticipantModalTable />
+                <ParticipantModalTable partyId={partyId} />
               </Modal>
               <ParticipantTable data={participants} />
             </div>

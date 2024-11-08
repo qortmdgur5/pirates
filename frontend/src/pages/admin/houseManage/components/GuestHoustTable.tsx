@@ -23,7 +23,7 @@ interface GuestHouseTableProps {
   pageSize: number;
 }
 
-function GuestHouseTable({ isMostReviews, page }: GuestHouseTableProps) {
+function GuestHouseTable({ isMostReviews, page, pageSize }: GuestHouseTableProps) {
   const [data, setData] = useState<GuestHouse[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
 
@@ -33,7 +33,7 @@ function GuestHouseTable({ isMostReviews, page }: GuestHouseTableProps) {
         const response = await axios.get<GuestHouseAPIResponse>(
           "/api/admin/accomodations",
           {
-            params: { isMostReviews, skip: 0, limit: 10 },
+            params: { isMostReviews, page, pageSize },
             headers: { accept: "application/json" },
           }
         );

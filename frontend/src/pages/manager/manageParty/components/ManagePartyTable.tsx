@@ -27,6 +27,7 @@ interface ManagePartyTableProps {
 const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   isOldestOrders,
   page,
+  pageSize,
   fetchTrigger,
 }) => {
   const [data, setData] = useState<Party[]>([]);
@@ -41,7 +42,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
         const response = await axios.get<PartyAPIResponse>(
           `/api/manager/parties/${id}`,
           {
-            params: { isOldestOrders, skip: 0, limit: 10 },
+            params: { isOldestOrders, page, pageSize },
             headers: { accept: "application/json" },
           }
         );

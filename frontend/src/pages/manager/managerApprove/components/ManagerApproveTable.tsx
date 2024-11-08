@@ -30,7 +30,7 @@ interface ManagerApproveTableProps {
 }
 
 const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
-  isOldestOrders, page
+  isOldestOrders, page, pageSize
 }) => {
   const [data, setData] = useState<Manager[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -78,7 +78,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
         const response = await axios.get<ManagerAPIResponse>(
           `/api/owner/managers/${id}`,
           {
-            params: { isOldestOrders, skip: 0, limit: 10 },
+            params: { isOldestOrders, page, pageSize },
             headers: { accept: "application/json" },
           }
         );
