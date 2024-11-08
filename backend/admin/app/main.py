@@ -144,7 +144,7 @@ async def login_owner(
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=300, detail={"ㅁㄴ어ㅏ마ㅣㅓ녿;거ㅏㅣㅏㅓㅣ마": error_message})
+        raise HTTPException(status_code=300, detail={"msg": error_message})
        
 @app.get("/owner/accomodation/{id}", response_model=schemas.OwnerAccomodationsWithoutDate, summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
 async def read_ownerAccomodation(

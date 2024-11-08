@@ -11,8 +11,8 @@ SQLALCHEMY_DATABASE_URL = f"mysql+aiomysql://{config['database']['user']}:{confi
 
 engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
-    pool_size=20,
-    max_overflow=0,
+    pool_size=50,
+    max_overflow=10,
     )
 
 SessionLocal = sessionmaker(

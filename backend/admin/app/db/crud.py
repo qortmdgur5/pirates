@@ -9,6 +9,8 @@ from datetime import datetime, timedelta, timezone
 from ..oauth.password import hash_password, pwd_context, get_password_hash, verify_password
 import qrcode
 import logging
+import time
+from sqlalchemy.exc import SQLAlchemyError
 
 config = load_config("config.yaml")
 
@@ -62,9 +64,7 @@ async def get_adminAccomodations(
         totalCount = await db.scalar(totalCount_query)
         
         result = await db.execute(query)
-        print("Result:", result)
         accomodations = result.scalars().all()
-        print("Accommodations:", accomodations) 
         
         response = [
             {
@@ -81,14 +81,19 @@ async def get_adminAccomodations(
             "data": response,
             "totalCount": totalCount
         }
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
     except ValueError as e:
         error_message = str(e)
-        print("Logging error:", error_message)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
     except Exception as e:
         error_message = str(e)
-        print("Logging error:", error_message)
+        print("Exception:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
@@ -129,10 +134,21 @@ async def get_adminOwners(
             "data": response,
             "totalCount": totalCount
         }
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 async def put_auth_adminOwners(db: AsyncSession, id: int):
     
@@ -146,10 +162,21 @@ async def put_auth_adminOwners(db: AsyncSession, id: int):
             await db.commit()
             await db.refresh(db_owner)
             return {"msg": "ok"}  
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -165,10 +192,21 @@ async def put_deny_adminOwners(db: AsyncSession, id: int):
             await db.commit()
             await db.refresh(db_owner)
             return {"msg": "ok"}  
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -192,10 +230,21 @@ async def create_signup_owner(db: AsyncSession, data: schemas.signupOwner):
         
         return {"msg": "ok"}  
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 async def create_duplicate_owner(db: AsyncSession, username: str):
     try:
@@ -205,10 +254,21 @@ async def create_duplicate_owner(db: AsyncSession, username: str):
         is_duplicate = result is not None
         return {"duplicate": is_duplicate}
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 async def authenticate_owner(db: AsyncSession, username: str, password: str):
@@ -230,10 +290,21 @@ async def authenticate_owner(db: AsyncSession, username: str, password: str):
         accomodation_id = accomodation.id if accomodation else None
         
         return owner, pw, accomodation_id
-    except Exception as e:  
-        error_message = f"Unexpected error: {str(e)}"
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
         await log_error(db, error_message)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 async def get_ownerAccomodation(
     id: int,
@@ -274,10 +345,21 @@ async def get_ownerAccomodation(
             "data": response,
             "totalCount": totalCount
         }
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAccomodationsPost):
     try:
@@ -305,10 +387,21 @@ async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAc
         await db.refresh(db_accomodation)
         
         return {"msg": "ok"}  
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 async def put_ownerAccomodation(db: AsyncSession, id: int, accomodation: schemas.OwnerAccomodationsPut):
     
@@ -328,10 +421,21 @@ async def put_ownerAccomodation(db: AsyncSession, id: int, accomodation: schemas
             await db.refresh(db_accomodation)
             
             return {"msg": "ok"}  
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -373,10 +477,21 @@ async def get_ownermanagers(
             "data": response,
             "totalCount": totalCount
         }
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 
@@ -391,10 +506,21 @@ async def put_auth_ownerOwners(db: AsyncSession, id: int):
             await db.commit()
             await db.refresh(db_manager)
             return {"msg": "ok"}  
+        except SQLAlchemyError as e:
+            error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
         except ValueError as e:
             error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -410,10 +536,21 @@ async def put_deny_ownerOwners(db: AsyncSession, id: int):
             await db.refresh(db_manager)
             return {"msg": "ok"}  
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
 
@@ -452,10 +589,21 @@ async def get_managerGetAccomodation(
             "totalCount": totalCount
         }
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 async def create_signup_mananger(db: AsyncSession, data: schemas.signupManager):
@@ -475,10 +623,21 @@ async def create_signup_mananger(db: AsyncSession, data: schemas.signupManager):
         
         return {"msg": "ok"}  
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 async def create_duplicate_mananger(db: AsyncSession, username: str):
     try:
@@ -488,10 +647,21 @@ async def create_duplicate_mananger(db: AsyncSession, username: str):
         is_duplicate = result is not None
         return {"duplicate": is_duplicate}
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 async def authenticate_mananger(db: AsyncSession, username: str, password: str):
@@ -513,11 +683,22 @@ async def authenticate_mananger(db: AsyncSession, username: str, password: str):
         accomodation_id = accomodation.id if accomodation else None
         
         return user, pw, accomodation_id
-    except Exception as e:  
-        error_message = f"Unexpected error: {str(e)}"
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
         await log_error(db, error_message)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
 async def get_managerParties(
     id: int,
     db: AsyncSession,
@@ -572,10 +753,21 @@ async def get_managerParties(
             "totalCount": totalCount
         }
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
 
@@ -597,10 +789,21 @@ async def post_managerParty(db: AsyncSession, party: schemas.managerPartiesPost)
         
         return {"msg": "ok"}  
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerParties):
     result = await db.execute(
@@ -621,10 +824,21 @@ async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerPart
             await db.refresh(db_party)
             return {"msg": "ok"}  
         
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -640,10 +854,21 @@ async def del_managerParty(db: AsyncSession, id: int):
             await db.commit() 
             return {"msg": "ok"}  
         
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -689,10 +914,21 @@ async def get_managerParty(
             "totalCount": totalCount
         }
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 async def post_managerParticipant(db: AsyncSession, participants: schemas.managerParticipantPost):
     try:
@@ -711,10 +947,21 @@ async def post_managerParticipant(db: AsyncSession, participants: schemas.manage
         
         return {"msg": "ok"}  
     
-    except Exception as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
     
@@ -730,10 +977,21 @@ async def del_managerParticipant(db: AsyncSession, id: int):
             await db.commit() 
             return {"msg": "ok"}  
         
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -751,10 +1009,21 @@ async def put_managerPartyOn(db: AsyncSession, id: int, party: schemas.managerPa
             await db.refresh(db_party)
             return {"msg": "ok"}  
         
-        except Exception as e:
+        except SQLAlchemyError as e:
             error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
             await log_error(db, error_message)
             raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
     
@@ -775,7 +1044,18 @@ async def get_managerAccomodationQR(
             raise HTTPException(status_code=404, detail="QR code file not found")
         
         return qr_code_path
-    except Exception  as e:
+    except SQLAlchemyError as e:
         error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
