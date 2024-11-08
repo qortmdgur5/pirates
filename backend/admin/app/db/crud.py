@@ -881,11 +881,12 @@ async def get_managerParty(
     pageSize: int = 10
 ) -> List[dict]:
     try:
+        offset = max((page - 1) * pageSize, 0)
         query = (
             select(models.Participant)
             .filter(models.Participant.party_id == id)
             .order_by(models.Participant.id.desc())
-            .offset((page - 1) * pageSize)  
+            .offset(offset)  
             .limit(pageSize)
         )
 
