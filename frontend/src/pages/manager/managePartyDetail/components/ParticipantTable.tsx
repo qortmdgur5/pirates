@@ -1,22 +1,54 @@
+import { useState, useEffect } from "react";
 import styles from "./styles/reservationStatusTable.module.scss";
 
 // 참석자 정보를 정의하는 인터페이스
 interface Participant {
-  id: number;      // ID
-  name: string;    // 이름
-  phone: string;   // 연락처
-  age: number;     // 나이
-  gender: string;  // 성별
-  mbti: string; // MBTI
-  region: string; // 지역
+  id: number;
+  name: string;
+  phone: string;
+  age: number;
+  gender: string;
+  mbti: string;
+  region: string;
 }
 
 // ParticipantTable의 props 타입 정의
 interface ParticipantTableProps {
-  data: Participant[]; // 참석자 리스트
+  data: Participant[];
+  setParticipantCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function ParticipantTable({ data }: ParticipantTableProps) {
+function ParticipantTable({
+  data,
+  setParticipantCount,
+}: ParticipantTableProps) {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
+  useEffect(() => {
+    setParticipants(data); // data가 로딩되면 participants 업데이트
+  }, [data]); // data가 변경될 때마다 업데이트
+
+  // 삭제 처리 함수
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`/api/manager/participant/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // 성공적으로 삭제되면 UI에서 해당 항목을 제거
+        setParticipants((prevParticipants) =>
+          prevParticipants.filter((participant) => participant.id !== id)
+        );
+        setParticipantCount((prev) => prev - 1);
+      } else {
+        console.error("삭제 실패:", response.statusText);
+      }
+    } catch (error) {
+      console.error("삭제 요청 에러:", error);
+    }
+  };
+
   return (
     <div className={styles.table_container}>
       <table className={styles.guest_house_table}>
@@ -35,7 +67,7 @@ function ParticipantTable({ data }: ParticipantTableProps) {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
+          {participants.map((item, index) => (
             <tr key={index}>
               <td className={styles.td_left_black}></td>
               <td className={styles.text_center}>{index + 1}</td>
@@ -46,7 +78,12 @@ function ParticipantTable({ data }: ParticipantTableProps) {
               <td className={styles.text_center}>{item.mbti}</td>
               <td className={styles.text_center}>{item.region}</td>
               <td className={styles.text_center}>
-                <button className={styles.red_button}>삭제</button>
+                <button
+                  className={styles.red_button}
+                  onClick={() => handleDelete(item.id)}
+                >
+                  삭제
+                </button>
               </td>
               <td className={styles.td_right_black}></td>
             </tr>

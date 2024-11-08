@@ -32,10 +32,12 @@ function ManagePartyDetail() {
   const partyId = Number(id); // id를 number로 변환하여 사용
   const { state } = useLocation(); // 전달된 state를 가져옵니다, 파티방 상세페이지 예약현황 데이터, 이전 manageParty 페이지에서 넘어온 데이터
   const [participants, setParticipants] = useState<Participant[]>([]); // 참석자 명단 데이터
-  const partyData = state; // state에 담긴 데이터를 partyData로 할당
+  const [participantCount, setParticipantCount] = useState<number>(
+    state.participant
+  ); // 참가자 수 상태
+  const partyData = state;
   const [page, setPage] = useState<number>(0); // 페이지 상태
   const [pageSize, setSageSize] = useState<number>(10); // 페이지 사이즈 상태 기본 10 사이즈로 설정
-
   // 메뉴 탭 데이터
   const managerMenuTabs = [
     {
@@ -127,7 +129,10 @@ function ManagePartyDetail() {
           <div className={styles.manage_container}>
             <p className={styles.manage_title}>예약 현황</p>
             <div className={styles.manage_box}>
-              <ReservationStatusTable data={partyData} />
+              <ReservationStatusTable
+                data={partyData}
+                participantCount={participantCount}
+              />
             </div>
             <p className={styles.manage_title}>참석자 명단</p>
             <div className={styles.manage_box}>
@@ -151,9 +156,14 @@ function ManagePartyDetail() {
                 <ParticipantModalTable
                   partyId={partyId}
                   onRegister={fetchParticipants}
+                  participant={participantCount}
+                  setParticipantCount={setParticipantCount}
                 />
               </Modal>
-              <ParticipantTable data={participants} />
+              <ParticipantTable
+                data={participants}
+                setParticipantCount={setParticipantCount}
+              />
             </div>
           </div>
         </div>

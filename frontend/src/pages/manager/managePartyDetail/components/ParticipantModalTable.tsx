@@ -15,9 +15,16 @@ interface ParticipantData {
 interface ParticipantModalTableProps {
   partyId: number;
   onRegister: () => void;
+  participant: number;
+  setParticipantCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function ParticipantModalTable({ partyId, onRegister }: ParticipantModalTableProps) {
+function ParticipantModalTable({
+  partyId,
+  onRegister,
+  participant,
+  setParticipantCount,
+}: ParticipantModalTableProps) {
   const initialParticipantData: ParticipantData = {
     id: partyId,
     name: "",
@@ -27,6 +34,9 @@ function ParticipantModalTable({ partyId, onRegister }: ParticipantModalTablePro
     mbti: null,
     region: null,
   };
+
+  // 참석인원 상태관리
+  const [participants, setParticipants] = useState(participant);
 
   const [participantData, setParticipantData] = useState<ParticipantData>(
     initialParticipantData
@@ -63,6 +73,7 @@ function ParticipantModalTable({ partyId, onRegister }: ParticipantModalTablePro
 
       // 등록 후 초기값으로 리셋
       setParticipantData(initialParticipantData);
+      setParticipantCount(prev => prev + 1); // 참가자 수 증가
       onRegister();
     } catch (error) {
       console.error("참가자 등록 실패:", error);
