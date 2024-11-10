@@ -249,7 +249,7 @@ async def read_managerGetAccomodation(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
-@app.post("/mananger/signup", summary="매니저용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_MANAGER로 넣어주셈", tags=["owner , manager"])
+@app.post("/manager/signup", summary="매니저용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_MANAGER로 넣어주셈", tags=["owner , manager"])
 async def post_signup_mananger(
     data: schemas.signupManager,
     db: AsyncSession = Depends(database.get_db)
@@ -263,7 +263,7 @@ async def post_signup_mananger(
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
       
-@app.post("/mananger/duplicate", summary="매니저용 아이디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", tags=["owner , manager"])
+@app.post("/manager/duplicate", summary="매니저용 아이디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", tags=["owner , manager"])
 async def post_duplicate_mananger(
     username: str,
     db: AsyncSession = Depends(database.get_db)
@@ -277,7 +277,7 @@ async def post_duplicate_mananger(
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
   
-@app.post("/mananger/login", response_model=schemas.loginResponse, summary="매니저용 로그인 API", tags=["owner , manager"])
+@app.post("/manager/login", response_model=schemas.loginResponse, summary="매니저용 로그인 API", tags=["owner , manager"])
 async def login_mananger(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(database.get_db)
