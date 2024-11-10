@@ -2,6 +2,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  min-height: 100vh;
   background-color: $color-gray-100;
 
   .signup_container {
@@ -51,7 +52,7 @@
       font-size: 18px;
       font-family: 'NanumSquareR', sans-serif;
       color: $color-black-100;
-      margin-top: 24px;
+      margin: 24px auto 24px auto;
       padding: 0 18% 0 18%;
     }
 
@@ -59,7 +60,7 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      margin-top: 75px;
+      margin-top: 45px;
       padding: 0 92px 0 92px;
 
       .signup_input_line {
@@ -79,10 +80,10 @@
           color: $color-black-100;
         }
 
-        .signup_input_input_area {
+        .signup_input_input_area:not(:first-child) {
           width: 65%;
 
-          input {
+          >input {
             width: 100%;
             height: 39px;
             border: 1px solid $color-gray-400;
@@ -118,42 +119,23 @@
             background-color: $color-gray-400;
           }
         }
-
-        .signup_input_email_input_area {
-          width: 65%;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-
-          input,
-          select {
-            height: 39px;
-            border: 1px solid $color-gray-400;
-            padding: 0 16px 0 16px;
-            font-size: 14px;
-            font-family: 'NanumSquareR', sans-serif;
-          }
-        }
-
-        .signup_input_birth_input_area {
-          display: flex;
-          justify-content: space-evenly;
-          align-items: center;
-          width: 65%;
-          gap: 4px;
-
-          select {
-            flex-grow: 1;
-            width: 30%;
-            height: 39px;
-          }
-        }
       }
 
       .danger_message {
+        display: none;
         font-size: 14px;
         font-family: 'NanumSquareR', sans-serif;
         color: $color-red-000;
+        margin-top: 6px;
+        padding-left: 35%;
+        font-weight: bold;
+      }
+
+      .success_message {
+        display: none;
+        font-size: 14px;
+        font-family: 'NanumSquareR', sans-serif;
+        color: green;
         margin-top: 6px;
         padding-left: 35%;
         font-weight: bold;
@@ -176,12 +158,12 @@
         font-family: 'NanumSquareR', sans-serif;
       }
 
-      .signup_button{
+      .signup_button {
         background-color: $color-blue-000;
         color: $color-white-000;
       }
 
-      .cancel_button{
+      .cancel_button {
         background-color: $color-gray-300;
         color: $color-black-100;
       }

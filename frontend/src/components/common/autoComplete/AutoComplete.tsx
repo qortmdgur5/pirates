@@ -54,6 +54,7 @@ const Autocomplete = React.forwardRef(function Autocomplete(
       // onChange에서 선택된 항목의 id를 setValue에 전달
       if (newValue) {
         setValue(newValue.id); // 선택된 항목의 id 값을 setValue로 전달
+        console.log(newValue.id);
       } else {
         setValue(undefined);
       }
