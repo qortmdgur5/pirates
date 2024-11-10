@@ -565,20 +565,12 @@ async def put_deny_ownerOwners(db: AsyncSession, id: int):
 ## owner , manager(사장님 And 매니저 사용 API)
 async def get_managerGetAccomodation(
     db: AsyncSession,
-    page: int = 0,
-    pageSize: int = 10
 ) -> List[dict]:
     try:
-        offset = max(page * pageSize, 0)
-        
         query = (
             select(models.Accomodation.owner_id, models.Accomodation.name)
-            .order_by(models.Accomodation.owner_id)
-            .offset(offset)
-            .limit(pageSize)
+            .order_by(models.Accomodation.name.asc())
         )
-
-        totalCount = await db.scalar(select(func.count()).select_from(models.Accomodation))
 
         result = await db.execute(query)
         managerAccomodations = result.all()
@@ -592,9 +584,8 @@ async def get_managerGetAccomodation(
         ]
         
         return {
-            "data": response,
-            "totalCount": totalCount
-        }
+            "data": response
+            }
     
     except SQLAlchemyError as e:
         error_message = str(e)

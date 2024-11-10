@@ -238,12 +238,10 @@ async def update_deny_ownerOwners(
 ## owner , manager(사장님 And 매니저 사용 API)
 @app.get("/manager/getAccomodation", summary="매니저용 회원가입 페이지 API, 모든 숙소 리스트 가져오기", tags=["owner , manager"])
 async def read_managerGetAccomodation(
-    page: int = Query(0),
-    pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_managerGetAccomodation(db, page, pageSize)
+        data = await crud.get_managerGetAccomodation(db)
         return data
     except Exception as e:
         error_message = str(e)
