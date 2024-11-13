@@ -678,7 +678,7 @@ async def authenticate_mananger(db: AsyncSession, username: str, password: str):
         if not row:
             raise HTTPException(status_code=404, detail="User not found")
         
-        owner, accomodation = row
+        user, accomodation = row
         
         pw = verify_password(password, user.password)
 
