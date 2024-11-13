@@ -47,6 +47,7 @@ const Autocomplete = React.forwardRef(function Autocomplete(
     focused,
     anchorEl,
     setAnchorEl,
+    groupedOptions,
   } = useAutocomplete({
     options,
     getOptionLabel: (option) => option.label, // label은 option.label로 지정
@@ -103,17 +104,15 @@ const Autocomplete = React.forwardRef(function Autocomplete(
           ]}
         >
           <StyledListbox {...getListboxProps()}>
-            {options.map((option, index) => {
+            {(groupedOptions as typeof options).map((option, index) => {
               const optionProps = getOptionProps({ option, index });
 
               return (
-                <StyledOption {...optionProps} key={option.id}>
-                  {option.label}
-                </StyledOption>
+                <StyledOption {...optionProps}>{option.label}</StyledOption>
               );
             })}
 
-            {options.length === 0 && (
+            {groupedOptions.length === 0 && (
               <StyledNoOptions>No results</StyledNoOptions>
             )}
           </StyledListbox>

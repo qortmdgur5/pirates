@@ -150,5 +150,10 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+input[type="password"] {
+  font-family: sans-serif !important; // 기본 시스템 폰트를 강제 적용
+}
+
+
 @import './color.scss';
 @import './font.scss';
