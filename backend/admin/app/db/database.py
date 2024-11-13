@@ -13,6 +13,7 @@ engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
     pool_size=50,
     max_overflow=10,
+    pool_recycle=3600
     )
 
 SessionLocal = sessionmaker(

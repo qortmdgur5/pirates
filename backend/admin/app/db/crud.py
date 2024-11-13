@@ -287,10 +287,12 @@ async def authenticate_owner(db: AsyncSession, username: str, password: str):
         )
         
         result = await db.execute(query)
-        owner, accomodation = result.scalar_one_or_none()
+        row = result.first() 
 
-        if not owner:
+        if not row:
             raise HTTPException(status_code=404, detail="Owner not found")
+
+        owner, accomodation = row
 
         pw = verify_password(password, owner.password)
         
@@ -671,10 +673,12 @@ async def authenticate_mananger(db: AsyncSession, username: str, password: str):
         )
         
         result = await db.execute(query)
-        user, accomodation = result.scalar_one_or_none()  
+        row = result.first() 
         
-        if user is None:
+        if not row:
             raise HTTPException(status_code=404, detail="User not found")
+        
+        owner, accomodation = row
         
         pw = verify_password(password, user.password)
 
