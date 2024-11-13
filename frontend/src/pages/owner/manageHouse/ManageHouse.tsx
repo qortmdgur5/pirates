@@ -24,12 +24,12 @@ function ManageHouse() {
     {
       text: "게스트 하우스 관리",
       isActive: true,
-      path: "/manager/manageHouse",
+      path: "/owner/manageHouse",
     },
     {
       text: "매니저 등록 관리",
       isActive: false,
-      path: "/manager/managerApprove",
+      path: "/owner/managerApprove",
     },
     { text: "파티방 관리", isActive: false, path: "/manager/manageParty" },
     { text: "마이페이지", isActive: false, path: "#" },

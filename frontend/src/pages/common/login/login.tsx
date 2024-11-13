@@ -66,7 +66,7 @@ function Login() {
               <p className={styles.login_box_right_inner_signup_text}>
                 아직 회원이 아니신가요?
               </p>
-              <button className={styles.login_box_right_inner_signup_button} onClick={() => navigation("/owner/signup")}>
+              <button className={styles.login_box_right_inner_signup_button} onClick={() => navigation("/manager/signup")}>
                 회원가입
               </button>
             </div>
