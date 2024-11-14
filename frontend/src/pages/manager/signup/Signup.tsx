@@ -8,7 +8,7 @@ import axios from "axios";
 function Signup() {
   const navigateTo = useNavigation(); // 네비게이션 훅 호출
   const [isOwner, setIsOwner] = useState<boolean>(true);
-  const [onwerId, setOwnerId] = useState<number | undefined>(); // 매니저의 게스트하우스 리스트 owner_id 관리
+  const [ownerId, setOwnerId] = useState<number | undefined>(); // 매니저의 게스트하우스 리스트 owner_id 관리
   const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -122,40 +122,39 @@ function Signup() {
     setIsPasswordMatch(null);
   }, [isOwner]);
 
-  const handleSignup = () => {
-    // 모든 조건 확인 후 회원가입 처리
-    if (
-      (isOwner &&
-        isOwnerDuplication === true &&
-        isPasswordValid === true &&
-        isPasswordMatch === true) ||
-      (!isOwner &&
-        isManagerDuplication === true &&
-        isPasswordValid === true &&
-        isPasswordMatch === true &&
-        onwerId)
-    ) {
-      const signupData = isOwner
-        ? { username, password, name, phoneNumber }
-        : { username, password, name, phoneNumber, owner_id: onwerId };
+  const handleSignup = async () => {
+  // 모든 조건 확인 후 회원가입 처리
+  if (
+    (isOwner &&
+      isOwnerDuplication === true &&
+      isPasswordValid === true &&
+      isPasswordMatch === true) ||
+    (!isOwner &&
+      isManagerDuplication === true &&
+      isPasswordValid === true &&
+      isPasswordMatch === true &&
+      ownerId)
+  ) {
+    const signupData = isOwner
+      ? { username, password, name, phoneNumber }
+      : { username, password, name, phoneNumber, owner_id: ownerId };
 
-      const apiUrl = isOwner ? "/api/owner/signup" : "/api/manager/signup";
+    const apiUrl = isOwner ? "/api/owner/signup" : "/api/manager/signup";
 
-      axios
-        .post(apiUrl, signupData)
-        .then((response) => {
-          console.log("회원가입 성공", response.data);
-          alert("회원가입이 완료되었습니다.");
-          navigateTo("/"); // 회원가입 완료 후 메인 페이지로 리다이렉트
-        })
-        .catch((error) => {
-          console.error("회원가입 오류:", error);
-          alert("회원가입에 실패했습니다. 다시 시도해주세요.");
-        });
-    } else {
-      alert("모든 항목을 정확히 입력해주세요.");
+    try {
+      const response = await axios.post(apiUrl, signupData);
+      console.log("회원가입 성공", response.data);
+      alert("회원가입이 완료되었습니다.");
+      navigateTo("/"); // 회원가입 완료 후 메인 페이지로 리다이렉트
+    } catch (error) {
+      console.error("회원가입 오류:", error);
+      alert("회원가입에 실패했습니다. 다시 시도해주세요.");
     }
-  };
+  } else {
+    alert("모든 항목을 정확히 입력해주세요.");
+  }
+};
+
 
   return (
     <>

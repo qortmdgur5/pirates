@@ -1,31 +1,47 @@
-import Input from "../../../components/common/input/Input";
 import styles from "./styles/login.module.scss";
-import styled from "styled-components";
-import { useNavigation  } from "../../../utils/navigation";
-
-const RoundButton = styled.button<{ iconUrl: string }>`
-  width: 90px;
-  height: 90px;
-  border-radius: 50%; /* 동그란 모양 */
-  background-image: url(${(props) => props.iconUrl}); /* 이미지 설정 */
-  background-size: cover; /* 이미지를 버튼 크기에 맞게 조절 */
-  background-position: center; /* 이미지 위치 중앙 정렬 */
-  border: none; /* 기본 버튼 스타일 제거 */
-  cursor: pointer; /* 마우스 커서 스타일 */
-  transition: transform 0.2s; /* 클릭할 때 애니메이션 효과 */
-
-  &:hover {
-    transform: scale(1.1); /* 호버 시 크기 확대 */
-  }
-
-  &:active {
-    transform: scale(0.9); /* 클릭 시 크기 축소 */
-  }
-`;
+import { useNavigation } from "../../../utils/navigation";
+import TabsComponent from "../../../components/common/tabs/Tabs";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function Login() {
   // 네비게이션 함수
   const navigation = useNavigation();
+
+  // 상태관리 모음
+  const [isOwner, setIsOwner] = useState<boolean>(true); // 매니저 사장님 상태 관리
+  const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
+  const [password, setPassword] = useState<string>(""); // 비밀번호 입력값 관리
+
+  // 아이디 입력창 관리
+  const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(e.target.value);
+  };
+
+  // 비밀번호 입력창 관리
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  // 탭이 변경될 때 (사장님, 매니저 변경) 모든 입력 필드 초기화
+  useEffect(() => {
+    setUserName("");
+    setPassword("");
+  }, [isOwner]);
+
+  // 회원가입 처리
+  const handleSignup = async () => {
+    const signupData = { username, password };
+
+    const apiUrl = isOwner ? "/api/owner/login" : "/api/manager/login";
+
+    try {
+      const response = await axios.post(apiUrl, signupData);
+      console.log(isOwner ,"로그인 성공", response.data);
+    } catch (error) {
+      console.error("로그인 오류:", error);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -55,10 +71,24 @@ function Login() {
             <p className={styles.login_box_right_inner_text_2}>
               회원 서비스 이용을 위해 로그인 해주세요.
             </p>
+            <TabsComponent
+              tabs={["사장님", "매니저"]}
+              setIsOwner={setIsOwner}
+            />
             <div className={styles.login_box_right_inner_input_box}>
-              <Input placeholder="아이디 입력" type="text" />
-              <Input placeholder="비밀번호 입력" type="password" />
-              <button className={styles.login_box_right_inner_login_button} onClick={() => navigation("/admin/houseManage")}>
+              <input
+                type="text"
+                placeholder="아이디 입력"
+                value={username}
+                onChange={handleUserNameChange}
+              />
+              <input
+                type="password"
+                placeholder="비밀번호 입력"
+                value={password}
+                onChange={handlePasswordChange}
+              />
+              <button className={styles.login_box_right_inner_login_button} onClick={handleSignup}>
                 로그인
               </button>
             </div>
@@ -66,18 +96,12 @@ function Login() {
               <p className={styles.login_box_right_inner_signup_text}>
                 아직 회원이 아니신가요?
               </p>
-              <button className={styles.login_box_right_inner_signup_button} onClick={() => navigation("/manager/signup")}>
+              <button
+                className={styles.login_box_right_inner_signup_button}
+                onClick={() => navigation("/manager/signup")}
+              >
                 회원가입
               </button>
-            </div>
-            <div className={styles.login_box_right_inner_sns_text}>
-              SNS 계정으로 로그인
-            </div>
-            <div className={styles.sns_login_button_box}>
-              <RoundButton iconUrl="/src/assets/image/kakao_login_button.png" />
-              <RoundButton iconUrl="/src/assets/image/facebook_login_button.png" />
-              <RoundButton iconUrl="/src/assets/image/naver_login_button.png" />
-              <RoundButton iconUrl="/src/assets/image/insta_login_button.png" />
             </div>
           </div>
         </div>

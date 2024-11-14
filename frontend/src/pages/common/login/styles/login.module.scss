@@ -1,5 +1,4 @@
-.container {
-}
+.container {}
 
 .login_box {
   width: 100%;
@@ -84,7 +83,7 @@
       font-size: 25px;
       line-height: 32px;
       color: $color-black-000;
-      margin-top: 40px;
+      margin: 40px auto 20px auto;
       font-family: 'NanumSquareR', sans-serif;
     }
 
@@ -92,8 +91,17 @@
       display: flex;
       flex-direction: column;
       gap: 35px;
-      margin-top: 95px;
+      margin-top: 18px;
       font-family: 'NanumSquareR', sans-serif;
+
+      input {
+        width: 100%;
+        height: 84px;
+        border-radius: 18px;
+        font-size: 28px;
+        border: 1px solid #c9c9c9;
+        padding: 0 25px 0 25px;
+      }
     }
 
     .login_box_right_inner_login_button {
@@ -159,7 +167,7 @@
       }
     }
 
-    .sns_login_button_box{
+    .sns_login_button_box {
       display: flex;
       justify-content: center;
       gap: 30px;
