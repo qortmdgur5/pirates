@@ -30,16 +30,26 @@ function Login() {
   }, [isOwner]);
 
   // 회원가입 처리
-  const handleSignup = async () => {
-    const signupData = { username, password };
+  const handleLogin = async () => {
+    const data = new URLSearchParams();
+    data.append("username", username); // 입력한 사용자명
+    data.append("password", password); // 입력한 비밀번호
 
     const apiUrl = isOwner ? "/api/owner/login" : "/api/manager/login";
 
     try {
-      const response = await axios.post(apiUrl, signupData);
-      console.log(isOwner ,"로그인 성공", response.data);
+      const response = await axios.post(apiUrl, data, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          accept: "application/json",
+        },
+      });
+      isOwner
+        ? navigation("/owner/manageHouse")
+        : navigation("/manager/manageParty");
     } catch (error) {
       console.error("로그인 오류:", error);
+      alert("로그인 정보가 올바르지 않습니다.");
     }
   };
 
@@ -88,7 +98,10 @@ function Login() {
                 value={password}
                 onChange={handlePasswordChange}
               />
-              <button className={styles.login_box_right_inner_login_button} onClick={handleSignup}>
+              <button
+                className={styles.login_box_right_inner_login_button}
+                onClick={handleLogin}
+              >
                 로그인
               </button>
             </div>
