@@ -23,7 +23,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=config['Token'])
 def get_current_owner(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, config['SECRET_KEY'], algorithms=[config['ALGORITHM']])
-        owner_id = payload.get("sub")
+        owner_id = payload.get("owner_id")
         role = payload.get("role")
         accomodation_id = payload.get("accomodation_id")
         

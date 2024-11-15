@@ -295,7 +295,7 @@ async def authenticate_owner(db: AsyncSession, username: str, password: str):
         owner, accomodation = row
 
         pw = verify_password(password, owner.password)
-        
+
         accomodation_id = accomodation.id if accomodation else None
         
         return owner, pw, accomodation_id
