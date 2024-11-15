@@ -3,6 +3,16 @@ import { useNavigation } from "../../../utils/navigation";
 import TabsComponent from "../../../components/common/tabs/Tabs";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { authAtoms, accomoAtoms } from "../../../atoms/authAtoms";
+import { useRecoilState } from "recoil";
+
+interface DecodedToken {
+  role: string | null;
+  owner_id?: number | null;
+  manager_id?: number | null;
+  accommodation_id?: number | null;
+}
 
 function Login() {
   // 네비게이션 함수
@@ -12,6 +22,11 @@ function Login() {
   const [isOwner, setIsOwner] = useState<boolean>(true); // 매니저 사장님 상태 관리
   const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
   const [password, setPassword] = useState<string>(""); // 비밀번호 입력값 관리
+
+  // 전역 상태관리 모음
+  // Recoil 상태 훅
+  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 사용자 정보 상태
+  const [accomoAtom, setAccomoAtom] = useRecoilState(accomoAtoms); // 숙소 정보 상태
 
   // 아이디 입력창 관리
   const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,6 +59,21 @@ function Login() {
           accept: "application/json",
         },
       });
+      const token = response.data.access_token; // 서버에서 반환한 토큰
+      const decoded: DecodedToken = jwtDecode(token);
+      console.log("디코딩된 토큰 정보:", decoded);
+
+      const userRole = decoded.role;
+      const userId =
+        userRole === "owner"
+          ? decoded.owner_id ?? null
+          : decoded.manager_id ?? null;
+      const accommodationId = decoded.accommodation_id || null;
+
+      // Recoil 상태 업데이트
+      setAuthAtom({ userId: userId, role: userRole, token: token }); // 사용자 정보 저장
+      setAccomoAtom({ accomodation_id: accommodationId }); // 숙소 ID 저장
+
       isOwner
         ? navigation("/owner/manageHouse")
         : navigation("/manager/manageParty");
