@@ -2,16 +2,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 300px;
-  filter: drop-shadow(4.5px 7.794px 2.5px rgba(4, 0, 0, 0.25));
+  width: 15.625vw;
+  filter: drop-shadow(0.234vw 0.406vw 0.13vw rgba(4, 0, 0, 0.25));
   background-color: #4462d0;
-  border-radius: 0 18px 18px 0;
-  padding: 20px 0 40px 0;
+  border-radius: 0 0.938vw 0.938vw 0;
+  padding: 1.042vw 0 2.083vw 0;
 
   .houes_manage_profile_text_1 {
-    font-size: 33px;
+    font-size: 1.719vw;
     font-family: 'NanumSquareEB', sans-serif;
-    line-height: 41px;
+    line-height: 2.135vw;
     color: $color-white-000;
     font-weight: bold;
 
@@ -24,12 +24,12 @@
     display: flex;
     justify-content: center;
     align-items: end;
-    width: 129px;
-    height: 129px;
+    width: 6.719vw;
+    height: 6.719vw;
     border-radius: 50%;
     background-color: #aebae8;
     overflow: hidden;
-    margin-top: 50px;
+    margin-top: 2.604vw;
 
     img {
       width: 80%;
@@ -38,9 +38,9 @@
   }
 
   .house_manage_profile_id {
-    font-size: 29px;
+    font-size: 1.51vw;
     color: $color-white-000;
     font-family: 'NanumSquareB', sans-serif;
-    margin-top: 10px;
+    margin-top: 0.521vw;
   }
 }

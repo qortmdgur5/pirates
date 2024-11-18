@@ -100,7 +100,7 @@
         height: 4.375vw;
         border-radius: 0.938vw;
         font-size: 1.458vw;
-        border: 1px solid #c9c9c9;
+        border: 0.052vw solid #c9c9c9;
         padding: 0 1.302vw 0 1.302vw;
       }
     }
@@ -110,7 +110,7 @@
       height: 4.375vw;
       border-radius: 0.938vw;
       background-color: #404040;
-      border: 1px solid #c9c9c9;
+      border: 0.052vw solid #c9c9c9;
       font-size: 1.458vw;
       color: $color-white-000;
       font-family: 'NanumSquareR', sans-serif;
@@ -156,7 +156,7 @@
       &::after {
         content: "";
         flex: 1;
-        border-bottom: 2px solid #c9c9c9;
+        border-bottom: 0.104vw solid #c9c9c9;
       }
 
       &::before {

@@ -98,20 +98,23 @@ const Root = styled("div")(
   ({ theme }) => `
   table {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 24px;
+    font-size: 1.25vw;
     width: 100%;
     background-color: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
-    box-shadow: 0px 4px 16px ${
+    box-shadow: 0px 0.208vw 0.833vw ${
       theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : grey[200]
     };
-    border-radius: 12px;
-    border: 1px solid ${theme.palette.mode === "dark" ? grey[800] : grey[200]};
+    border-radius: 0.625vw;
+    border: 0.052vw solid ${
+      theme.palette.mode === "dark" ? grey[800] : grey[200]
+    };
     overflow: hidden;
+    margin-top: 0.781vw
   }
 
   td,
   th {
-    padding: 16px;
+    padding: 0.833vw;
   }
 
   th {
@@ -130,7 +133,7 @@ const CustomTablePagination = styled(TablePagination)(
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 0.417vw;
     background-color: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
 
     @media (min-width: 768px) {
@@ -145,10 +148,12 @@ const CustomTablePagination = styled(TablePagination)(
 
   & .${classes.select}{
     font-family: 'IBM Plex Sans', sans-serif;
-    padding: 2px 0 2px 4px;
-    border: 1px solid ${theme.palette.mode === "dark" ? grey[800] : grey[200]};
-    border-radius: 6px; 
-    font-size: 22px;
+    padding: 0.104vw 0 0.104vw 0.208vw;
+    border: 0.052vw solid ${
+      theme.palette.mode === "dark" ? grey[800] : grey[200]
+    };
+    border-radius: 0.313vw; 
+    font-size: 1.146vw;
     background-color: transparent;
     color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
     transition: all 100ms ease;
@@ -159,7 +164,7 @@ const CustomTablePagination = styled(TablePagination)(
     }
 
     &:focus {
-      outline: 3px solid ${
+      outline: 0.156vw solid ${
         theme.palette.mode === "dark" ? blue[400] : blue[200]
       };
       border-color: ${blue[400]};
@@ -176,7 +181,7 @@ const CustomTablePagination = styled(TablePagination)(
 
   & .${classes.actions} {
     display: flex;
-    gap: 6px;
+    gap: 0.313vw;
     border: transparent;
     text-align: center;
   }
@@ -188,12 +193,14 @@ const CustomTablePagination = styled(TablePagination)(
     border: transparent;
     border-radius: 50%; 
     background-color: transparent;
-    border: 1px solid ${theme.palette.mode === "dark" ? grey[800] : grey[200]};
+    border: 0.052vw solid ${
+      theme.palette.mode === "dark" ? grey[800] : grey[200]
+    };
     color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
     transition: all 100ms ease;
 
     > svg {
-      font-size: 24px;
+      font-size: 1.25vw;
     }
 
     &:hover {
@@ -202,7 +209,7 @@ const CustomTablePagination = styled(TablePagination)(
     }
 
     &:focus {
-      outline: 3px solid ${
+      outline: 0.156vw solid ${
         theme.palette.mode === "dark" ? blue[400] : blue[200]
       };
       border-color: ${blue[400]};
@@ -211,7 +218,7 @@ const CustomTablePagination = styled(TablePagination)(
     &:disabled {
       opacity: 0.3;
       &:hover {
-        border: 1px solid ${
+        border: 0.052vw solid ${
           theme.palette.mode === "dark" ? grey[800] : grey[200]
         };
         background-color: transparent;

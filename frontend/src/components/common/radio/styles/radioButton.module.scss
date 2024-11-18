@@ -9,21 +9,21 @@
 }
 
 .customRadio {
-  width: 32px;
-  height: 32px;
+  width: 1.667vw;
+  height: 1.667vw;
   border-radius: 50%;
-  border: 2px solid $color-black-300;
+  border: 0.104vw solid $color-black-300;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 14px;
+  margin-right: 0.729vw;
   position: relative;
 }
 
 .customRadio::before {
   content: "";
-  width: 18px;
-  height: 18px;
+  width: 0.938vw;
+  height: 0.938vw;
   background-color: $color-black-300; /* 체크되지 않은 상태의 색상 */
   border-radius: 50%;
   position: absolute;
@@ -35,8 +35,8 @@
 
 .customRadio::after {
   content: "";
-  width: 18px;
-  height: 18px;
+  width: 0.938vw;
+  height: 0.938vw;
   background-color: $color-blue-000; // 선택된 경우 내부 색상
   border-radius: 50%;
   position: absolute;
@@ -48,7 +48,7 @@
 }
 
 .labelText {
-  font-size: 25px;
+  font-size: 1.302vw;
   font-family: 'NanumSquareB', sans-serif;
   color: $color-black-200;
 }

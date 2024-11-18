@@ -14,7 +14,7 @@ const ApproveButtonBox = styled.button`
   background-color: transparent;
 
   img {
-    width: 50px;
+    width: 2.604vw;
   }
 `;
 
