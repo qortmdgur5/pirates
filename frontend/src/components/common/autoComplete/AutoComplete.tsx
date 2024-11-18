@@ -157,6 +157,7 @@ const StyledAutocompleteRoot = styled("div")(
   padding-right: 5px;
   overflow: hidden;
   width: 100%;
+  height: 2.031vw;
 
   &.focused {
     border-color: ${blue[400]};
@@ -195,7 +196,7 @@ const StyledInput = styled("input")(
 const StyledPopper = styled("div")`
   position: relative;
   z-index: 1001;
-  width: 320px;
+  width: 16.667vw;
 `;
 
 const StyledListbox = styled("ul")(
