@@ -60,14 +60,14 @@ const Tab = styled(BaseTab)`
   font-family: "IBM Plex Sans", sans-serif;
   color: #fff;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.729vw;
   font-weight: 600;
   background-color: transparent;
   width: 100%;
-  padding: 10px 12px;
-  margin: 6px;
+  padding: 0.521vw 0.625vw;
+  margin: 0.313vw;
   border: none;
-  border-radius: 7px;
+  border-radius: 0.365vw;
   display: flex;
   justify-content: center;
 
@@ -93,10 +93,10 @@ const Tab = styled(BaseTab)`
 
 const TabsList = styled(BaseTabsList)(
   ({ theme }) => `
-  min-width: 400px;
+  min-width: 20.833vw;
   background-color: ${grey[500]};
-  border-radius: 12px;
-  margin-bottom: 16px;
+  border-radius: 0.625vw;
+  margin-bottom: 0.833vw;
   display: flex;
   align-items: center;
   justify-content: center;
