@@ -1,7 +1,7 @@
 .container {
   display: flex;
   width: 100%;
-  height: calc(100vh - 120px);
+  min-height: calc(100vh - 6.25vw);
 
   .house_manage_left_box {
     display: flex;
@@ -10,7 +10,7 @@
 
   .house_manage_right_box {
     flex-grow: 1;
-    padding: 0 60px 60px 60px;
+    padding: 0 3.125vw 3.125vw 3.125vw;
 
     .manage_container {
       width: 100%;
@@ -19,33 +19,33 @@
 
       .manage_title {
         display: flex;
-        font-size: 40px;
+        font-size: 2.083vw;
         font-family: 'NanumSquareB', sans-serif;
         color: $color-black-100;
-        padding: 32px 0 0 37px;
+        padding: 1.667vw 0 0 1.927vw;
 
         &::before {
           content: "";
-          width: 5px;
-          height: 40px;
+          width: 0.26vw;
+          height: 2.083vw;
           background-color: #313131;
-          margin-right: 14px;
+          margin-right: 0.729vw;
         }
       }
 
       .manage_box {
         width: 100%;
-        padding: 160px 140px 120px 70px;
+        padding: 8.333vw 7.292vw 6.25vw 3.646vw;
 
         .search_box {
           display: flex;
           justify-content: space-between;
-          gap: 120px;
-          padding: 0 10px 0 28px;
+          gap: 6.25vw;
+          padding: 0 0.521vw 0 1.458vw;
 
           .radio_box {
             display: flex;
-            gap: 25px;
+            gap: 1.302vw;
           }
         }
 
@@ -54,16 +54,16 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 263px;
-          height: 72px;
-          border-radius: 16px;
-          box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+          width: 13.698vw;
+          height: 3.75vw;
+          border-radius: 0.833vw;
+          box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4, 0, 0, 0.55);
           background-color: $color-blue-000;
-          font-size: 30px;
+          font-size: 1.563vw;
           font-family: 'NanumSquareEB', sans-serif;
           color: $color-white-000;
-          margin-top: 36px;
-          margin-right: 15px;
+          margin-top: 1.875vw;
+          margin-right: 0.781vw;
         }
       }
     }
@@ -74,11 +74,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 0.625vw;
 
   .modal_logo_img_box {
-    width: 36px;
-    height: 36px;
+    width: 1.875vw;
+    height: 1.875vw;
 
     img {
       width: 100%;
@@ -90,33 +90,33 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-size: 35px;
+    font-size: 1.823vw;
     font-weight: bold;
     font-family: 'VITROCORE', sans-serif;
   }
 }
 
 .modal_text_1 {
-  font-size: 54px;
+  font-size: 2.813vw;
   font-family: 'NanumSquareR', sans-serif;
   color: $color-black-100;
-  margin-top: 65px;
+  margin-top: 3.385vw;
 }
 
 .modal_text_2 {
-  font-size: 18px;
+  font-size: 0.938vw;
   font-family: 'NanumSquareR', sans-serif;
   color: $color-black-100;
-  margin-top: 30px;
-  padding: 0 30px 0 30px;
+  margin-top: 1.563vw;
+  padding: 0 1.563vw 0 1.563vw;
 }
 
 .party_register_form {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 60px;
-  margin-top: 70px;
+  gap: 3.125vw;
+  margin-top: 3.646vw;
 
   .party_register_form_input_box {
     display: flex;
@@ -124,7 +124,7 @@
     align-items: center;
 
     .party_register_form_input_left {
-      font-size: 26px;
+      font-size: 1.354vw;
       font-family: 'NanumSquareR', sans-serif;
       color: $color-black-100;
     }
@@ -135,15 +135,15 @@
 
       .date_input_text,
       .time_input_text {
-        font-size: 26px;
+        font-size: 1.354vw;
         font-family: 'NanumSquareR', sans-serif;
         color: $color-black-100;
-        margin-right: 20px;
+        margin-right: 1.042vw;
       }
 
       .date_calendar_emoji,
       .time_clock_emoji {
-        font-size: 36px;
+        font-size: 1.875vw;
         background-color: transparent;
       }
 
@@ -151,18 +151,18 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 4px;
-        margin-right: 20px;
+        gap: 0.208vw;
+        margin-right: 1.042vw;
 
         .party_register_input_text {
-          font-size: 26px;
+          font-size: 1.354vw;
           font-family: 'NanumSquareR', sans-serif;
           color: $color-black-100;
         }
 
         .party_register_check_box {
-          width: 28px;
-          height: 28px;
+          width: 1.458vw;
+          height: 1.458vw;
         }
       }
 
@@ -170,29 +170,29 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 4px;
+        gap: 0.208vw;
 
         .party_register_input_text {
-          font-size: 26px;
+          font-size: 1.354vw;
           font-family: 'NanumSquareR', sans-serif;
           color: $color-black-100;
         }
 
         .party_register_check_box {
-          width: 28px;
-          height: 28px;
+          width: 1.458vw;
+          height: 1.458vw;
         }
       }
     }
 
     .party_register_max_input {
-      width: 180px;
-      border-radius: 18px;
-      font-size: 28px;
+      width: 9.375vw;
+      border-radius: 0.938vw;
+      font-size: 1.458vw;
       font-family: 'NanumSquareR', sans-serif;
       color: $color-black-100;
-      border: 1px solid #c9c9c9;
-      padding: 0 25px 0 25px;
+      border: 0.052vw solid #c9c9c9;
+      padding: 0 1.302vw 0 1.302vw;
       text-align: right;
     }
   }
@@ -201,27 +201,27 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 46px;
-    margin-top: 40px;
+    gap: 2.396vw;
+    margin-top: 2.083vw;
 
     .blue_button{
-      width: 180px;
-      height: 50px;
-      border-radius: 16px;
-      box-shadow: inset -2.517px -3.109px 4px rgba(4,0,0,0.55);
+      width: 9.375vw;
+      height: 2.604vw;
+      border-radius: 0.833vw;
+      box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4,0,0,0.55);
       background-color: $color-blue-000;
-      font-size: 29px;
+      font-size: 1.51vw;
       font-family: 'NanumSquareR', sans-serif;
       color: $color-white-000;
     }
 
     .gray_button{
-      width: 180px;
-      height: 50px;
-      border-radius: 16px;
-      box-shadow: inset -2.517px -3.109px 4px rgba(4,0,0,0.55);
+      width: 9.375vw;
+      height: 2.604vw;
+      border-radius: 0.833vw;
+      box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4,0,0,0.55);
       background-color: $color-gray-300;
-      font-size: 29px;
+      font-size: 1.51vw;
       font-family: 'NanumSquareR', sans-serif;
       color: $color-black-100;
     }
