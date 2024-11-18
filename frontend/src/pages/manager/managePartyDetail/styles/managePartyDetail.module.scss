@@ -1,7 +1,7 @@
 .container {
   display: flex;
   width: 100%;
-  height: calc(100vh - 120px);
+  min-height: calc(100vh - 6.25vw);
 
   .house_manage_left_box {
     display: flex;
@@ -10,7 +10,7 @@
 
   .house_manage_right_box {
     flex-grow: 1;
-    padding: 0 60px 60px 60px;
+    padding: 0 3.125vw 3.125vw 3.125vw;
 
     .manage_container {
       width: 100%;
@@ -19,47 +19,47 @@
 
       .manage_title {
         display: flex;
-        font-size: 40px;
+        font-size: 2.083vw;
         font-family: 'NanumSquareB', sans-serif;
         color: $color-black-100;
-        padding: 32px 0 0 37px;
+        padding: 1.667vw 0 0 1.927vw;
 
         &::before {
           content: "";
-          width: 5px;
-          height: 40px;
+          width: 0.26vw;
+          height: 2.083vw;
           background-color: #313131;
-          margin-right: 14px;
+          margin-right: 0.729vw;
         }
       }
 
       .manage_box {
         width: 100%;
-        padding: 36px 140px 160px 70px;
+        padding: 1.875vw 7.292vw 8.333vw 3.646vw;
 
         .search_box {
           display: flex;
           justify-content: space-between;
-          gap: 120px;
-          padding: 0 10px 0 28px;
+          gap: 6.25vw;
+          padding: 0 0.521vw 0 1.458vw;
 
           .radio_box {
             display: flex;
-            gap: 25px;
+            gap: 1.302vw;
           }
         }
 
         .blue_button {
           float: right;
-          width: 117px;
-          height: 46px;
-          border-radius: 16px;
-          box-shadow: inset -2.517px -3.109px 4px rgba(4, 0, 0, 0.55);
+          width: 6.094vw;
+          height: 2.396vw;
+          border-radius: 0.833vw;
+          box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4, 0, 0, 0.55);
           background-color: $color-blue-000;
-          font-size: 19px;
+          font-size: 0.99vw;
           font-family: 'NanumSquareEB', sans-serif;
           color: $color-white-000;
-          margin: auto 32px 20px auto;
+          margin: auto 1.667vw 1.042vw auto;
         }
       }
     }
@@ -68,9 +68,9 @@
 
 .modal_close_button{
   position: absolute;
-  top: -32px;
-  right: 38px;
-  font-size: 18px;
+  top: -1.667vw;
+  right: 1.979vw;
+  font-size: 0.938vw;
   font-family: 'NanumSquareEB', sans-serif;
   color: $color-white-000;
   background-color: transparent;

@@ -62,7 +62,7 @@ function ManagePartyDetail() {
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "column",
-      width: "1112px",
+      width: "57.917vw",
       height: "fit-content",
       zIndex: "20",
       position: "absolute",

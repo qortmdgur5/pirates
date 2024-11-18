@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styles from './styles/reservationStatusTable.module.scss';
 
 interface ReservationStatusTableProps {
