@@ -17,8 +17,8 @@ interface Accommodation {
 
 function ManageHouse() {
   const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null);
-  const ownerId = 100; // 로그인된 사장님 id 값
-  const accomodationId = 38; // 수정할 숙소 id 값 
+  const ownerId = 1; // 로그인된 사장님 id 값
+  const accomodationId = 1; // 수정할 숙소 id 값 
 
   const managerMenuTabs = [
     {
