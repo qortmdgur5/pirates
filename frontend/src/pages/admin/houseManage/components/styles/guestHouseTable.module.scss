@@ -1,19 +1,19 @@
 .table_container {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 1.042vw;
 }
 
 .guest_house_table {
   width: 100%;
-  border-radius: 40px;
+  border-radius: 2.083vw;
   overflow: hidden;
-  border-bottom: 1px solid;
+  border-bottom: 0.052vw solid;
 }
 
 .guest_house_table th {
-  height: 97px;
-  line-height: 97px;
-  font-size: 28px;
+  height: 5.052vw;
+  line-height: 5.052vw;
+  font-size: 1.458vw;
   font-family: 'NanumSquareEB', sans-serif;
   color: $color-black-100;
   background-color: $color-blue-200;
@@ -22,21 +22,21 @@
 
 .th_left_blank,
 .td_left_black{
-  width: 36px;
+  width: 1.875vw;
 }
 
 .th_right_blank,
 .td_right_black{
-  width: 50px;
+  width: 2.604vw;
 }
 
 .guest_house_table td {
-  height: 90px;
-  line-height: 90px;
-  font-size: 26px;
+  height: 4.688vw;
+  line-height: 4.688vw;
+  font-size: 1.354vw;
   font-family: 'NanumSquareB', sans-serif;
   color: $color-black-400;
-  border-bottom: 1px solid $color-gray-200;
+  border-bottom: 0.052vw solid $color-gray-200;
   background-color: $color-white-000;
 
   &:first-child,
