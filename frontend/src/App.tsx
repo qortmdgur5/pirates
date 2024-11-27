@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // 페이지 컴포넌트
-import LoginPage from "./pages/common/login/login"
+import ManagerLoginPage from "./pages/manager/login/Login"
 import AdminHouseManagePage from "./pages/admin/houseManage/HouseManage"
 import AdminHouseApprovePage from "./pages/admin/houseApprove/HouseApprove"
 import ManageHousePage from "./pages/owner/manageHouse/ManageHouse"
@@ -14,7 +14,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route index path="/" element={<LoginPage />}></Route>
+        <Route index path="/" element={<ManagerLoginPage />}></Route>
         <Route path="/admin/houseManage" element={<AdminHouseManagePage />}></Route>
         <Route path="/admin/houseApprove" element={<AdminHouseApprovePage />}></Route>
         <Route path="/owner/manageHouse" element={<ManageHousePage />}></Route>
