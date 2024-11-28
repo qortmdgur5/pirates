@@ -10,6 +10,7 @@ import ManagePartyPage from "./pages/manager/manageParty/ManageParty"
 import ManagePartyDetailPage from "./pages/manager/managePartyDetail/ManagePartyDetail"
 import ManagerSignupPage from "./pages/manager/signup/Signup"
 import UserLoginPage from "./pages/user/login/Login"
+import UserPartyPage from "./pages/user/party/Party"
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/manager/managePartyDetail/:id" element={<ManagePartyDetailPage />}></Route>
         <Route path="/manager/signup" element={<ManagerSignupPage />}></Route>
         <Route index path="/" element={<UserLoginPage />}></Route>
+        <Route path="/user/party/:qr?/:party_id?" element={<UserPartyPage />} />
       </Routes>
     </BrowserRouter>
   );
