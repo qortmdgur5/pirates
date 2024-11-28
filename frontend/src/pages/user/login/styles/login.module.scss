@@ -1,0 +1,112 @@
+.container {
+  width: 100%;
+
+  .container_contents {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 0 14% 54px 14%;
+
+    .logo_text_box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .logo_text_1,
+      .logo_text_2 {
+        background: linear-gradient(152deg, #6e2a72 0%, #3b52a9 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: bold;
+        font-family: 'VITROCORE', sans-serif;
+
+        &.logo_text_1 {
+          font-size: 68px;
+          margin-top: 54px;
+        }
+      
+        &.logo_text_2 {
+          font-size: 66px;
+          margin-top: 14px;
+        }
+      }
+
+      .logo_text_3{
+        color: $color-black-500;
+        font-size: 28px;
+        font-family: 'NanumSquareR', sans-serif;
+        margin-top: 30px;
+      }
+    }
+
+    .logo_box{
+      display: flex;
+      align-items: center;
+      width: 137px;
+      height: 137px;
+      margin-top: 54px;
+
+      img{
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    .login_text_1{
+      font-size: 25px;
+      color: $color-black-000;
+      font-family: 'NanumSquareR', sans-serif;
+      margin-top: 82px;
+    }
+
+    .sns_login_box{
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 48px;
+
+      button{
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 84px;
+        border-radius: 18px;
+
+        img{
+          position: absolute;
+        }
+        
+        &.google_login_button{
+          background-color: $color-gray-700;
+
+          img{
+            width: 40px;
+            left: 32px;
+          }
+        }
+        
+        &.kakao_login_button{
+          background-color: $color-yellow-000;
+
+          img{
+            width: 68px;
+            left: 18px;
+          }
+        }
+
+        span{
+          font-size: 28px;
+          color: $color-black-500;
+          font-family: 'NanumSquareR', sans-serif;
+        }
+      }
+    }
+  }
+}
