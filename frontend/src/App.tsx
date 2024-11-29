@@ -11,6 +11,7 @@ import ManagePartyDetailPage from "./pages/manager/managePartyDetail/ManageParty
 import ManagerSignupPage from "./pages/manager/signup/Signup"
 import UserLoginPage from "./pages/user/login/Login"
 import UserPartyPage from "./pages/user/party/Party"
+import UserChatPage from "./pages/user/chat/Chat"
 
 function App() {
   return (
@@ -25,7 +26,8 @@ function App() {
         <Route path="/manager/managePartyDetail/:id" element={<ManagePartyDetailPage />}></Route>
         <Route path="/manager/signup" element={<ManagerSignupPage />}></Route>
         <Route index path="/" element={<UserLoginPage />}></Route>
-        <Route path="/user/party/:qr?/:party_id?" element={<UserPartyPage />} />
+        <Route path="/user/party" element={<UserPartyPage />} />
+        <Route path="/user/chat" element={<UserChatPage />} />
       </Routes>
     </BrowserRouter>
   );
