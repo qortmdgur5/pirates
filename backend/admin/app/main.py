@@ -1,8 +1,6 @@
 import time
 import os
-import requests
-from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, Query, Request, status, APIRouter, Body
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, status, APIRouter
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import urllib.parse
 from .db import crud, database
 from .utils import schemas
-from .oauth import oauth
-from .utils.utils import load_config
+from .oauth import oauth, kakaoLogin
+
 
 app = FastAPI()
 
@@ -28,7 +26,7 @@ owner_router = APIRouter(prefix="/owner", tags=["owner"])
 manager_router = APIRouter(prefix="/manager", tags=["owner , manager"])
 user_router = APIRouter(prefix="/user", tags=["user"])
 
-config = load_config("config.yaml")
+
 
 @app.middleware("http")
 async def log_request_time(
@@ -544,60 +542,44 @@ async def read_managerAccomodationQR(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-KAKAO_CLIENT_ID = config['KAKAO_CLIENT_ID']
-KAKAO_REDIRECT_URI = config['KAKAO_REDIRECT_URI']
-
 @app.get("/user/auth/kakao/login", summary="카카오 로그인 API", tags=['user'])
-async def kakao_login():
+async def kakao_login(
+   db: AsyncSession = Depends(database.get_db)
+):
     try:
-        kakao_auth_url = (
-            f"https://kauth.kakao.com/oauth/authorize"
-            f"?client_id={KAKAO_CLIENT_ID}"
-            f"&redirect_uri={KAKAO_REDIRECT_URI}"
-            f"&response_type=code"
-        )
+        kakao_auth_url = await kakao_login.kakao_login_data(db)
         return RedirectResponse(kakao_auth_url)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in login redirect: {str(e)}")
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
 
 @app.get("/user/auth/kakao/callback", summary="카카오 로그인 콜백 API", tags=['user'])
-async def kakao_callback(code: str, db: AsyncSession = Depends(database.get_db)):
+async def kakao_callback(
+    code: str, 
+    db: AsyncSession = Depends(database.get_db)
+    ):
     """
     code: 카카오가 리디렉션 URL로 전달하는 Authorization Code
     """
     try:
-        token_url = "https://kauth.kakao.com/oauth/token"
-        data = {
-            "grant_type": "authorization_code",
-            "client_id": KAKAO_CLIENT_ID,
-            "redirect_uri": KAKAO_REDIRECT_URI,
-            "code": code,
-        }
-        token_response = requests.post(token_url, data=data)
-        
-        if token_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get access token")
-        token_data = token_response.json()
-        access_token = token_data.get("access_token")
-
-        user_info_url = "https://kapi.kakao.com/v2/user/me"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        user_response = requests.get(user_info_url, headers=headers)
-
-        if user_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get user info")
-        user_info = user_response.json()
-
+        user_info = await kakaoLogin.kakao_callback_data(db, code)
         return await crud.post_userLogin(db, user_info)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in callback: {str(e)}")
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
 @app.post("/user/login", response_model=schemas.UserLoginResponse, summary="유저 로그인 API", tags=['user'])
-async def create_userLogin(db: AsyncSession = Depends(database.get_db)):
+async def create_userLogin(
+    db: AsyncSession = Depends(database.get_db)
+    ):
     try:
         return {"msg": "User login processed", "user": "example_user"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in login: {str(e)}")
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
             
 # @app.post(
 #     "/user/login", 
