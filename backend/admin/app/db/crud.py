@@ -1,6 +1,6 @@
 import os
 from typing import List, Optional
-from fastapi import HTTPException
+from fastapi import HTTPException, Body
 from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models, schemas
@@ -1062,3 +1062,136 @@ async def get_managerAccomodationQR(
         print("Exception:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+## user
+async def get_userParty(
+    db: AsyncSession,
+    userParty: Optional[schemas.userPartyRequest]
+) -> List[dict]:
+    try:
+        query = (
+            select(models.Accomodation.name,
+                models.Accomodation.introduction,
+                models.Accomodation.address,
+                models.Accomodation.number,
+                models.Owner.phoneNumber,
+                models.Accomodation.score,
+                models.Accomodation.loveCount,
+            )
+            .select_from(models.Party) 
+            .join(models.Accomodation, models.Party.accomodation_id == models.Accomodation.id)
+            .join(models.Owner, models.Accomodation.owner_id == models.Owner.id) 
+            .filter(models.Party.id == userParty.party_id)
+        )
+
+        result = await db.execute(query)
+        party = result.first()
+
+        response = [
+                {
+                    "name": party.name, 
+                    "introduction": party.introduction,
+                    "address": party.address,
+                    "number": party.number,
+                    "phoneNumber": party.phoneNumber,
+                    "score": party.score,
+                    "loveCount": party.loveCount,
+                    "party_id": userParty.party_id
+                }
+            ]
+        return {
+            "data": response,
+            "totalCount": 0
+        } 
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+async def get_userPartyInto(
+    id: int,
+    db: AsyncSession,
+    page: int = 0,
+    pageSize: int = 10
+) -> List[dict]:
+    try:
+        offset = max(page * pageSize, 0)
+        query = (
+            select(models.User, models.UserInfo, models.PartyUserInfo)
+            .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
+            .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
+            .filter(models.User.party_id == id)
+            .order_by(models.User.id.desc())
+            .offset(offset)  
+            .limit(pageSize)
+        )
+
+        result = await db.execute(query)
+        users = result.all()
+        
+        totalCount_query = (
+            select(func.count(models.User.id))
+            .filter(models.User.party_id == id)
+        )
+        totalCount = await db.scalar(totalCount_query)
+        response = [
+                {
+                    "id": user[0].id, 
+                    "name": user[0].username,
+                    "gender": user[1].gender if user[1] else None,
+                    "team": user[2].team if user[2] else None
+                }
+                for user in users
+            ]
+        return {
+            "data": response,
+            "totalCount": totalCount
+        }
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
+    
+## 여기서 음.. 파티 아이디랑 다 넣어야 함 어떻게 넣지?
+async def post_userLogin(db: AsyncSession, user_info: dict):
+    username = user_info.get("id")
+    nickname = user_info.get("properties", {}).get("nickname")
+    
+    existing_user = await db.execute(
+        select(models.User).where(models.User.username == username)
+    )
+    user = existing_user.scalars().first()
+    if not user:
+        new_user = models.User(username=username, nickname=nickname)
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
+        return {"msg": "User registered successfully", "username": new_user.username, "nickname": new_user.nickname}
+    else:
+        return {"msg": "User already exists",  "username": new_user.username, "nickname": new_user.nickname}

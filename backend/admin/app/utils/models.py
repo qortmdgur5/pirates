@@ -71,6 +71,7 @@ class Party(Base):
     partyOn = Column(Integer)
     partys = relationship("Accomodation", back_populates="party") 
     participant = relationship("Participant", back_populates="participants") 
+    users = relationship("User", back_populates="party") 
     
 class Manager(Base):
     __tablename__ = "Manager"
@@ -97,3 +98,44 @@ class Participant(Base):
     region = Column(String(255))
     gender = Column(Boolean)
     participants = relationship("Party", back_populates="participant") 
+
+class User(Base):
+    __tablename__ = "User"
+
+    id = Column(Integer, primary_key=True, index=True)
+    party_id = Column(Integer, ForeignKey('Party.id'))
+    username = Column(String(255))
+    provider = Column(String(255))
+    provider_id = Column(String(255))
+    date = Column(DateTime, default=func.now())
+    nickname = Column(String(255))
+
+    party = relationship("Party", back_populates="users")  
+    userInfo = relationship("UserInfo", back_populates="user") 
+    partyUserInfo = relationship("PartyUserInfo", back_populates="user") 
+
+class UserInfo(Base):
+    __tablename__ = "UserInfo"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('User.id'))
+    name = Column(String(255))
+    phone = Column(String(255))
+    email = Column(String(255))
+    gender = Column(Boolean)
+    job = Column(String(255))
+    age = Column(Integer)
+    mbti = Column(String(255))
+    region = Column(String(255))
+    
+    user = relationship("User", back_populates="userInfo")
+
+class PartyUserInfo(Base):
+    __tablename__ = "PartyUserInfo"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('User.id'))
+    team = Column(Integer)
+    partyOn = Column(Boolean)
+
+    user = relationship("User", back_populates="partyUserInfo")

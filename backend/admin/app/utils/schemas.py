@@ -139,3 +139,61 @@ class signupManager(BaseModel):
 class loginResponse(BaseModel):
     access_token: str
     token_type: str
+
+## user
+class userLoginResponse(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    gender: Optional[bool] = None
+    job: Optional[str] = None
+    age: Optional[int] = None
+    mbti: Optional[str] = None   
+    region: Optional[str] = None
+
+class userLoginResponses(BaseModel):
+    userInfo: List[userLoginResponse] = []   
+    id: int  
+    party_id: int
+
+class userSignupResponse(BaseModel):
+    user_id: int
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    gender: Optional[bool] = None
+    job: Optional[str] = None
+    age: Optional[int] = None
+    mbti: Optional[str] = None   
+    region: Optional[str] = None
+
+class userPartyRequest(BaseModel):
+    qr: Optional[str] = None
+    party_id: Optional[int] = None
+
+class userPartyResponses(BaseModel):
+    name: Optional[str] = None
+    introduction: Optional[str] = None
+    address: Optional[str] = None
+    number: Optional[str] = None
+    phoneNumber: Optional[str] = None
+    score: Optional[float] = None
+    loveCount: Optional[int] = None   
+    party_id: Optional[int] = None
+
+class userPartyResponse(BaseModel):
+    data: List[userPartyResponses]
+    totalCount: int
+
+class userPartyIntoResponses(BaseModel):
+    id: int
+    name: str
+    gender: bool
+    team: int 
+
+class userPartyIntoResponse(BaseModel):
+    data: List[userPartyIntoResponses]
+    totalCount: int
+    
+class UserLoginResponse(BaseModel):
+    msg: str
+    user: str

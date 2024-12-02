@@ -1,7 +1,9 @@
 import time
 import os
-from fastapi import FastAPI, Depends, HTTPException, Query, Request, status, APIRouter
-from fastapi.responses import FileResponse
+import requests
+from typing import Optional
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, status, APIRouter, Body
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +11,7 @@ import urllib.parse
 from .db import crud, database
 from .utils import schemas
 from .oauth import oauth
+from .utils.utils import load_config
 
 app = FastAPI()
 
@@ -23,9 +26,15 @@ app.add_middleware(
 admin_router = APIRouter(prefix="/admin", tags=["admin"])
 owner_router = APIRouter(prefix="/owner", tags=["owner"])
 manager_router = APIRouter(prefix="/manager", tags=["owner , manager"])
+user_router = APIRouter(prefix="/user", tags=["user"])
+
+config = load_config("config.yaml")
 
 @app.middleware("http")
-async def log_request_time(request: Request, call_next):
+async def log_request_time(
+    request: Request, 
+    call_next
+    ):
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
@@ -33,7 +42,11 @@ async def log_request_time(request: Request, call_next):
     return response
 
 ## admin (관리자 사용 API)
-@app.get("/admin/accomodations", response_model=schemas.AdminAccomodation, summary="관리자용 게스트 하우스 관리 페이지 - 게스트 하우스 리스트 정보 가져오기 API", tags=["admin"])
+@app.get(
+    "/admin/accomodations", 
+    response_model=schemas.AdminAccomodation, 
+    summary="관리자용 게스트 하우스 관리 페이지 - 게스트 하우스 리스트 정보 가져오기 API", 
+    tags=["admin"])
 async def read_adminAccomodations(
     isMostReviews: bool = Query(True), 
     page: int = Query(0),
@@ -50,7 +63,11 @@ async def read_adminAccomodations(
         await crud.log_error(db, error_message) 
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
-@app.get("/admin/owners", response_model=schemas.AdminOwner, summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 리스트 정보 가져오기 API", tags=["admin"])
+@app.get(
+    "/admin/owners", 
+    response_model=schemas.AdminOwner, 
+    summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 리스트 정보 가져오기 API",
+    tags=["admin"])
 async def read_adminOwners(
     isOldestOrders: bool = Query(True),
     page: int = Query(0),
@@ -65,7 +82,10 @@ async def read_adminOwners(
         await crud.log_error(db, error_message) 
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
-@app.put("/admin/owner/auth/{id}", summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 승인 API , 승인 요청 시 해당 사장님 role 컬럼을 ROLE_AUTH_OWNER 로 변경", tags=["admin"])
+@app.put(
+    "/admin/owner/auth/{id}", 
+    summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 승인 API , 승인 요청 시 해당 사장님 role 컬럼을 ROLE_AUTH_OWNER 로 변경", 
+    tags=["admin"])
 async def update_auth_adminOwners(
     id: int, 
     db: AsyncSession = Depends(database.get_db)
@@ -77,7 +97,10 @@ async def update_auth_adminOwners(
         await crud.log_error(db, error_message) 
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
-@app.put("/admin/owner/deny/{id}", summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 취소 API, 요청 시 사장님 role 컬럼을 ROLE_NOTAUTH_OWNER 로 변경", tags=["admin"])
+@app.put(
+    "/admin/owner/deny/{id}", 
+    summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 취소 API, 요청 시 사장님 role 컬럼을 ROLE_NOTAUTH_OWNER 로 변경", 
+    tags=["admin"])
 async def update_deny_adminOwners(
     id: int, 
     db: AsyncSession = Depends(database.get_db)
@@ -91,7 +114,10 @@ async def update_deny_adminOwners(
 
 
 ## owner (사장님 사용 API)
-@app.post("/owner/signup", summary="사장님용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_OWNER로 넣어주셈", tags=["owner"])
+@app.post(
+    "/owner/signup", 
+    summary="사장님용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_OWNER로 넣어주셈", 
+    tags=["owner"])
 async def post_signup_owner(
     data: schemas.signupOwner,
     db: AsyncSession = Depends(database.get_db)
@@ -105,7 +131,10 @@ async def post_signup_owner(
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
       
-@app.post("/owner/duplicate", summary="사장님용 아아디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", tags=["owner"])
+@app.post(
+    "/owner/duplicate", 
+    summary="사장님용 아아디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", 
+    tags=["owner"])
 async def post_duplicate_owner(
     username: str,
     db: AsyncSession = Depends(database.get_db)
@@ -119,7 +148,11 @@ async def post_duplicate_owner(
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
   
-@app.post("/owner/login", response_model=schemas.loginResponse, summary="Owner 로그인 후 토큰 발급", tags=["owner"])
+@app.post(
+    "/owner/login", 
+    response_model=schemas.loginResponse, 
+    summary="Owner 로그인 후 토큰 발급", 
+    tags=["owner"])
 async def login_owner(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(database.get_db)
@@ -146,7 +179,10 @@ async def login_owner(
         await crud.log_error(db, error_message) 
         raise HTTPException(status_code=300, detail={"msg": error_message})
        
-@app.get("/owner/accomodation/{id}", response_model=schemas.OwnerAccomodationsWithoutDate, summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
+@app.get(
+    "/owner/accomodation/{id}", 
+    response_model=schemas.OwnerAccomodationsWithoutDate, 
+    summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
 async def read_ownerAccomodation(
     id: int, 
     page: int = Query(0),
@@ -162,7 +198,10 @@ async def read_ownerAccomodation(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-@app.post("/owner/accomodation", summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API, QR 주소 컬럼 추가", tags=["owner"])
+@app.post(
+    "/owner/accomodation", 
+    summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API, QR 주소 컬럼 추가", 
+    tags=["owner"])
 async def create_ownerAccomdation(
     accomodation: schemas.OwnerAccomodationsPost,
     db: AsyncSession = Depends(database.get_db)
@@ -175,7 +214,10 @@ async def create_ownerAccomdation(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-@app.put("/owner/accomodation/{id}", summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 수정 API", tags=["owner"])
+@app.put(
+    "/owner/accomodation/{id}", 
+    summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 수정 API", 
+    tags=["owner"])
 async def update_ownerAccomodation(
     id: int,
     accomodation: schemas.OwnerAccomodationsPut,
@@ -190,7 +232,11 @@ async def update_ownerAccomodation(
 
 
 
-@app.get("/owner/managers/{id}", response_model=schemas.OwnerManager, summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", tags=["owner"])
+@app.get(
+    "/owner/managers/{id}", 
+    response_model=schemas.OwnerManager, 
+    summary="사장님용 게스트 하우스 등록 관리 페이지 - 게스트 하우스 정보 가져오기 API", 
+    tags=["owner"])
 async def read_ownermanagers(
     id: int, 
     isOldestOrders: bool = Query(True), 
@@ -207,7 +253,10 @@ async def read_ownermanagers(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
 
-@app.put("/owner/manager/auth/{id}", summary="사장님용 매니저 등록 관리 페이지 - 매니저 승인 API , 승인 요청 시 해당 매니저 role 컬럼을 ROLE_AUTH_MANAGER 로 변경", tags=["owner"])
+@app.put(
+    "/owner/manager/auth/{id}", 
+    summary="사장님용 매니저 등록 관리 페이지 - 매니저 승인 API , 승인 요청 시 해당 매니저 role 컬럼을 ROLE_AUTH_MANAGER 로 변경", 
+    tags=["owner"])
 async def update_auth_ownerOwners(
     id: int, 
     db: AsyncSession = Depends(database.get_db)
@@ -220,7 +269,10 @@ async def update_auth_ownerOwners(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-@app.put("/owner/manager/deny/{id}", summary="사장님용 매니저 등록 관리 페이지 - 매니저 삭제 API , 삭제 요청 시 해당 매니저 정보 삭제", tags=["owner"])
+@app.put(
+    "/owner/manager/deny/{id}", 
+    summary="사장님용 매니저 등록 관리 페이지 - 매니저 삭제 API , 삭제 요청 시 해당 매니저 정보 삭제", 
+    tags=["owner"])
 async def update_deny_ownerOwners(
     id: int, 
     db: AsyncSession = Depends(database.get_db)
@@ -236,7 +288,10 @@ async def update_deny_ownerOwners(
 
 
 ## owner , manager(사장님 And 매니저 사용 API)
-@app.get("/manager/getAccomodation", summary="매니저용 회원가입 페이지 API, 모든 숙소 리스트 가져오기", tags=["owner , manager"])
+@app.get(
+    "/manager/getAccomodation", 
+    summary="매니저용 회원가입 페이지 API, 모든 숙소 리스트 가져오기", 
+    tags=["owner , manager"])
 async def read_managerGetAccomodation(
     db: AsyncSession = Depends(database.get_db)
 ):
@@ -249,7 +304,10 @@ async def read_managerGetAccomodation(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
-@app.post("/manager/signup", summary="매니저용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_MANAGER로 넣어주셈", tags=["owner , manager"])
+@app.post(
+    "/manager/signup", 
+    summary="매니저용 회원가입 API, role 데이터는 기본값 미승인 값인 ROLE_NOTAUTH_MANAGER로 넣어주셈", 
+    tags=["owner , manager"])
 async def post_signup_mananger(
     data: schemas.signupManager,
     db: AsyncSession = Depends(database.get_db)
@@ -263,7 +321,10 @@ async def post_signup_mananger(
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
       
-@app.post("/manager/duplicate", summary="매니저용 아이디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", tags=["owner , manager"])
+@app.post(
+    "/manager/duplicate", 
+    summary="매니저용 아이디 중복검사 API, username 과 동일한 데이터가 있으면 true, 없으면 false", 
+    tags=["owner , manager"])
 async def post_duplicate_mananger(
     username: str,
     db: AsyncSession = Depends(database.get_db)
@@ -277,7 +338,11 @@ async def post_duplicate_mananger(
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
   
-@app.post("/manager/login", response_model=schemas.loginResponse, summary="매니저용 로그인 API", tags=["owner , manager"])
+@app.post(
+    "/manager/login", 
+    response_model=schemas.loginResponse, 
+    summary="매니저용 로그인 API", 
+    tags=["owner , manager"])
 async def login_mananger(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(database.get_db)
@@ -305,7 +370,11 @@ async def login_mananger(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
-@app.get("/manager/parties/{id}", response_model=schemas.managerParty, summary="매니저용 파티방 관리 페이지 - 파티방 리스트 가져오기 API", tags=["owner , manager"])
+@app.get(
+    "/manager/parties/{id}", 
+    response_model=schemas.managerParty, 
+    summary="매니저용 파티방 관리 페이지 - 파티방 리스트 가져오기 API", 
+    tags=["owner , manager"])
 async def read_managerParties(
     id: int, 
     isOldestOrders: bool = Query(True),
@@ -322,7 +391,10 @@ async def read_managerParties(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-@app.post("/manager/party", summary="매니저용 파티방 관리 페이지 - 파티방 개설 API", tags=["owner , manager"])
+@app.post(
+    "/manager/party", 
+    summary="매니저용 파티방 관리 페이지 - 파티방 개설 API", 
+    tags=["owner , manager"])
 async def create_managerParty(
     party: schemas.managerPartiesPost,
     db: AsyncSession = Depends(database.get_db)
@@ -335,7 +407,10 @@ async def create_managerParty(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
-@app.put("/manager/party/{id}", summary="매니저용 파티방 관리 페이지 - 파티방 수정 API", tags=["owner , manager"])
+@app.put(
+    "/manager/party/{id}", 
+    summary="매니저용 파티방 관리 페이지 - 파티방 수정 API", 
+    tags=["owner , manager"])
 async def update_managerParty(
     id: int,
     party: schemas.managerPartyUpdate,
@@ -348,7 +423,10 @@ async def update_managerParty(
         await crud.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
-@app.delete("/manager/party/{id}", summary="매니저용 파티방 관리 페이지 - 파티방 삭제 API, 요청시 해당 파티방 삭제", tags=["owner , manager"])
+@app.delete(
+    "/manager/party/{id}", 
+    summary="매니저용 파티방 관리 페이지 - 파티방 삭제 API, 요청시 해당 파티방 삭제", 
+    tags=["owner , manager"])
 async def delete_managerParty(
     id: int,
     db: AsyncSession = Depends(database.get_db)
@@ -363,7 +441,11 @@ async def delete_managerParty(
     
     
     
-@app.get("/manager/party/{id}", response_model=schemas.managerParticipants, summary="매니저용 파티 상세 페이지 - 파티 상세 정보 가져오기 API", tags=["owner , manager"])
+@app.get(
+    "/manager/party/{id}", 
+    response_model=schemas.managerParticipants, 
+    summary="매니저용 파티 상세 페이지 - 파티 상세 정보 가져오기 API", 
+    tags=["owner , manager"])
 async def read_managerParty(
     id: int, 
     page: int = Query(0),
@@ -379,7 +461,11 @@ async def read_managerParty(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-@app.post("/manager/participant", response_model=schemas.SimpleResponse, summary="매니저용 파티 상세 페이지 - 참석자 추가 API", tags=["owner , manager"])
+@app.post(
+    "/manager/participant", 
+    response_model=schemas.SimpleResponse, 
+    summary="매니저용 파티 상세 페이지 - 참석자 추가 API", 
+    tags=["owner , manager"])
 async def create_managerParticipant(
     party: schemas.managerParticipantPost,
     db: AsyncSession = Depends(database.get_db)
@@ -392,7 +478,10 @@ async def create_managerParticipant(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
-@app.delete("/manager/participant/{id}", summary="매니저용 파티 상세 페이지 - 참석자 삭제 API, 요청시 해당 참석자 삭제", tags=["owner , manager"])
+@app.delete(
+    "/manager/participant/{id}", 
+    summary="매니저용 파티 상세 페이지 - 참석자 삭제 API, 요청시 해당 참석자 삭제", 
+    tags=["owner , manager"])
 async def delete_managerParticipant(
     id: int,
     db: AsyncSession = Depends(database.get_db)
@@ -405,7 +494,10 @@ async def delete_managerParticipant(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
-@app.put("/manager/partyOn/{id}", summary="매니저용 파티 상세 페이지 - 파티 ON/OFF API, 요청시 요청값에 따른 파티방 ON/OFF 처리", tags=["owner , manager"])
+@app.put(
+    "/manager/partyOn/{id}", 
+    summary="매니저용 파티 상세 페이지 - 파티 ON/OFF API, 요청시 요청값에 따른 파티방 ON/OFF 처리", 
+    tags=["owner , manager"])
 async def update_managerPartyOn(
     id: int,
     party: schemas.managerPartyOn,
@@ -418,7 +510,10 @@ async def update_managerPartyOn(
         await crud.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
-@app.get("/manager/accomodation/qr/{id}", summary="QR 코드 주소 데이터 요청", tags=["owner , manager"])
+@app.get(
+    "/manager/accomodation/qr/{id}", 
+    summary="QR 코드 주소 데이터 요청", 
+    tags=["owner , manager"])
 async def read_managerAccomodationQR(
     id: int, 
     db: AsyncSession = Depends(database.get_db)
@@ -443,6 +538,131 @@ async def read_managerAccomodationQR(
         )
     except HTTPException as http_exc:
         raise http_exc 
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+KAKAO_CLIENT_ID = config['KAKAO_CLIENT_ID']
+KAKAO_REDIRECT_URI = config['KAKAO_REDIRECT_URI']
+
+@app.get("/user/auth/kakao/login", summary="카카오 로그인 API", tags=['user'])
+async def kakao_login():
+    try:
+        kakao_auth_url = (
+            f"https://kauth.kakao.com/oauth/authorize"
+            f"?client_id={KAKAO_CLIENT_ID}"
+            f"&redirect_uri={KAKAO_REDIRECT_URI}"
+            f"&response_type=code"
+        )
+        return RedirectResponse(kakao_auth_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in login redirect: {str(e)}")
+
+@app.get("/user/auth/kakao/callback", summary="카카오 로그인 콜백 API", tags=['user'])
+async def kakao_callback(code: str, db: AsyncSession = Depends(database.get_db)):
+    """
+    code: 카카오가 리디렉션 URL로 전달하는 Authorization Code
+    """
+    try:
+        token_url = "https://kauth.kakao.com/oauth/token"
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": KAKAO_CLIENT_ID,
+            "redirect_uri": KAKAO_REDIRECT_URI,
+            "code": code,
+        }
+        token_response = requests.post(token_url, data=data)
+        
+        if token_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to get access token")
+        token_data = token_response.json()
+        access_token = token_data.get("access_token")
+
+        user_info_url = "https://kapi.kakao.com/v2/user/me"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        user_response = requests.get(user_info_url, headers=headers)
+
+        if user_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to get user info")
+        user_info = user_response.json()
+
+        return await crud.post_userLogin(db, user_info)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in callback: {str(e)}")
+    
+@app.post("/user/login", response_model=schemas.UserLoginResponse, summary="유저 로그인 API", tags=['user'])
+async def create_userLogin(db: AsyncSession = Depends(database.get_db)):
+    try:
+        return {"msg": "User login processed", "user": "example_user"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in login: {str(e)}")
+            
+# @app.post(
+#     "/user/login", 
+#     response_model=schemas.userLoginResponses, 
+#     summary="유저 로그인 API", 
+#     tags=["user"])
+# async def create_userLogin(
+#     db: AsyncSession = Depends(database.get_db)
+# ):
+#     try:
+#         return await crud.post_userLogin(db)
+#     except Exception as e:
+#         error_message = str(e)
+#         await crud.log_error(db, error_message)  
+#         raise HTTPException(status_code=500, detail={"msg": error_message})
+
+@app.post(
+    "/user/signup", 
+    response_model=schemas.SimpleResponse, 
+    summary="유저 회원가입 API - 최초 로그인인 경우 - 로그인 API 를 탔을때 userInfo 데이터가 Null 일 경우 회원가입 페이지로 이동하여 추가정보를 저장할 API", 
+    tags=["user"])
+async def create_userSignup(
+    userSignup = schemas.userSignupResponse,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        return await crud.post_userSignup(db,userSignup)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+@app.get(
+    "/user/party", 
+    response_model=schemas.userPartyResponse, 
+    summary="게스트 하우스의 당일 파티정보 가져오기 API", 
+    tags=["user"])
+async def read_userPartyInto( 
+    party_id: int = Query(...), 
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        userParty = schemas.userPartyRequest(party_id=party_id)
+        data = await crud.get_userParty(db, userParty)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+@app.get(
+    "/user/partyInfo/{party_id}", 
+    response_model=schemas.userPartyIntoResponse, 
+    summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true 인 경우의 유저들 정보만 가져오기", 
+    tags=["user"])
+async def read_userPartyInto( 
+    party_id: int, 
+    page: int = Query(0),
+    pageSize: int = Query(10), 
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        data = await crud.get_userPartyInto(party_id, db, page, pageSize)
+        return data
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
