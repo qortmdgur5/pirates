@@ -12,6 +12,7 @@ import ManagerSignupPage from "./pages/manager/signup/Signup"
 import UserLoginPage from "./pages/user/login/Login"
 import UserPartyPage from "./pages/user/party/Party"
 import UserChatPage from "./pages/user/chat/Chat"
+import UserChatRoomsPage from "./pages/user/chatRoom/ChatRoom"
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route index path="/" element={<UserLoginPage />}></Route>
         <Route path="/user/party" element={<UserPartyPage />} />
         <Route path="/user/chat" element={<UserChatPage />} />
+        <Route path="/user/chatRooms" element={<UserChatRoomsPage />} />
       </Routes>
     </BrowserRouter>
   );
