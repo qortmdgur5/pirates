@@ -33,17 +33,17 @@ function Chat() {
           <MeInfo name={"내 이름"} time={"09:25 AM"} />
           <MeChat
             text={
-              "bjjhjfkkjbkjewjhewrhuweqkjdjkhsdjkbsdjhfejkbfeuhfewjkbewjkewjbksdfbjksdjbsdfjhbwefrierwkjbwerjkwerjkbwerjkbwer"
+              "asdsad"
             }
           />
           <MeChat
             text={
-              "bjjhjfkkjbkjewjhewrhuweqkjdjkhsdjkbsdjhfejkbfeuhfewjkbewjkewjbksdfbjksdjbsdfjhbwefrierwkjbwerjkwerjkbwerjkbwer"
+              "werwer"
             }
           />
           <MeChat
             text={
-              "bjjhjfkkjbkjewjhewrhuweqkjdjkhsdjkbsdjhfejkbfeuhfewjkbewjkewjbksdfbjksdjbsdfjhbwefrierwkjbwerjkwerjkbwerjkbwer"
+              "bjjhjfkkjbkjewjhewrhuweqkjdjkhsdjkbsdjhfejkbfeuhfewjkbewjkewjbksdfbjksdjbsdfjhbwefrierwkjbwerjkwerjkbwerjkbwerksajdgajsdjsagdjhasgdjhgshjkjsakjashdjksahdjkhasjkdhasjkdhkjasdh"
             }
           />
         </div>

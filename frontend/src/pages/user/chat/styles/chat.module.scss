@@ -28,6 +28,8 @@
     }
 
     .chat_contents {
+      display: flex;
+      flex-direction: column;
       width: 100%;
       padding: 12px 20px 12px 20px;
       border-top: 1px solid $color-gray-000;
