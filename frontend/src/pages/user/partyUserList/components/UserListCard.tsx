@@ -14,7 +14,7 @@ function UserListCard() {
           <img src="/src/assets/image/gender_man.png" alt="gender_man_img" />
         </div>
       </div>
-      <p className={styles.chat_button}>채팅</p>
+      <button className={styles.chat_button} type='button'>채팅</button>
     </div>
   )
 }

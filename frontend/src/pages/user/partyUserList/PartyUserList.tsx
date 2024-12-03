@@ -2,6 +2,7 @@ import BackButton from "../../../components/common/backButton/BackButton";
 import HomeButton from "../../../components/common/homeButton/HomeButton";
 import HouseNameAndDate from "../../../components/common/houseNameAndDate/HouseNameAndDate";
 import TeamDropDown from "../../../components/common/teamDropDown/TeamDropDown";
+import UserListCard from "./components/UserListCard";
 import styles from "./styles/partyUserList.module.scss";
 
 function PartyUserList() {
@@ -27,7 +28,25 @@ function PartyUserList() {
             <p className={styles.participant_status}>98/100</p>
           </div>
         </div>
-        <TeamDropDown team={"1조"} />
+        <div className={styles.user_list_box}>
+          <UserListCard />
+          <UserListCard />
+          <TeamDropDown team={"1조"} />
+          <UserListCard />
+          <UserListCard />
+          <UserListCard />
+          <UserListCard />
+          <TeamDropDown team={"2조"} />
+          <UserListCard />
+          <UserListCard />
+          <UserListCard />
+          <UserListCard />
+          <TeamDropDown team={"3조"} />
+          <UserListCard />
+          <UserListCard />
+          <UserListCard />
+          <UserListCard />
+        </div>
       </div>
     </div>
   );
