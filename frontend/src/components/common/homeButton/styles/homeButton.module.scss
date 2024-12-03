@@ -1,0 +1,16 @@
+.home_text_box {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+  gap: 20px;
+
+  img {
+    width: 40px;
+  }
+
+  .home_text {
+    font-size: 34px;
+    color: $color-black-100;
+    font-family: 'NanumSquareEB', sans-serif;
+  }
+}

@@ -1,14 +1,13 @@
+import HomeButton from "../../../components/common/homeButton/HomeButton";
+import HouseNameAndDate from "../../../components/common/houseNameAndDate/HouseNameAndDate";
 import styles from "./styles/party.module.scss";
 
 function Party() {
   return (
     <div className={styles.container}>
       <div className={styles.container_contents}>
-        <p className={styles.party_text_1}>솔 게스트 하우스 - 8.9 (토)</p>
-        <div className={styles.home_text_box}>
-          <img src="/src/assets/image/home_icon.png" alt="home_icon_image" />
-          <span className={styles.home_text}>HOME</span>
-        </div>
+        <HouseNameAndDate guestHouseName={"솔 게스트 하우스"} />
+        <HomeButton />
         <div className={styles.house_info_box}>
           <div className={styles.house_info_lane}>
             <div className={styles.house_info_left}>소개</div>

@@ -8,29 +8,6 @@
     justify-content: center;
     padding: 105px 5.6% 86px 5.6%;
 
-    .party_text_1 {
-      font-size: 44px;
-      color: $color-black-100;
-      font-family: 'NanumSquareR', sans-serif;
-    }
-
-    .home_text_box {
-      display: flex;
-      align-items: center;
-      margin-right: auto;
-      gap: 20px;
-
-      img {
-        width: 40px;
-      }
-
-      .home_text {
-        font-size: 34px;
-        color: $color-black-100;
-        font-family: 'NanumSquareEB', sans-serif;
-      }
-    }
-
     .house_info_box {
       width: 100%;
       margin-top: 86px;
