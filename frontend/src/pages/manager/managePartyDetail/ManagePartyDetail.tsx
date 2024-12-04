@@ -161,6 +161,17 @@ function ManagePartyDetail() {
                 onPageChange={setPage} // 페이지 변경 시 호출
                 onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
               />
+              <div className={styles.party_detail_button_box}>
+                <button className={styles.party_modify_button} type="button">
+                  파티방 수정
+                </button>
+                <button className={styles.party_delete_button} type="button">
+                  파티방 삭제
+                </button>
+                <button className={styles.party_enter_button} type="button">
+                  파티방 입장
+                </button>
+              </div>
             </div>
           </div>
         </div>
