@@ -9,6 +9,7 @@ import ManagerApprovePage from "./pages/owner/managerApprove/ManagerApprove";
 import ManagePartyPage from "./pages/manager/manageParty/ManageParty"
 import ManagePartyDetailPage from "./pages/manager/managePartyDetail/ManagePartyDetail"
 import ManagerSignupPage from "./pages/manager/signup/Signup"
+import ManagerPartyUserListPage from "./pages/manager/partyUserList/PartyUserList"
 import UserLoginPage from "./pages/user/login/Login"
 import UserPartyPage from "./pages/user/party/Party"
 import UserChatPage from "./pages/user/chat/Chat"
@@ -27,6 +28,7 @@ function App() {
         <Route path="/manager/manageParty" element={<ManagePartyPage />}></Route>
         <Route path="/manager/managePartyDetail/:id" element={<ManagePartyDetailPage />}></Route>
         <Route path="/manager/signup" element={<ManagerSignupPage />}></Route>
+        <Route path="/manager/party/userList" element={<ManagerPartyUserListPage />}></Route>
         <Route index path="/" element={<UserLoginPage />}></Route>
         <Route path="/user/party" element={<UserPartyPage />} />
         <Route path="/user/chat" element={<UserChatPage />} />

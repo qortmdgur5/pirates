@@ -1,0 +1,90 @@
+.container {
+  width: 100%;
+
+  .container_contents {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 105px 42px 38px 42px;
+
+    .love_matching_button{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      margin-bottom: 30px;
+      width: 160px;
+      height: 60px;
+      border-radius: 18px;
+      background-color: pink;
+      font-size: 32px;
+      font-family: "NanumSquareB", sans-serif;
+    }
+
+    .home_and_back_box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .search_and_participant_box {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+      height: 56px;
+      margin-top: 42px;
+      margin-bottom: 48px;
+
+      .search_box {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+        align-items: center;
+        height: 100%;
+
+        .name_input {
+          width: 100%;
+          height: 100%;
+          border-radius: 19px;
+          background-color: $color-white-000;
+          border: 3px solid $color-blue-000;
+          font-size: 24px;
+          color: $color-black-200;
+          font-family: "NanumSquareB", sans-serif;
+          padding-left: 20px;
+          padding-right: 46px;
+        }
+
+        img {
+          position: absolute;
+          right: 16px;
+          width: 25px;
+          height: 26px;
+        }
+      }
+
+      .participant_box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 108px;
+        height: 100%;
+        border-radius: 13px;
+        filter: drop-shadow(3.776px 4.663px 2.5px rgba(4, 0, 0, 0.17));
+        background-color: $color-gray-700;
+        font-size: 21px;
+        color: $color-black-200;
+        font-family: "NanumSquareB", sans-serif;
+      }
+    }
+
+    .user_list_box{
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      width: 100%;
+    }
+  }
+}
