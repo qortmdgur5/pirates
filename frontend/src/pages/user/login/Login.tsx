@@ -20,13 +20,6 @@ function Login() {
           회원 서비스 이용을 위해 로그인 해주세요.
         </p>
         <div className={styles.sns_login_box}>
-          <button className={styles.google_login_button}>
-            <img
-              src="/src/assets/image/google_login_button.png"
-              alt="google_login_img"
-            />
-            <span>구글 로그인</span>
-          </button>
           <button className={styles.kakao_login_button}>
             <img
               src="/src/assets/image/kakao_login_button.png"
