@@ -1,9 +1,35 @@
 import styles from "./styles/login.module.scss";
-import { useNavigation } from "../../../utils/navigation";
+import { useState } from "react";
 
 function Login() {
-  // 네비게이션 함수
-  const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+
+  // 카카오 로그인 버튼 클릭 시 API 호출
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      
+      // 카카오 로그인 API 호출
+      const response = await fetch('/api/user/auth/kakao/login', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('로그인 성공');
+        // 추가적인 응답 처리 로직이 필요하면 이곳에서 처리
+      } else {
+        alert('로그인에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('로그인 중 오류 발생:', error);
+      alert('로그인 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -20,12 +46,16 @@ function Login() {
           회원 서비스 이용을 위해 로그인 해주세요.
         </p>
         <div className={styles.sns_login_box}>
-          <button className={styles.kakao_login_button}>
+          <button
+            className={styles.kakao_login_button}
+            onClick={handleLogin}
+            disabled={loading}
+          >
             <img
               src="/src/assets/image/kakao_login_button.png"
               alt="kakao_login_img"
             />
-            <span>카카오 로그인</span>
+            <span>{loading ? '로그인 중...' : '카카오 로그인'}</span>
           </button>
         </div>
       </div>
