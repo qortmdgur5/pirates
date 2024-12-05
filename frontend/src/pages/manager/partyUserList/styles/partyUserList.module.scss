@@ -7,7 +7,7 @@
     justify-content: center;
     padding: 105px 42px 38px 42px;
 
-    .love_matching_button{
+    .love_matching_button {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -80,7 +80,23 @@
       }
     }
 
-    .user_list_box{
+    .team_assign_button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      width: 108px;
+      height: 56px;
+      border-radius: 13px;
+      filter: drop-shadow(3.776px 4.663px 2.5px rgba(4, 0, 0, 0.17));
+      background-color: $color-blue-000;
+      font-size: 21px;
+      color: $color-white-000;
+      font-family: "NanumSquareB", sans-serif;
+      margin-bottom: 48px;
+    }
+
+    .user_list_box {
       display: flex;
       flex-direction: column;
       gap: 32px;

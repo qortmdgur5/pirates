@@ -31,7 +31,11 @@ function PartyUserList() {
             <p className={styles.participant_status}>98/100</p>
           </div>
         </div>
+        <button className={styles.team_assign_button} type="button">
+          조 배정
+        </button>
         <div className={styles.user_list_box}>
+          <TeamDropDown team={"미지정"} />
           <UserListCard />
           <UserListCard />
           <TeamDropDown team={"1조"} />
