@@ -140,6 +140,13 @@ class loginResponse(BaseModel):
     access_token: str
     token_type: str
 
+class managerPartyUserInfoData(BaseModel):
+    id: int
+    team: int
+
+class managerPartyUserInfoDatas(BaseModel):
+    data: List[managerPartyUserInfoData] 
+
 ## user
 class userLoginResponse(BaseModel):
     name: Optional[str] = None
@@ -157,13 +164,13 @@ class userLoginResponses(BaseModel):
 
 class userSignupResponse(BaseModel):
     user_id: int
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    gender: Optional[bool] = None
+    name: str
+    phone: str
+    email: str
+    gender: bool
     job: Optional[str] = None
     age: Optional[int] = None
-    mbti: Optional[str] = None   
+    mbti: Optional[str] = None
     region: Optional[str] = None
 
 class userPartyRequest(BaseModel):
@@ -179,6 +186,7 @@ class userPartyResponses(BaseModel):
     score: Optional[float] = None
     loveCount: Optional[int] = None   
     party_id: Optional[int] = None
+    party_on: bool
 
 class userPartyResponse(BaseModel):
     data: List[userPartyResponses]

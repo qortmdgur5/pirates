@@ -1,15 +1,15 @@
 import time
 import os
 from fastapi import FastAPI, Depends, HTTPException, Query, Request, status, APIRouter
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 import urllib.parse
 from .db import crud, database
-from .utils import schemas
+from .utils import schemas, utils
 from .oauth import oauth, kakaoLogin
-
+from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI()
 
@@ -26,6 +26,9 @@ owner_router = APIRouter(prefix="/owner", tags=["owner"])
 manager_router = APIRouter(prefix="/manager", tags=["owner , manager"])
 user_router = APIRouter(prefix="/user", tags=["user"])
 
+config = utils.load_config("config.yaml")
+
+app.add_middleware(SessionMiddleware, secret_key=config['SECRET_KEY'])
 
 
 @app.middleware("http")
@@ -542,87 +545,108 @@ async def read_managerAccomodationQR(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-@app.get("/user/auth/kakao/login", summary="카카오 로그인 API", tags=['user'])
-async def kakao_login(
-   db: AsyncSession = Depends(database.get_db)
+@app.get(
+    "/manager/partyInfo/{id}", 
+    summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true, false 모든 유저들 정보 가져오기", 
+    tags=["owner , manager"])
+async def read_managerPartyInfo(
+    id: int, 
+    page: int = Query(0),
+    pageSize: int = Query(10), 
+    db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        kakao_auth_url = await kakao_login.kakao_login_data(db)
+        data = await crud.get_userPartyInto(id, db, page, pageSize)
+        return data
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+@app.put(
+    "/manager/partyInfo", 
+    summary="매니저용 파티 유저 리스트 페이지 - 유저의 PartyUserInfo 테이블 team 조 배정 및 수정 API", 
+    tags=["owner , manager"])
+async def update_managerPartyInfo(
+    data: schemas.managerPartyUserInfoDatas,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        return await crud.put_managerPartyInfo(db, data)
+    except Exception as e:
+        error_message = str(e)
+        await crud.log_error(db, error_message)  
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+## user
+@app.get( 
+    "/user/auth/kakao/login/{id}", 
+    summary="카카오 로그인 API", 
+    tags=['user']
+    )
+async def kakao_login(
+    id: int,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        kakao_auth_url = await kakaoLogin.kakao_login_data(id, db)
         return RedirectResponse(kakao_auth_url)
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
-@app.get("/user/auth/kakao/callback", summary="카카오 로그인 콜백 API", tags=['user'])
+@app.get(
+    "/user/auth/kakao/callback", 
+    summary="카카오 로그인 콜백 API",
+    tags=['user']
+    )
 async def kakao_callback(
     code: str, 
+    state: str,
     db: AsyncSession = Depends(database.get_db)
     ):
     """
     code: 카카오가 리디렉션 URL로 전달하는 Authorization Code
     """
     try:
-        user_info = await kakaoLogin.kakao_callback_data(db, code)
-        return await crud.post_userLogin(db, user_info)
-    except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
-    
-@app.post("/user/login", response_model=schemas.UserLoginResponse, summary="유저 로그인 API", tags=['user'])
-async def create_userLogin(
-    db: AsyncSession = Depends(database.get_db)
-    ):
-    try:
-        return {"msg": "User login processed", "user": "example_user"}
+        id = int(state) 
+        user_info = await kakaoLogin.kakao_callback_data(db, code, id)
+        return await crud.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
             
-# @app.post(
-#     "/user/login", 
-#     response_model=schemas.userLoginResponses, 
-#     summary="유저 로그인 API", 
-#     tags=["user"])
-# async def create_userLogin(
-#     db: AsyncSession = Depends(database.get_db)
-# ):
-#     try:
-#         return await crud.post_userLogin(db)
-#     except Exception as e:
-#         error_message = str(e)
-#         await crud.log_error(db, error_message)  
-#         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 @app.post(
     "/user/signup", 
-    response_model=schemas.SimpleResponse, 
     summary="유저 회원가입 API - 최초 로그인인 경우 - 로그인 API 를 탔을때 userInfo 데이터가 Null 일 경우 회원가입 페이지로 이동하여 추가정보를 저장할 API", 
     tags=["user"])
 async def create_userSignup(
-    userSignup = schemas.userSignupResponse,
+    userSignup: schemas.userSignupResponse,
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.post_userSignup(db,userSignup)
+        return await crud.post_userSignup(db, userSignup)
     except Exception as e:
         error_message = str(e)
         await crud.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 @app.get(
-    "/user/party", 
+    "/user/party/{id}", 
     response_model=schemas.userPartyResponse, 
     summary="게스트 하우스의 당일 파티정보 가져오기 API", 
     tags=["user"])
 async def read_userPartyInto( 
-    party_id: int = Query(...), 
+    id: int,
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        userParty = schemas.userPartyRequest(party_id=party_id)
+        userParty = schemas.userPartyRequest(party_id=id)
         data = await crud.get_userParty(db, userParty)
         return data
     except Exception as e:
