@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from sqlalchemy import func, select, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,11 +9,12 @@ from ..utils import models, schemas
 from typing import List, Optional
 from datetime import datetime
 from ..oauth.password import hash_password, verify_password
-from ..utils.utils import load_config
 import qrcode
 from urllib.parse import urlencode
 
-config = load_config("config.yaml")
+load_dotenv()
+QR_DIRECTORY = os.getenv("QR_DIRECTORY")
+QR_CODE = os.getenv("QR_CODE")
 
 ## owner (사장님 사용 API)
 async def create_signup_owner(db: AsyncSession, data: schemas.signupOwner):
@@ -166,10 +168,10 @@ async def get_ownerAccomodation(
 
 async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAccomodationsPost):
     try:
-        qr_directory = config['qr_directory']
+        qr_directory = QR_DIRECTORY
         os.makedirs(qr_directory, exist_ok=True)
         
-        base_url = config['qr_code']  
+        base_url = QR_CODE
         query_params = {
             "id": accomodation.id
         }

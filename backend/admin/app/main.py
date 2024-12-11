@@ -1,14 +1,14 @@
 import logging
+import os
 import time
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .db import database, errorLog
-from .utils import utils
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from .routers import admin, owner, manager, user
-from sqlalchemy.ext.asyncio import AsyncSession
+from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -20,27 +20,39 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
-config = utils.load_config("config.yaml")
-app.add_middleware(SessionMiddleware, secret_key=config['SECRET_KEY'])
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 app.include_router(admin.router)
 app.include_router(owner.router)
 app.include_router(manager.router)
 app.include_router(user.router)
 
-logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(message)s")
+logging.basicConfig(
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 class ExceptionMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next, db: AsyncSession = Depends(database.get_db)):
+    async def dispatch(self, request: Request, call_next):
+        db = database.SessionLocal() 
         try:
             response = await call_next(request)
             return response
         except Exception as e:
-            logging.error(f"Unhandled exception: {str(e)}")
-            await errorLog.log_error(db, str(e)) 
+            logger.error(f"Unhandled exception: {str(e)}")
+            try:
+                await errorLog.log_error(db, str(e)) 
+            except Exception as log_error:
+                logger.error(f"Error logging exception: {str(log_error)}")
             return JSONResponse(
                 status_code=500, content={"msg": "Internal server error"}
             )
+        finally:
+            await db.close() 
 
 app.add_middleware(ExceptionMiddleware)
 
@@ -49,6 +61,7 @@ async def log_request_time(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
-    logging.info(f"Request {request.url.path} took {process_time:.4f} seconds")
+    if process_time > 1: 
+        logging.warning(f"Request {request.url.path} took {process_time:.4f} seconds")
     return response
 

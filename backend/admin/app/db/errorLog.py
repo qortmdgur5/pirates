@@ -1,10 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..utils import models
-from ..utils.utils import load_config
 from datetime import datetime, timedelta, timezone
 import logging
 
-config = load_config("config.yaml")
 
 logging.basicConfig(
     level=logging.ERROR, 

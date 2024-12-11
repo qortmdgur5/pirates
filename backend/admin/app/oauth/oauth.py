@@ -1,28 +1,32 @@
+import os
+from dotenv import load_dotenv
 from ..db.errorLog import format_dates
-from ..utils.utils import load_config
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 
-
-config = load_config("config.yaml")
+load_dotenv()
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ALGORITHM = os.getenv("ALGORITHM")
+SECRET_KEY = os.getenv("SECRET_KEY")
+TOKEN = os.getenv("TOKEN")
 
 def create_access_token(data: dict):
     try:
         to_encode = data.copy()
-        expire = format_dates(datetime.now() + timedelta(minutes=config['ACCESS_TOKEN_EXPIRE_MINUTES'])) 
+        expire = format_dates(datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)) 
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, config['SECRET_KEY'], algorithm=config['ALGORITHM'])
+        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "fail"})
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=config['Token'])
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=TOKEN)
 
 def get_current_owner(token: str = Depends(oauth2_scheme)):
     try:
-        payload = jwt.decode(token, config['SECRET_KEY'], algorithms=[config['ALGORITHM']])
+        payload = jwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)
         owner_id = payload.get("owner_id")
         role = payload.get("role")
         accomodation_id = payload.get("accomodation_id")

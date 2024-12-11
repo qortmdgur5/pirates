@@ -1,13 +1,13 @@
+import os
+from dotenv import load_dotenv
 import requests
-from ..utils.utils import load_config
 from fastapi import HTTPException
 from ..db import errorLog
 from sqlalchemy.ext.asyncio import AsyncSession
 
-config = load_config("config.yaml")
-
-KAKAO_CLIENT_ID = config['KAKAO_CLIENT_ID']
-KAKAO_REDIRECT_URI = config['KAKAO_REDIRECT_URI']
+load_dotenv()
+KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
+KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 async def kakao_login_data(id: int, db: AsyncSession):
     try:
