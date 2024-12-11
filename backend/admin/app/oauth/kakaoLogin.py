@@ -1,7 +1,7 @@
 import requests
 from ..utils.utils import load_config
 from fastapi import HTTPException
-from ..db import crud
+from ..db import errorLog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 config = load_config("config.yaml")
@@ -23,12 +23,12 @@ async def kakao_login_data(id: int, db: AsyncSession):
     except ValueError as e:
         error_message = str(e)
         print("ValueError:", error_message)
-        await crud.log_error(db, error_message)
+        await errorLog.log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
     except Exception as e:
         error_message = str(e)
         print("Exception:", error_message)
-        await crud.log_error(db, error_message)
+        await errorLog.log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
 async def kakao_callback_data(db: AsyncSession, code: str, id: int):
@@ -59,11 +59,11 @@ async def kakao_callback_data(db: AsyncSession, code: str, id: int):
     except ValueError as e:
         error_message = str(e)
         print("ValueError:", error_message)
-        await crud.log_error(db, error_message)
+        await errorLog.log_error(db, error_message)
         raise HTTPException(status_code=400, detail={"msg": error_message})
     except Exception as e:
         error_message = str(e)
         print("Exception:", error_message)
-        await crud.log_error(db, error_message)
+        await errorLog.log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
         

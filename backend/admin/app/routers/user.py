@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Query, APIRouter
-from ..db import crud, database
+from ..db import errorLog, userService, database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..oauth import kakaoLogin
@@ -22,11 +22,14 @@ async def kakao_login(
     try:
         kakao_auth_url = await kakaoLogin.kakao_login_data(id, db)
         return RedirectResponse(kakao_auth_url)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
-
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+    
 @router.get(
     "/auth/kakao/callback", 
     summary="카카오 로그인 콜백 API")
@@ -41,11 +44,13 @@ async def kakao_callback(
     try:
         id = int(state) 
         user_info = await kakaoLogin.kakao_callback_data(db, code, id)
-        return await crud.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
+        return await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
             
 
 @router.post(
@@ -56,11 +61,13 @@ async def create_userSignup(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.post_userSignup(db, userSignup)
+        return await userService.post_userSignup(db, userSignup)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 @router.get(
     "/party/{id}", 
@@ -72,12 +79,14 @@ async def read_userPartyInto(
 ):
     try:
         userParty = schemas.userPartyRequest(party_id=id)
-        data = await crud.get_userParty(db, userParty)
+        data = await userService.get_userParty(db, userParty)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 
 @router.get(
@@ -91,9 +100,11 @@ async def read_userPartyInto(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_userPartyInto(party_id, db, page, pageSize)
+        data = await userService.get_userPartyInto(party_id, db, page, pageSize)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})

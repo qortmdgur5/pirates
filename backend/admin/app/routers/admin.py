@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Query, APIRouter
-from ..db import crud, database
+from ..db import adminService, database, errorLog
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,13 +22,14 @@ async def read_adminAccomodations(
     # token: str = Depends(oauth.verify_token)
 ):
     try:
-        data = await crud.get_adminAccomodations(db, isMostReviews, page, pageSize)
+        data = await adminService.get_adminAccomodations(db, isMostReviews, page, pageSize)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        print("Logging error:", error_message)
-        await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 @router.get(
     "/owners", 
@@ -41,12 +42,14 @@ async def read_adminOwners(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_adminOwners(db, isOldestOrders, page, pageSize)
+        data = await adminService.get_adminOwners(db, isOldestOrders, page, pageSize)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 @router.put(
     "/owner/auth/{id}", 
@@ -56,11 +59,13 @@ async def update_auth_adminOwners(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_auth_adminOwners(db, id)
+        return await adminService.put_auth_adminOwners(db, id)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 @router.put(
     "/owner/deny/{id}", 
@@ -70,8 +75,10 @@ async def update_deny_adminOwners(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_deny_adminOwners(db, id)
+        return await adminService.put_deny_adminOwners(db, id)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})

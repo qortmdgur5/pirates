@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Query, status, APIRouter
-from ..db import crud, database
+from ..db import errorLog, ownerService,  database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
@@ -21,11 +21,11 @@ async def post_signup_owner(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        await crud.create_signup_owner(db, data)
+        await ownerService.create_signup_owner(db, data)
         return {"msg": "ok"}
     except Exception as e:
             error_message = str(e)
-            await crud.log_error(db, error_message) 
+            await errorLog.log_error(db, error_message) 
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
       
@@ -37,11 +37,11 @@ async def post_duplicate_owner(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.create_duplicate_owner(db, username)
+        data = await ownerService.create_duplicate_owner(db, username)
         return data
     except Exception as e:
             error_message = str(e)
-            await crud.log_error(db, error_message) 
+            await errorLog.log_error(db, error_message) 
             raise HTTPException(status_code=500, detail={"msg": error_message})
 
   
@@ -54,7 +54,7 @@ async def login_owner(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        user, pw, accomodation_id = await crud.authenticate_owner(db, form_data.username, form_data.password)
+        user, pw, accomodation_id = await ownerService.authenticate_owner(db, form_data.username, form_data.password)
 
         if not user or not pw:
             raise HTTPException(
@@ -72,7 +72,7 @@ async def login_owner(
         return {"access_token": access_token, "token_type": "bearer"}
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message) 
+        await errorLog.log_error(db, error_message) 
         raise HTTPException(status_code=300, detail={"msg": error_message})
        
 @router.get(
@@ -86,11 +86,11 @@ async def read_ownerAccomodation(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_ownerAccomodation(id, db, page, pageSize)
+        data = await ownerService.get_ownerAccomodation(id, db, page, pageSize)
         return data
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  
+        await errorLog.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
@@ -102,10 +102,10 @@ async def create_ownerAccomdation(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.post_ownerAccomodation(db, accomodation)
+        return await ownerService.post_ownerAccomodation(db, accomodation)
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  
+        await errorLog.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
@@ -118,10 +118,10 @@ async def update_ownerAccomodation(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_ownerAccomodation(db, id, accomodation)
+        return await ownerService.put_ownerAccomodation(db, id, accomodation)
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  
+        await errorLog.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
@@ -138,11 +138,11 @@ async def read_ownermanagers(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_ownermanagers(id, db, isOldestOrders, page, pageSize)
+        data = await ownerService.get_ownermanagers(id, db, isOldestOrders, page, pageSize)
         return data
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  
+        await errorLog.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
 
@@ -154,10 +154,10 @@ async def update_auth_ownerOwners(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_auth_ownerOwners(db, id)
+        return await ownerService.put_auth_ownerOwners(db, id)
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  
+        await errorLog.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
@@ -169,8 +169,8 @@ async def update_deny_ownerOwners(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_deny_ownerOwners(db, id)
+        return await ownerService.put_deny_ownerOwners(db, id)
     except Exception as e:
         error_message = str(e)
-        await crud.log_error(db, error_message)  
+        await errorLog.log_error(db, error_message)  
         raise HTTPException(status_code=500, detail={"msg": error_message})

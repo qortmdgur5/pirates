@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Query, status, APIRouter
 from fastapi.responses import FileResponse
-from ..db import crud, database
+from ..db import errorLog, managerService, database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
@@ -22,12 +22,14 @@ async def read_managerGetAccomodation(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_managerGetAccomodation(db)
+        data = await managerService.get_managerGetAccomodation(db)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
     
 @router.post(
@@ -38,12 +40,14 @@ async def post_signup_mananger(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        await crud.create_signup_mananger(db, data)
+        await managerService.create_signup_mananger(db, data)
         return {"msg": "ok"}
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-            error_message = str(e)
-            await crud.log_error(db, error_message) 
-            raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
       
 @router.post(
@@ -54,12 +58,14 @@ async def post_duplicate_mananger(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.create_duplicate_mananger(db, username)
+        data = await managerService.create_duplicate_mananger(db, username)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-            error_message = str(e)
-            await crud.log_error(db, error_message) 
-            raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
   
 @router.post(
@@ -71,7 +77,7 @@ async def login_mananger(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        user, pw, accomodation_id = await crud.authenticate_mananger(db, form_data.username, form_data.password)
+        user, pw, accomodation_id = await managerService.authenticate_mananger(db, form_data.username, form_data.password)
 
         if not user or not pw:
             raise HTTPException(
@@ -87,10 +93,12 @@ async def login_mananger(
         })
         
         return {"access_token": access_token, "token_type": "bearer"}
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
     
 @router.get(
@@ -105,12 +113,14 @@ async def read_managerParties(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_managerParties(id, db, isOldestOrders, page, pageSize)
+        data = await managerService.get_managerParties(id, db, isOldestOrders, page, pageSize)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message) 
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 
 @router.post(
@@ -121,12 +131,13 @@ async def create_managerParty(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.post_managerParty(db, party)
+        return await managerService.post_managerParty(db, party)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
-    
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
 @router.put(
     "/party/{id}", 
@@ -137,11 +148,13 @@ async def update_managerParty(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_managerParty(db, id, party)
+        return await managerService.put_managerParty(db, id, party)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
 @router.delete(
     "/party/{id}", 
@@ -151,11 +164,13 @@ async def delete_managerParty(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.del_managerParty(db, id)
+        return await managerService.del_managerParty(db, id)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
 
 @router.get(
@@ -169,12 +184,14 @@ async def read_managerParty(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_managerParty(id, db, page, pageSize)
+        data = await managerService.get_managerParty(id, db, page, pageSize)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 
 @router.post(
@@ -186,11 +203,13 @@ async def create_managerParticipant(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.post_managerParticipant(db, party)
+        return await managerService.post_managerParticipant(db, party)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
     
 @router.delete(
@@ -201,12 +220,13 @@ async def delete_managerParticipant(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.del_managerParticipant(db, id)
+        return await managerService.del_managerParticipant(db, id)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
-    
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
 @router.put(
     "/partyOn/{id}", 
@@ -217,11 +237,13 @@ async def update_managerPartyOn(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_managerPartyOn(db, id, party)
+        return await managerService.put_managerPartyOn(db, id, party)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
     
 @router.get(
     "/accomodation/qr/{id}", 
@@ -231,7 +253,7 @@ async def read_managerAccomodationQR(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        file_path  = await crud.get_managerAccomodationQR(id, db)
+        file_path  = await managerService.get_managerAccomodationQR(id, db)
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
 
@@ -250,10 +272,12 @@ async def read_managerAccomodationQR(
         )
     except HTTPException as http_exc:
         raise http_exc 
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 
 @router.get(
@@ -266,12 +290,14 @@ async def read_managerPartyInfo(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await crud.get_userPartyInto(id, db, page, pageSize)
+        data = await managerService.get_userPartyInto(id, db, page, pageSize)
         return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
 
 
 @router.put(
@@ -282,8 +308,10 @@ async def update_managerPartyInfo(
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await crud.put_managerPartyInfo(db, data)
+        return await managerService.put_managerPartyInfo(db, data)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
     except Exception as e:
-        error_message = str(e)
-        await crud.log_error(db, error_message)  
-        raise HTTPException(status_code=500, detail={"msg": error_message})
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
