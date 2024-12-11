@@ -38,21 +38,13 @@ logger = logging.getLogger(__name__)
 
 class ExceptionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        db = database.SessionLocal() 
         try:
             response = await call_next(request)
             return response
         except Exception as e:
             logger.error(f"Unhandled exception: {str(e)}")
-            try:
-                await errorLog.log_error(db, str(e)) 
-            except Exception as log_error:
-                logger.error(f"Error logging exception: {str(log_error)}")
-            return JSONResponse(
-                status_code=500, content={"msg": "Internal server error"}
-            )
-        finally:
-            await db.close() 
+            return JSONResponse(status_code=500, content={"msg": "Internal server error"})
+
 
 app.add_middleware(ExceptionMiddleware)
 
