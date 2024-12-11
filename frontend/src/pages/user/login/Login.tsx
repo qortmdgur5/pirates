@@ -4,31 +4,36 @@ import { useState } from "react";
 function Login() {
   const [loading, setLoading] = useState(false);
 
-  // 카카오 로그인 버튼 클릭 시 API 호출
-  const handleLogin = async () => {
-    try {
-      setLoading(true);
-      
-      // 카카오 로그인 API 호출
-      const response = await fetch('/api/user/auth/kakao/login', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  // 카카오 로그인 버튼 클릭 시 API 호출 - api 호출로 하면 안됨 url 로 리다이렉트 바로 연결시켜줘야 하기에 일단 주석
+  // const handleLogin = async () => {
+  //   try {
+  //     setLoading(true);
 
-      if (response.ok) {
-        console.log('로그인 성공');
-        // 추가적인 응답 처리 로직이 필요하면 이곳에서 처리
-      } else {
-        alert('로그인에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('로그인 중 오류 발생:', error);
-      alert('로그인 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
+  //     // 카카오 로그인 API 호출
+  //     const response = await fetch("http://localhost:9000/user/auth/kakao/login/1", {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     if (response.ok) {
+  //       console.log("로그인 성공");
+  //       // 추가적인 응답 처리 로직이 필요하면 이곳에서 처리
+  //     } else {
+  //       alert("로그인에 실패했습니다.");
+  //     }
+  //   } catch (error) {
+  //     console.error("로그인 중 오류 발생:", error);
+  //     alert("로그인 중 오류가 발생했습니다.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  // 카카오 로그인 버튼 클릭 시 리디렉션
+  const handleLogin = () => {
+    // 백엔드 로그인 엔드포인트로 리디렉션
+    window.location.href = "http://localhost:9000/user/auth/kakao/login/1";
   };
 
   return (
@@ -55,7 +60,7 @@ function Login() {
               src="/src/assets/image/kakao_login_button.png"
               alt="kakao_login_img"
             />
-            <span>{loading ? '로그인 중...' : '카카오 로그인'}</span>
+            <span>{loading ? "로그인 중..." : "카카오 로그인"}</span>
           </button>
         </div>
       </div>
