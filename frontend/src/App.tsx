@@ -32,7 +32,7 @@ function App() {
         <Route path="/manager/party/userList" element={<ManagerPartyUserListPage />}></Route>
         <Route index path="/" element={<UserLoginPage />}></Route>
         <Route path="/user/signup" element={<UserSignupPage />} />
-        <Route path="/user/party" element={<UserPartyPage />} />
+        <Route path="/user/party/:jwt" element={<UserPartyPage />} />
         <Route path="/user/chat" element={<UserChatPage />} />
         <Route path="/user/chatRooms" element={<UserChatRoomsPage />} />
         <Route path="/user/party/userList" element={<UserPartyUserListPage />} />
