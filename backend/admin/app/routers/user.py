@@ -5,6 +5,7 @@ from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..oauth import kakaoLogin
 from fastapi.responses import RedirectResponse
+from typing import Optional
 
 router = APIRouter(
     prefix="/user",
@@ -13,10 +14,10 @@ router = APIRouter(
 
 ## user
 @router.get( 
-    "/auth/kakao/login/{id}", 
+    "/auth/kakao/login", 
     summary="카카오 로그인 API")
 async def kakao_login(
-    id: int,
+    id: Optional[str] = None,
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
@@ -35,15 +36,14 @@ async def kakao_login(
     summary="카카오 로그인 콜백 API")
 async def kakao_callback(
     code: str, 
-    state: str,
+    state: Optional[str] = None,
     db: AsyncSession = Depends(database.get_db)
     ):
     """
     code: 카카오가 리디렉션 URL로 전달하는 Authorization Code
     """
     try:
-        id = int(state) 
-        user_info = await kakaoLogin.kakao_callback_data(db, code, id)
+        user_info = await kakaoLogin.kakao_callback_data(db, code, state)
         return await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -95,12 +95,10 @@ async def read_userPartyInto(
     summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true 인 경우의 유저들 정보만 가져오기")
 async def read_userPartyInto( 
     party_id: int, 
-    page: int = Query(0),
-    pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await userService.get_userPartyInto(party_id, db, page, pageSize)
+        data = await userService.get_userPartyInfo(party_id, db)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))

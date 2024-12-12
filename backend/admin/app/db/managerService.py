@@ -511,30 +511,20 @@ async def get_managerAccomodationQR(
 
 async def get_managerPartyInfo(
     id: int,
-    db: AsyncSession,
-    page: int = 0,
-    pageSize: int = 10
+    db: AsyncSession
 ) -> List[dict]:
     try:
-        offset = max(page * pageSize, 0)
         query = (
             select(models.User, models.UserInfo, models.PartyUserInfo, models.Party)
             .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
             .join(models.Party, models.Party.id == models.User.party_id, isouter=True)
             .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
             .order_by(models.User.id.desc())
-            .offset(offset)  
-            .limit(pageSize)
         )
 
         result = await db.execute(query)
         users = result.all()
         
-        totalCount_query = (
-            select(func.count(models.User.id))
-            .filter(models.User.party_id == id)
-        )
-        totalCount = await db.scalar(totalCount_query)
         response = [
                 {
                     "id": user[0].id, 
@@ -546,7 +536,7 @@ async def get_managerPartyInfo(
             ]
         return {
             "data": response,
-            "totalCount": totalCount
+            "totalCount": 0
         }
     
     except SQLAlchemyError as e:

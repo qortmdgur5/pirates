@@ -18,120 +18,141 @@ def get_kst_now():
 async def post_userLoginKakaoCallback(
     db: AsyncSession, 
     user_info: dict,
-    accomodation_id: int
+    accomodation_id: Optional[str]
 ):
     try:
+        kst_now = get_kst_now()
+        current_time = kst_now.time()
+        today_kst = kst_now.date()
+        yesterday_kst = today_kst - timedelta(days=1)
+
+        if current_time >= time(hour=0) and current_time < time(hour=6):
+            query_date = yesterday_kst
+        else:
+            query_date = today_kst
+
         username = user_info.get("id")
         nickname = user_info.get("properties", {}).get("nickname")
 
-        existing_user = await db.execute(
-            select(models.User).where(models.User.username == username)
-        )
+        existing_user = await db.execute(select(models.User).where(models.User.username == username))
         user = existing_user.scalars().first()
+        
+        if accomodation_id in [None, "", "None"]:
+            if not user:
+                new_user = models.User(username=username, nickname=nickname, date=kst_now)
+                db.add(new_user)
+                await db.commit()
+                await db.refresh(new_user)
 
-        if not user:
-            kst_now = get_kst_now()  
-            current_time = kst_now.time()  
-            today_kst = kst_now.date()  
-            yesterday_kst = today_kst - timedelta(days=1) 
-
-            if current_time >= time(hour=0) and current_time < time(hour=6):
-                query_date = yesterday_kst  
-            else:
-                query_date = today_kst
-
-            query_accomodation = (
-                select(
-                    models.Party.id,
-                    )
-                    .where(
-                        and_(
-                            models.Party.accomodation_id == accomodation_id,
-                            models.Party.partyDate == query_date
-                        )
-                    )
-            )
-
-            result_party = await db.execute(query_accomodation)
-            party_id = result_party.scalar()
-
-
-            new_user = models.User(username=username, party_id=party_id, nickname=nickname)
-            db.add(new_user)
-            await db.commit()
-            await db.refresh(new_user)
-
-            query = (
-                select(
-                    models.User.id,
-                    )
-                    .where(models.User.username == username)
-                )
-
-            result = await db.execute(query)
-            users = result.all()
-
-            
-            grouped_data = [{
-                "id": new_user.id,
-                "party_id": party_id,
-                "userInfo": []
+                grouped_data = [{
+                    "id": new_user.id,
+                    "party_id": None,
+                    "userInfo": []
                 }]
 
-            return {
+                return {
+                        "data": grouped_data,
+                        "totalCount": 0
+                    }
+            else:
+                grouped_data = [{
+                        "id": user.id,
+                        "party_id": None,
+                        "userInfo": []
+                    }]
+
+                return {
                     "data": grouped_data,
                     "totalCount": 0
-                } 
-
+                }
+        
         else:
-            query = (
-            select(
-                models.User.id,
-                models.User.party_id,
-                models.UserInfo.user_id,
-                models.UserInfo.name,
-                models.UserInfo.phone,
-                models.UserInfo.gender,
-                models.UserInfo.job,
-                models.UserInfo.age,
-                models.UserInfo.mbti,
-                models.UserInfo.region,
-            )
-                .join(models.UserInfo, models.UserInfo.user_id == models.User.id)
-                .where(models.User.username == username)
-            )
+            if not user:
+                query_accomodation = select(models.Party.id).where(
+                    and_(
+                        models.Party.accomodation_id == accomodation_id,
+                        models.Party.partyDate == query_date
+                    )
+                )
 
-            result = await db.execute(query)
-            rows = result.all()
+                result_party = await db.execute(query_accomodation)
+                party_id = result_party.scalar()
 
-            grouped_data = []
-            rows_sorted = sorted(rows, key=itemgetter(0, 1))
-            for (user_id, party_id), group in groupby(rows_sorted, key=itemgetter(0, 1)): 
-                user_info_list = [
-                    {
-                        "name": info[3],  
-                        "phone": info[4],
-                        "gender": info[5],
-                        "job": info[6],
-                        "age": info[7],
-                        "mbti": info[8],
-                        "region": info[9],
-                    }
-                    for info in group
-                ]
-                grouped_data.append({
-                    "id": user_id,
+                new_user = models.User(username=username, party_id=party_id, nickname=nickname, date=kst_now)
+                db.add(new_user)
+                await db.commit()
+                await db.refresh(new_user)
+
+                grouped_data = [{
+                    "id": new_user.id,
                     "party_id": party_id,
-                    "userInfo": user_info_list,
-                })
-            return {
-                "data": grouped_data,
-                "totalCount": 0
-            } 
+                    "userInfo": []
+                }]
+
+                return {
+                    "data": grouped_data,
+                    "totalCount": 0
+                }
+            
+            else:
+
+                query = select(
+                    models.User.id,
+                    models.User.party_id,
+                    models.UserInfo.user_id,
+                    models.UserInfo.name,
+                    models.UserInfo.phone,
+                    models.UserInfo.gender,
+                    models.UserInfo.job,
+                    models.UserInfo.age,
+                    models.UserInfo.mbti,
+                    models.UserInfo.region,
+                ).join(models.UserInfo, models.UserInfo.user_id == models.User.id).where(models.User.id == user.id)
+
+                result = await db.execute(query)
+                user_info = result.all()
+
+                if not user_info:
+                    grouped_data = [{
+                        "id": user.id,
+                        "party_id": user.party_id,
+                        "userInfo": []
+                    }]
+
+                    return {
+                        "data": grouped_data,
+                        "totalCount": 0
+                    }
+                else:
+                    grouped_data = []
+                    rows_sorted = sorted(user_info, key=itemgetter(0, 1))
+                    for (user_id, party_id), group in groupby(rows_sorted, key=itemgetter(0, 1)):
+                        user_info_list = [
+                            {
+                                "name": info[3],
+                                "phone": info[4],
+                                "gender": info[5],
+                                "job": info[6],
+                                "age": info[7],
+                                "mbti": info[8],
+                                "region": info[9],
+                            }
+                            for info in group
+                        ]
+                        grouped_data.append({
+                            "id": user_id,
+                            "party_id": party_id,
+                            "userInfo": user_info_list,
+                        })
+
+                return {
+                    "data": grouped_data,
+                    "totalCount": 0
+                }
 
     except SQLAlchemyError as e:
         error_message = str(e)
-        print("SQLAlchemyError:", error_message) 
+        print("SQLAlchemyError:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail="Database Error")
     except ValueError as e:
@@ -144,6 +165,11 @@ async def post_userLoginKakaoCallback(
         print("Exception:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+async def get_user_info_for_grouped_data(user_info):
+    """사용자 정보를 그룹화하여 반환"""
+    
 
 
 async def post_userSignup(
@@ -247,14 +273,11 @@ async def get_userParty(
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
-async def get_userPartyInto(
+async def get_userPartyInfo(
     id: int,
-    db: AsyncSession,
-    page: int = 0,
-    pageSize: int = 10
+    db: AsyncSession
 ) -> List[dict]:
     try:
-        offset = max(page * pageSize, 0)
         query = (
             select(models.User, models.UserInfo, models.PartyUserInfo, models.Party)
             .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
@@ -262,18 +285,11 @@ async def get_userPartyInto(
             .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
             .filter(models.User.party_id == id, models.Party.partyOn == True)
             .order_by(models.User.id.desc())
-            .offset(offset)  
-            .limit(pageSize)
         )
 
         result = await db.execute(query)
         users = result.all()
         
-        totalCount_query = (
-            select(func.count(models.User.id))
-            .filter(models.User.party_id == id)
-        )
-        totalCount = await db.scalar(totalCount_query)
         response = [
                 {
                     "id": user[0].id, 
@@ -285,7 +301,7 @@ async def get_userPartyInto(
             ]
         return {
             "data": response,
-            "totalCount": totalCount
+            "totalCount": 0
         }
     
     except SQLAlchemyError as e:

@@ -285,12 +285,10 @@ async def read_managerAccomodationQR(
     summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true, false 모든 유저들 정보 가져오기")
 async def read_managerPartyInfo(
     id: int, 
-    page: int = Query(0),
-    pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await managerService.get_userPartyInto(id, db, page, pageSize)
+        data = await managerService.get_managerPartyInfo(id, db)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))
