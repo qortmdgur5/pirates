@@ -18,7 +18,7 @@ interface Accommodation {
 function ManageHouse() {
   const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null);
   const ownerId = 1; // 로그인된 사장님 id 값
-  const accomodationId = 1; // 수정할 숙소 id 값 
+  const accomodationId = 1; // 수정할 숙소 id 값
 
   const managerMenuTabs = [
     {
@@ -77,11 +77,7 @@ function ManageHouse() {
       <Header />
       <div className={styles.container}>
         <div className={styles.house_manage_left_box}>
-          <ProfileBox
-            name="매니저님"
-            imgSrc="/src/assets/image/man_icon_img.png"
-            userId="sky1004"
-          />
+          <ProfileBox />
           <MenuBox menuTabs={managerMenuTabs} />
         </div>
         <div className={styles.manage_right_box}>

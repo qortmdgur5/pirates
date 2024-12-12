@@ -164,11 +164,7 @@ function ManageParty() {
       <Header />
       <div className={styles.container}>
         <div className={styles.house_manage_left_box}>
-          <ProfileBox
-            name="매니저님"
-            imgSrc="/src/assets/image/woman_icon_img.png"
-            userId="sky1004"
-          />
+          <ProfileBox />
           <MenuBox menuTabs={managerMenuTabs} />
         </div>
         <div className={styles.house_manage_right_box}>

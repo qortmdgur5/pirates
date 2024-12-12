@@ -71,7 +71,7 @@ function Login() {
       const accommodationId = decoded.accommodation_id || null;
 
       // Recoil 상태 업데이트
-      setAuthAtom({ userId: userId, role: userRole, token: token }); // 사용자 정보 저장
+      setAuthAtom({ userId: userId, role: userRole, token: token, username: username }); // 사용자 정보 저장
       setAccomoAtom({ accomodation_id: accommodationId }); // 숙소 ID 저장
 
       isOwner

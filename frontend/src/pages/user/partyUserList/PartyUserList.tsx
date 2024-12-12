@@ -19,7 +19,7 @@ interface UserPartyInfo {
 
 function PartyUserList() {
   const location = useLocation();
-  const { guestHouseName } = location.state || {}; // state에서 데이터 추출
+  const { guestHouseName } = location.state || {}; // /user/party 페이지에서 useNavigate state 로 데이터 추출
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
   const user = useRecoilValue(userAtom); // userAtom에서 현재 로그인된 사용자 정보 가져오기
   const navigate = useNavigate();
