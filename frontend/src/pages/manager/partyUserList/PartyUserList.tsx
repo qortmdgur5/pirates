@@ -40,12 +40,14 @@ function PartyUserList() {
           return;
         }
 
-        const response = await fetch(`/manager/partyInfo/${partyId}`);
+        const response = await fetch(`/api/manager/partyInfo/${partyId}`);
         if (!response.ok) {
           throw new Error("데이터를 가져오는 데 실패했습니다.");
         }
 
-        const data: UserPartyInfo[] = await response.json();
+        const responseData = await response.json(); // 응답을 파싱
+        const data: UserPartyInfo[] = responseData.data; // data 객체 내의 data 프로퍼티로 접근
+        console.log(data);
         setPartyUsers(data);
       } catch (error) {
         console.error("API 호출 에러:", error);

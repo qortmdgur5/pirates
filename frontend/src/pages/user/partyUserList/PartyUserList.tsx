@@ -39,7 +39,7 @@ function PartyUserList() {
           return;
         }
 
-        const response = await fetch(`/user/partyInfo/${partyId}`);
+        const response = await fetch(`/api/user/partyInfo/${partyId}`);
         if (!response.ok) {
           throw new Error("데이터를 가져오는 데 실패했습니다.");
         }
