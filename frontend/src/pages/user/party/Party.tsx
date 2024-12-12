@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigation } from "../../../utils/navigation";
 import axios from "axios"; // API 호출을 위한 axios 사용
+import { useNavigate } from "react-router-dom";
 
 // 파티 정보 타입 정의
 interface PartyInfo {
@@ -26,6 +27,7 @@ function Party() {
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 추가
   const [error, setError] = useState<string | null>(null); // 에러 상태 추가
   const navigate = useNavigation(); // 네비게이션 함수 사용
+  const navigation = useNavigate();
 
   useEffect(() => {
     // 실제 JWT 토큰을 받아오는 로직을 작성해야 합니다.
@@ -143,7 +145,9 @@ function Party() {
                 className={styles.house_party_button}
                 type="button"
                 onClick={() =>
-                  navigate(`/user/party/userList/${user?.party_id}`)
+                  navigation(`/user/party/userList/${user?.party_id}`, {
+                    state: { guestHouseName: partyInfo.name },
+                  })
                 }
               >
                 파티방 참여

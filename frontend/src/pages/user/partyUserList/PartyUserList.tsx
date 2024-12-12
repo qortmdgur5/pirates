@@ -1,11 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import BackButton from "../../../components/common/backButton/BackButton";
 import HomeButton from "../../../components/common/homeButton/HomeButton";
 import HouseNameAndDate from "../../../components/common/houseNameAndDate/HouseNameAndDate";
 import TeamDropDown from "../../../components/common/teamDropDown/TeamDropDown";
 import UserListCard from "./components/UserListCard";
 import styles from "./styles/partyUserList.module.scss";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
 
@@ -18,6 +18,8 @@ interface UserPartyInfo {
 }
 
 function PartyUserList() {
+  const location = useLocation();
+  const { guestHouseName } = location.state || {}; // state에서 데이터 추출
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
   const user = useRecoilValue(userAtom); // userAtom에서 현재 로그인된 사용자 정보 가져오기
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ function PartyUserList() {
   return (
     <div className={styles.container}>
       <div className={styles.container_contents}>
-        <HouseNameAndDate guestHouseName={"솔 게스트 하우스"} />
+        <HouseNameAndDate guestHouseName={guestHouseName} />
         <div className={styles.home_and_back_box}>
           <HomeButton />
           <BackButton />
