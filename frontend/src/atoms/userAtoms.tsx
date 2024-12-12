@@ -12,6 +12,7 @@ export interface UserInfo {
 }
 
 export interface User {
+  token: string;
   id: number;
   party_id: number | null;
   userInfo: UserInfo | null;

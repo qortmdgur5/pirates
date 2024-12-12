@@ -35,7 +35,7 @@ function App() {
         <Route path="/user/party/:jwt" element={<UserPartyPage />} />
         <Route path="/user/chat" element={<UserChatPage />} />
         <Route path="/user/chatRooms" element={<UserChatRoomsPage />} />
-        <Route path="/user/party/userList" element={<UserPartyUserListPage />} />
+        <Route path="/user/party/userList/:party_id" element={<UserPartyUserListPage />} />
       </Routes>
     </BrowserRouter>
   );

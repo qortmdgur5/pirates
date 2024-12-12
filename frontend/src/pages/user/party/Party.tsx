@@ -47,6 +47,7 @@ function Party() {
 
       // user 상태 설정
       setUser({
+        token: jwt,
         id: decodedUser.id,
         party_id: decodedUser.party_id,
         userInfo: decodedUser.userInfo,
@@ -97,60 +98,69 @@ function Party() {
           guestHouseName={partyInfo ? partyInfo.name : "게스트 하우스"}
         />
         <HomeButton />
-
         {partyInfo ? (
-          <div className={styles.house_info_box}>
-            <div className={styles.house_info_lane}>
-              <div className={styles.house_info_left}>소개</div>
-              <div className={styles.house_info_right}>
-                {partyInfo.introduction}
+          <>
+            <div className={styles.house_info_box}>
+              <div className={styles.house_info_lane}>
+                <div className={styles.house_info_left}>소개</div>
+                <div className={styles.house_info_right}>
+                  {partyInfo.introduction}
+                </div>
+              </div>
+              <div className={styles.house_info_lane}>
+                <div className={styles.house_info_left}>주소</div>
+                <div className={styles.house_info_right}>
+                  {partyInfo.address}
+                </div>
+              </div>
+              <div className={styles.house_info_lane}>
+                <div className={styles.house_info_left}>전화번호</div>
+                <div className={styles.house_info_right}>
+                  {partyInfo.number}
+                </div>
+              </div>
+              <div className={styles.house_info_lane}>
+                <div className={styles.house_info_left}>사장님 전화번호</div>
+                <div className={styles.house_info_right}>
+                  {partyInfo.phoneNumber}
+                </div>
+              </div>
+              <div className={styles.house_info_lane}>
+                <div className={styles.house_info_left}>평점</div>
+                <div className={styles.house_info_right}>
+                  ⭐ {partyInfo.score}
+                </div>
+              </div>
+              <div className={styles.house_info_lane}>
+                <div className={styles.house_info_left}>짝 매칭 카운트</div>
+                <div className={styles.house_info_right}>
+                  ❤️ {partyInfo.loveCount}
+                </div>
               </div>
             </div>
-            <div className={styles.house_info_lane}>
-              <div className={styles.house_info_left}>주소</div>
-              <div className={styles.house_info_right}>{partyInfo.address}</div>
+            <div className={styles.button_box}>
+              <button
+                className={styles.house_party_button}
+                type="button"
+                onClick={() =>
+                  navigate(`/user/party/userList/${user?.party_id}`)
+                }
+              >
+                파티방 참여
+              </button>
+              <button className={styles.personal_chat_button} type="button">
+                개인 채팅방
+              </button>
+              <button className={styles.love_button} type="button">
+                짝 매칭
+              </button>
             </div>
-            <div className={styles.house_info_lane}>
-              <div className={styles.house_info_left}>전화번호</div>
-              <div className={styles.house_info_right}>{partyInfo.number}</div>
-            </div>
-            <div className={styles.house_info_lane}>
-              <div className={styles.house_info_left}>사장님 전화번호</div>
-              <div className={styles.house_info_right}>
-                {partyInfo.phoneNumber}
-              </div>
-            </div>
-            <div className={styles.house_info_lane}>
-              <div className={styles.house_info_left}>평점</div>
-              <div className={styles.house_info_right}>
-                ⭐ {partyInfo.score}
-              </div>
-            </div>
-            <div className={styles.house_info_lane}>
-              <div className={styles.house_info_left}>짝 매칭 카운트</div>
-              <div className={styles.house_info_right}>
-                ❤️ {partyInfo.loveCount}
-              </div>
-            </div>
-          </div>
+          </>
         ) : (
           <div className={styles.noPartyInfo}>
-            <p>
-              파티가 오픈되지 않았거나, 오픈되었다면 QR 을 찍어주시기 바랍니다.
-            </p>
+            <p>파티에 입장하셨다면 QR 을 찍어주시기 바랍니다.</p>
           </div>
         )}
-        <div className={styles.button_box}>
-          <button className={styles.house_party_button} type="button">
-            파티방 참여
-          </button>
-          <button className={styles.personal_chat_button} type="button">
-            개인 채팅방
-          </button>
-          <button className={styles.love_button} type="button">
-            짝 매칭
-          </button>
-        </div>
       </div>
     </div>
   );
