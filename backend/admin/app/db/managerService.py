@@ -557,9 +557,10 @@ async def get_managerPartyInfo(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-async def put_managerPartyInfo(db: AsyncSession, data: schemas.managerPartyUserInfoDatas):
+async def put_managerPartyUserInfo(db: AsyncSession, data: schemas.managerPartyUserInfoDatas):
     try:
         updated_count = 0
+        inserted_count = 0
 
         for item in data.data:
             user_id, team = item.id, item.team
@@ -571,20 +572,21 @@ async def put_managerPartyInfo(db: AsyncSession, data: schemas.managerPartyUserI
             db_party = result.scalar_one_or_none()
 
             if db_party is None:
-                print(f"No record found for user_id={user_id}. Skipping.")
-                continue
-
-            if db_party.team != team:
-                print(f"Updating team for user_id={user_id} from {db_party.team} to {team}.")
+                new_party_user_info = models.PartyUserInfo(user_id=user_id, team=team, partyOn=True)
+                db.add(new_party_user_info)
+                await db.commit()
+                await db.refresh(new_party_user_info)
+                inserted_count += 1
+            else:
                 db_party.team = team
                 updated_count += 1
-
-            await db.commit()
-            await db.refresh(db_party)
+                await db.commit()
+                await db.refresh(db_party)
 
         return {
             "msg": "ok",
             "updated_count": updated_count,
+            "inserted_count": inserted_count,
         }
         
     except SQLAlchemyError as e:

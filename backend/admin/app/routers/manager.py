@@ -299,14 +299,14 @@ async def read_managerPartyInfo(
 
 
 @router.put(
-    "/partyInfo", 
+    "/partyUserInfo", 
     summary="매니저용 파티 유저 리스트 페이지 - 유저의 PartyUserInfo 테이블 team 조 배정 및 수정 API")
-async def update_managerPartyInfo(
+async def update_managerPartyUserInfo(
     data: schemas.managerPartyUserInfoDatas,
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        return await managerService.put_managerPartyInfo(db, data)
+        return await managerService.put_managerPartyUserInfo(db, data)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=400, detail={"msg": str(e)})
