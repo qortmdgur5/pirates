@@ -198,7 +198,7 @@ class userPartyIntoResponses(BaseModel):
     gender: bool
     team: int 
 
-class userPartyIntoResponse(BaseModel):
+class userPartyInfoResponse(BaseModel):
     data: List[userPartyIntoResponses]
     totalCount: int
     

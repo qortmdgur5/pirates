@@ -73,7 +73,7 @@ async def create_userSignup(
     "/party/{id}", 
     response_model=schemas.userPartyResponse, 
     summary="게스트 하우스의 당일 파티정보 가져오기 API")
-async def read_userPartyInto( 
+async def read_userPartyInfo( 
     id: int,
     db: AsyncSession = Depends(database.get_db)
 ):
@@ -90,15 +90,15 @@ async def read_userPartyInto(
 
 
 @router.get(
-    "/partyInfo/{party_id}", 
-    response_model=schemas.userPartyIntoResponse, 
+    "/partyInfo/{id}", 
+    response_model=schemas.userPartyInfoResponse, 
     summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true 인 경우의 유저들 정보만 가져오기")
-async def read_userPartyInto( 
-    party_id: int, 
+async def read_userPartyInfo( 
+    id: int, 
     db: AsyncSession = Depends(database.get_db)
 ):
     try:
-        data = await userService.get_userPartyInfo(party_id, db)
+        data = await userService.get_userPartyInfo(id, db)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))

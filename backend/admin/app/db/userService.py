@@ -294,7 +294,7 @@ async def get_userPartyInfo(
                 {
                     "id": user[0].id, 
                     "name": user[0].username,
-                    "gender": user[1].gender if user[1] else None,
+                    "gender": user[1].gender if user[1] else True,
                     "team": user[2].team if user[2] else None
                 }
                 for user in users

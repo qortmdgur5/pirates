@@ -519,6 +519,7 @@ async def get_managerPartyInfo(
             .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
             .join(models.Party, models.Party.id == models.User.party_id, isouter=True)
             .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
+            .filter(models.User.party_id == id)
             .order_by(models.User.id.desc())
         )
 
@@ -529,7 +530,7 @@ async def get_managerPartyInfo(
                 {
                     "id": user[0].id, 
                     "name": user[0].username,
-                    "gender": user[1].gender if user[1] else None,
+                    "gender": user[1].gender if user[1] else True,
                     "team": user[2].team if user[2] else None
                 }
                 for user in users
