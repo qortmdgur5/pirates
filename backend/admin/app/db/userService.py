@@ -283,7 +283,7 @@ async def get_userPartyInfo(
             .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
             .join(models.Party, models.Party.id == models.User.party_id, isouter=True)
             .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
-            .filter(models.User.party_id == id, models.Party.partyOn == True)
+            .filter(models.User.party_id == id, models.PartyUserInfo.partyOn == True)
             .order_by(models.User.id.desc())
         )
 
