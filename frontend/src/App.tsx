@@ -27,7 +27,7 @@ function App() {
         <Route path="/owner/managerApprove" element={<ManagerApprovePage />}></Route>
         <Route path="/manager/login" element={<ManagerLoginPage />}></Route>
         <Route path="/manager/manageParty" element={<ManagePartyPage />}></Route>
-        <Route path="/manager/managePartyDetail/:id" element={<ManagePartyDetailPage />}></Route>
+        <Route path="/manager/managePartyDetail" element={<ManagePartyDetailPage />}></Route>
         <Route path="/manager/signup" element={<ManagerSignupPage />}></Route>
         <Route path="/manager/party/userList" element={<ManagerPartyUserListPage />}></Route>
         <Route index path="/" element={<UserLoginPage />}></Route>

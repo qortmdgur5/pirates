@@ -1,7 +1,7 @@
 import styles from "./styles/houseNameAndDate.module.scss";
 
 interface Props {
-  guestHouseName: string;
+  guestHouseName: string | null;
   date?: string; // date 프롭스는 선택적으로 전달받음
 }
 

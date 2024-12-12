@@ -7,7 +7,7 @@ import ReservationStatusTable from "./components/ReservationStatusTable";
 import styles from "./styles/managePartyDetail.module.scss";
 import Modal from "react-modal";
 import ParticipantModalTable from "./components/ParticipantModalTable";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
@@ -28,9 +28,9 @@ interface ParticipantAPIResponse {
 }
 
 function ManagePartyDetail() {
-  const { id } = useParams<{ id: string }>(); // Party PK
-  const partyId = Number(id); // id를 number로 변환하여 사용
   const { state } = useLocation(); // 전달된 state를 가져옵니다, 파티방 상세페이지 예약현황 데이터, 이전 manageParty 페이지에서 넘어온 데이터
+  const partyId = state.id; // Party PK
+  const partyDate = state.partyDate; // Party 날짜
   const [participants, setParticipants] = useState<Participant[]>([]); // 참석자 명단 데이터
   const [participantCount, setParticipantCount] = useState<number>(
     state.participant
@@ -39,6 +39,7 @@ function ManagePartyDetail() {
   const [page, setPage] = useState<number>(0); // 페이지 상태
   const [pageSize, setPageSize] = useState<number>(10); // 페이지 사이즈 상태 기본 10 사이즈로 설정
   const [totalCount, setTotalCount] = useState<number>(0);
+  const navigate = useNavigate();
   // 메뉴 탭 데이터
   const managerMenuTabs = [
     { text: "파티방 관리", isActive: true, path: "/manager/manageParty" },
@@ -84,7 +85,7 @@ function ManagePartyDetail() {
 
   const fetchParticipants = () => {
     axios
-      .get(`/api/manager/party/${id}`, { params: { page, pageSize } })
+      .get(`/api/manager/party/${partyId}`, { params: { page, pageSize } })
       .then((response) => {
         const filteredData = response.data.data.map((item: Participant) => ({
           id: item.id,
@@ -103,7 +104,7 @@ function ManagePartyDetail() {
 
   useEffect(() => {
     fetchParticipants();
-  }, [id, page, pageSize, totalCount]);
+  }, [partyId, page, pageSize, totalCount]);
 
   return (
     <>
@@ -164,7 +165,15 @@ function ManagePartyDetail() {
                 <button className={styles.party_delete_button} type="button">
                   파티방 삭제
                 </button>
-                <button className={styles.party_enter_button} type="button">
+                <button
+                  className={styles.party_enter_button}
+                  type="button"
+                  onClick={() =>
+                    navigate(`/manager/party/userList`, {
+                      state: { partyId, partyDate },
+                    })
+                  }
+                >
                   파티방 입장
                 </button>
               </div>

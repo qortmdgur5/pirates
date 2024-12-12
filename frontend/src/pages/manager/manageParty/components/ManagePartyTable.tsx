@@ -58,7 +58,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
 
   // 행 클릭 시 상세 페이지로 이동
   const handleRowClick = (item: Party) => {
-    navigate(`/manager/managePartyDetail/${item.id}`, { state: item });
+    navigate(`/manager/managePartyDetail`, { state: item });
   };
 
   return (
