@@ -65,14 +65,22 @@ function Login() {
 
       const userRole = decoded.role;
       const userId =
-        userRole === "owner"
+        userRole === "ROLE_AUTH_OWNER" || userRole === "ROLE_NOTAUTH_OWNER"
           ? decoded.owner_id ?? null
           : decoded.manager_id ?? null;
       const accommodationId = decoded.accommodation_id || null;
 
       // Recoil 상태 업데이트
-      setAuthAtom({ userId: userId, role: userRole, token: token, username: username }); // 사용자 정보 저장
-      setAccomoAtom({ accomodation_id: accommodationId }); // 숙소 ID 저장
+      setAuthAtom({
+        userId: userId,
+        role: userRole,
+        token: token,
+        username: username,
+      }); // 사용자 정보 저장
+      setAccomoAtom({
+        accomodation_id: accommodationId,
+        accomodation_name: null,
+      }); // 숙소 ID 저장
 
       isOwner
         ? navigation("/owner/manageHouse")

@@ -145,7 +145,7 @@ function Signup() {
       const response = await axios.post(apiUrl, signupData);
       console.log("회원가입 성공", response.data);
       alert("회원가입이 완료되었습니다.");
-      navigateTo("/"); // 회원가입 완료 후 메인 페이지로 리다이렉트
+      navigateTo("/manager/login"); // 회원가입 완료 후 사장 및 매니저 로그인 페이지 리다이렉트
     } catch (error) {
       console.error("회원가입 오류:", error);
       alert("회원가입에 실패했습니다. 다시 시도해주세요.");

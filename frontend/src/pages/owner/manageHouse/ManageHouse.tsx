@@ -5,6 +5,8 @@ import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import HouseInfoBox from "./components/HouseInfoBox";
 import styles from "./styles/manageHouse.module.scss";
+import { useRecoilState } from "recoil";
+import { accomoAtoms } from "../../../atoms/authAtoms";
 
 interface Accommodation {
   name: string;
@@ -17,8 +19,10 @@ interface Accommodation {
 
 function ManageHouse() {
   const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null);
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const [accomoAtom, setAccomoAtom] = useRecoilState(accomoAtoms); // 숙소 정보 상태
   const ownerId = 1; // 로그인된 사장님 id 값
-  const accomodationId = 1; // 수정할 숙소 id 값
+  const accomodationId = 31; // 수정할 숙소 id 값
 
   const managerMenuTabs = [
     {
@@ -37,16 +41,22 @@ function ManageHouse() {
 
   const fetchAccommodation = async (id: number) => {
     try {
-      const response = await axios.get<Accommodation[]>(
+      const response = await axios.get<{ data: Accommodation[] }>(
         `/api/owner/accomodation/${id}`,
         {
           params: { skip: 0, limit: 10 },
           headers: { accept: "application/json" },
         }
       );
-      setHouseInfo(response.data[0]);
+      setHouseInfo(response.data.data[0]);
+      setAccomoAtom((prevState) => ({
+        ...prevState,
+        accomodation_name: response.data.data[0].name, // 이름만 업데이트
+      }));
     } catch (error) {
       console.error("데이터를 불러오지 못했습니다.", error);
+    } finally {
+      setLoading(false); // 로딩 상태 해제
     }
   };
 
@@ -83,11 +93,15 @@ function ManageHouse() {
         <div className={styles.manage_right_box}>
           <div className={styles.manage_container}>
             <p className={styles.manage_title}>게스트하우스 관리</p>
-            <HouseInfoBox
-              houseInfo={houseInfo}
-              onSave={saveAccommodation}
-              onUpdate={updateAccommodation}
-            />
+            {loading ? (
+              <p>로딩 중...</p>
+            ) : (
+              <HouseInfoBox
+                houseInfo={houseInfo}
+                onSave={saveAccommodation}
+                onUpdate={updateAccommodation}
+              />
+            )}
           </div>
         </div>
       </div>

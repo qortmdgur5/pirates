@@ -29,11 +29,7 @@ function HouseManage() {
       <Header />
       <div className={styles.container}>
         <div className={styles.house_manage_left_box}>
-          <ProfileBox
-            name="관리자님"
-            imgSrc="/src/assets/image/woman_icon_img.png"
-            userId="Pirates"
-          />
+          <ProfileBox />
           <MenuBox menuTabs={adminMenuTabs} />
         </div>
         <div className={styles.house_manage_right_box}>

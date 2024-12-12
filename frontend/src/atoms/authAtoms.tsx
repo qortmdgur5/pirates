@@ -19,13 +19,13 @@ export const authAtoms = atom<AuthState>({
 
 interface AccomoState {
   accomodation_id: number | null;
-  // accomodation_name: string | null;
+  accomodation_name: string | null;
 }
 
 export const accomoAtoms = atom<AccomoState>({
   key: "accomoAtoms",
   default: {
     accomodation_id: null,
-    // accomodation_name: null,
+    accomodation_name: null,
   },
 });
