@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from fastapi import Depends, HTTPException, Query, APIRouter
+from fastapi import Depends, HTTPException, APIRouter
 from ..db import errorLog, userService, database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..oauth import kakaoLogin
+from ..oauth import kakaoLogin, oauth
 from fastapi.responses import RedirectResponse
 from typing import Optional
 
@@ -44,7 +44,9 @@ async def kakao_callback(
     """
     try:
         user_info = await kakaoLogin.kakao_callback_data(db, code, state)
-        return await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
+        grouped_data = await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
+        access_token = oauth.create_access_token(data={"data": grouped_data})
+        return {"access_token": access_token, "token_type": "bearer"}
     except ValueError as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=400, detail={"msg": str(e)})

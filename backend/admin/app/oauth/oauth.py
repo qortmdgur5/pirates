@@ -15,12 +15,12 @@ TOKEN = os.getenv("TOKEN")
 def create_access_token(data: dict):
     try:
         to_encode = data.copy()
-        expire = format_dates(datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)) 
+        expire = format_dates(datetime.now() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))) 
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
     except Exception as e:
-        raise HTTPException(status_code=500, detail={"msg": "fail"})
+        raise HTTPException(status_code=500, detail={"msg": "fail", "error": str(e)})
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=TOKEN)
 
