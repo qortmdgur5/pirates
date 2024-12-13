@@ -11,6 +11,7 @@ interface Party {
   partyOpen: boolean;
   partyTime: string;
   participant: number;
+  team: number;
 }
 
 interface PartyAPIResponse {
@@ -34,7 +35,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   const accomodationId = 1; // 임시 숙소 id
   const navigate = useNavigate(); // navigate 추가
 
-  // 매니저 리스트 가져오기 API
+  // 파티 리스트 가져오기 API
   useEffect(() => {
     const fetchData = async (id: number) => {
       try {
@@ -46,8 +47,8 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
           }
         );
         setData(response.data.data);
+        console.log(response.data.data);
         setTotalCount(response.data.totalCount);
-        console.log(totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
       }

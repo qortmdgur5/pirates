@@ -83,6 +83,7 @@ function ManageParty() {
   const [partyOpen, setPartyOpen] = useState<boolean>(false);
   const [partyTime, setPartyTime] = useState<string>("20-00-00");
   const [number, setNumber] = useState<number>(100);
+  const [team, setTeam] = useState<number>(0);
 
   // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState(false);
@@ -103,6 +104,7 @@ function ManageParty() {
       partyOpen,
       partyTime,
       number,
+      team,
     };
 
     try {
@@ -348,6 +350,19 @@ function ManageParty() {
                         type="number"
                         value={number} // 상태를 input 값에 연결
                         onChange={(e) => setNumber(Number(e.target.value))} // 입력값을 숫자로 변환 후 상태 업데이트
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.party_register_form_input_box}>
+                    <p className={styles.party_register_form_input_left}>
+                      팀 OR 테이블
+                    </p>
+                    <div className={styles.party_register_form_input_right}>
+                      <input
+                        className={styles.party_register_max_input}
+                        type="number"
+                        value={team} // 상태를 input 값에 연결
+                        onChange={(e) => setTeam(Number(e.target.value))} // 입력값을 숫자로 변환 후 상태 업데이트
                       />
                     </div>
                   </div>

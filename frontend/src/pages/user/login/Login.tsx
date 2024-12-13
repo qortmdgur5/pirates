@@ -33,7 +33,7 @@ function Login() {
   // 카카오 로그인 버튼 클릭 시 리디렉션
   const handleLogin = () => {
     // 백엔드 로그인 엔드포인트로 리디렉션
-    window.location.href = "http://localhost:9000/user/auth/kakao/login/1";
+    window.location.href = "http://localhost:9000/user/auth/kakao/login?id=1";
   };
 
   return (

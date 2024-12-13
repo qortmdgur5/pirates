@@ -31,6 +31,7 @@ function ManagePartyDetail() {
   const { state } = useLocation(); // 전달된 state를 가져옵니다, 파티방 상세페이지 예약현황 데이터, 이전 manageParty 페이지에서 넘어온 데이터
   const partyId = state.id; // Party PK
   const partyDate = state.partyDate; // Party 날짜
+  const team = state.team; // team 데이터
   const [participants, setParticipants] = useState<Participant[]>([]); // 참석자 명단 데이터
   const [participantCount, setParticipantCount] = useState<number>(
     state.participant
@@ -170,7 +171,7 @@ function ManagePartyDetail() {
                   type="button"
                   onClick={() =>
                     navigate(`/manager/party/userList`, {
-                      state: { partyId, partyDate },
+                      state: { partyId, partyDate, team },
                     })
                   }
                 >
