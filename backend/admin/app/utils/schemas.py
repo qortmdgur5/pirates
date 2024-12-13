@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -79,6 +78,7 @@ class managerParties(BaseModel):
     partyOpen: bool
     partyTime: str
     participant: int
+    team: int
 
 class managerParty(BaseModel):
     data: List[managerParties]    
@@ -90,12 +90,14 @@ class managerPartiesPost(BaseModel):
     number: int
     partyOpen: bool
     partyTime: str
+    team: int
        
 class managerPartyUpdate(BaseModel):
     partyDate: str
     number: int
     partyOpen: bool
     partyTime: str
+    team: int
     
 class managerParticipant(BaseModel):
     id: int

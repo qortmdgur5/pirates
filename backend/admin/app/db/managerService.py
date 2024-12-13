@@ -164,7 +164,8 @@ async def get_managerParties(
                 models.Party.number,
                 models.Party.partyOpen,
                 models.Party.partyTime,
-                func.count(models.Participant.id).label("participant_count")
+                func.count(models.Participant.id).label("participant_count"),
+                func.coalesce(models.Party.team, 0).label("team"),
             )
             .join(models.Participant, models.Party.id == models.Participant.party_id, isouter=True)
             .filter(models.Party.accomodation_id == id)
@@ -190,7 +191,8 @@ async def get_managerParties(
                 "number": managerParty.number,
                 "partyOpen": managerParty.partyOpen,
                 "partyTime": format_party_time(managerParty.partyTime),
-                "participant": managerParty.participant_count  
+                "participant": managerParty.participant_count,
+                "team": managerParty.team
             }
             for managerParty in managerParties
         ]
@@ -228,7 +230,8 @@ async def post_managerParty(db: AsyncSession, party: schemas.managerPartiesPost)
             partyDate=formatted_date,
             number=party.number,
             partyOpen=party.partyOpen,
-            partyTime=formatted_time
+            partyTime=formatted_time,
+            team=party.team
         )
         db.add(db_party)
         await db.commit()
@@ -267,6 +270,7 @@ async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerPart
             db_party.number = party.number
             db_party.partyOpen = party.partyOpen
             db_party.partyTime = formatted_time
+            db_party.team = party.team
             await db.commit()
             await db.refresh(db_party)
             return {"msg": "ok"}  

@@ -69,6 +69,7 @@ class Party(Base):
     partyTime = Column(Time, default=func.now())
     number = Column(Integer)
     partyOn = Column(Integer)
+    team = Column(Integer)
     partys = relationship("Accomodation", back_populates="party") 
     participant = relationship("Participant", back_populates="participants") 
     users = relationship("User", back_populates="party") 

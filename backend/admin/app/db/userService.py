@@ -187,11 +187,6 @@ async def post_userLoginKakaoCallback(
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
 
-async def get_user_info_for_grouped_data(user_info):
-    """사용자 정보를 그룹화하여 반환"""
-    
-
-
 async def post_userSignup(
     db: AsyncSession, 
     userSignup: schemas.userSignupResponse
