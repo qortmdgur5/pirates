@@ -14,6 +14,7 @@ interface UserPartyInfo {
   name: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
   team: number | null; // 팀 번호 (nullable)
+  partyOn: boolean; // 파티 실시간 참석여부
 }
 
 function PartyUserList() {
@@ -82,7 +83,6 @@ function PartyUserList() {
   };
 
   const groupedUsers = groupByTeam(partyUsers);
-  console.log(groupedUsers);
 
   // 팀 변경 처리 함수
   const handleTeamChange = (userId: number, newTeam: number | null) => {
@@ -135,6 +135,7 @@ function PartyUserList() {
                     team={user.team}
                     userName={user.name}
                     gender={user.gender}
+                    partyOn={true}
                     maxTeam={maxTeam != null ? maxTeam : null}
                     onTeamChange={handleTeamChange} // 팀 변경 핸들러 전달
                   />

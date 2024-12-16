@@ -7,6 +7,7 @@ interface UserListCardProps {
   userName: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
   maxTeam: number | null; // 최대 팀
+  partyOn: boolean; // 파티 실시간 참석 여부
   onTeamChange: (userId: number, newTeam: number | null) => void; // 팀 변경 처리 함수
 }
 
@@ -16,6 +17,7 @@ function UserListCard({
   userName,
   gender,
   maxTeam,
+  partyOn,
   onTeamChange,
 }: UserListCardProps) {
   // 팀 상태 관리
@@ -89,8 +91,13 @@ function UserListCard({
           {renderOptions()}
         </select>
       </div>
-      <button className={styles.on_off_button} type="button">
-        ON
+      <button
+        className={`${styles.on_off_button} ${
+          partyOn ? styles.party_on : styles.party_off
+        }`}
+        type="button"
+      >
+        {partyOn ? "ON" : "OFF"}
       </button>
     </div>
   );

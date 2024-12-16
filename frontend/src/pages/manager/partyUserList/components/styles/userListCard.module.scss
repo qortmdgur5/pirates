@@ -73,8 +73,19 @@
     height: 100%;
     border-radius: 18px;
     filter: drop-shadow(3.776px 4.663px 2.5px rgba(4, 0, 0, 0.17));
-    background-color: $color-yellow-100;
     font-size: 28px;
     font-family: "NanumSquareB", sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  
+    &.party_on {
+      background-color: $color-green-000;
+      color: $color-black-100;
+    }
+  
+    &.party_off {
+      background-color: $color-yellow-100;
+      color: $color-black-100;
+    }
   }
+  
 }
