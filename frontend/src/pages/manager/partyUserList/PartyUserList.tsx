@@ -6,7 +6,7 @@ import TeamDropDown from "../../../components/common/teamDropDown/TeamDropDown";
 import UserListCard from "./components/UserListCard";
 import styles from "./styles/partyUserList.module.scss";
 import { useRecoilValue } from "recoil";
-import { accomoAtoms } from "../../../atoms/authAtoms";
+import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 import { useEffect, useState } from "react";
 
 // API 응답 타입 정의
@@ -18,12 +18,14 @@ interface UserPartyInfo {
 }
 
 function PartyUserList() {
-  const { state } = useLocation(); // 파티방 상세 페이지에서 넘어온 state {partyId, partyDate}
+  const { state } = useLocation(); // 파티방 상세 페이지에서 넘어온 state {partyId, partyDate, team}
   const partyId = state.partyId; // Party PK
   const partyDate = state.partyDate; // Party 날짜
+  const maxTeam = state.team; // 최대 팀 번호
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
-  const manager = useRecoilValue(accomoAtoms);
-  const guestHouseName = manager.accomodation_name;
+  const accomodation = useRecoilValue(accomoAtoms);
+  const manager = useRecoilValue(authAtoms);
+  const guestHouseName = accomodation.accomodation_name;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -111,6 +113,7 @@ function PartyUserList() {
                     team={user.team}
                     userName={user.name}
                     gender={user.gender}
+                    maxTeam={maxTeam != null ? maxTeam : null}
                   />
                 ))}
               </div>
