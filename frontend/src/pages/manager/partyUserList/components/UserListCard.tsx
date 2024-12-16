@@ -17,11 +17,12 @@ function UserListCard({
   userName,
   gender,
   maxTeam,
-  partyOn,
+  partyOn: initialPartyOn,
   onTeamChange,
 }: UserListCardProps) {
-  // 팀 상태 관리
+  // 팀 상태 및 파티 참석 상태 관리
   const [selectedTeam, setSelectedTeam] = useState<number | null>(team);
+  const [partyOn, setPartyOn] = useState<boolean>(initialPartyOn);
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newTeam = event.target.value;
@@ -29,6 +30,30 @@ function UserListCard({
 
     setSelectedTeam(newTeamValue);
     onTeamChange(id, newTeamValue); // 팀 변경 처리
+  };
+
+  const handlePartyToggle = async () => {
+    const newPartyOnState = !partyOn;
+
+    try {
+      // 서버에 PUT 요청
+      const response = await fetch(
+        `/api/manager/partyUserOn/${id}?partyOn=${newPartyOnState}`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("파티 상태 변경 요청에 실패했습니다.");
+      }
+
+      // 요청 성공 시 상태 업데이트
+      setPartyOn(newPartyOnState);
+    } catch (error) {
+      console.error("Error updating partyOn state:", error);
+      alert("파티 상태 변경 중 문제가 발생했습니다.");
+    }
   };
 
   const renderOptions = () => {
@@ -96,6 +121,7 @@ function UserListCard({
           partyOn ? styles.party_on : styles.party_off
         }`}
         type="button"
+        onClick={handlePartyToggle} // 버튼 클릭 시 상태 변경
       >
         {partyOn ? "ON" : "OFF"}
       </button>
