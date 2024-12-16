@@ -9,7 +9,6 @@ import { useRecoilValue } from "recoil";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 import { useEffect, useState } from "react";
 
-// API 응답 타입 정의
 interface UserPartyInfo {
   id: number; // User 테이블 Primary key
   name: string; // 유저 이름
@@ -18,10 +17,10 @@ interface UserPartyInfo {
 }
 
 function PartyUserList() {
-  const { state } = useLocation(); // 파티방 상세 페이지에서 넘어온 state {partyId, partyDate, team}
-  const partyId = state.partyId; // Party PK
-  const partyDate = state.partyDate; // Party 날짜
-  const maxTeam = state.team; // 최대 팀 번호
+  const { state } = useLocation();
+  const partyId = state.partyId;
+  const partyDate = state.partyDate;
+  const maxTeam = state.team;
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
   const accomodation = useRecoilValue(accomoAtoms);
   const manager = useRecoilValue(authAtoms);
@@ -47,9 +46,8 @@ function PartyUserList() {
           throw new Error("데이터를 가져오는 데 실패했습니다.");
         }
 
-        const responseData = await response.json(); // 응답을 파싱
-        const data: UserPartyInfo[] = responseData.data; // data 객체 내의 data 프로퍼티로 접근
-        console.log(data);
+        const responseData = await response.json();
+        const data: UserPartyInfo[] = responseData.data;
         setPartyUsers(data);
       } catch (error) {
         console.error("API 호출 에러:", error);
@@ -60,17 +58,40 @@ function PartyUserList() {
     fetchPartyUsers();
   }, [manager, navigate]);
 
-  // 팀별로 유저를 그룹화하는 함수
-  const groupByTeam = (users: UserPartyInfo[]) => {
-    return users.reduce((acc, user) => {
+  const groupByTeam = (
+    users: UserPartyInfo[]
+  ): Map<string | number, UserPartyInfo[]> => {
+    // 그룹화
+    const grouped = users.reduce((acc, user) => {
       const teamKey = user.team ?? "미지정";
-      if (!acc[teamKey]) acc[teamKey] = [];
-      acc[teamKey].push(user);
+      if (!acc.has(teamKey)) acc.set(teamKey, []);
+      acc.get(teamKey)?.push(user);
       return acc;
-    }, {} as Record<string | number, UserPartyInfo[]>);
+    }, new Map<string | number, UserPartyInfo[]>());
+
+    // 키 정렬
+    const sortedEntries = Array.from(grouped.entries()).sort(
+      ([keyA], [keyB]) => {
+        if (keyA === "미지정") return -1; // "미지정"은 항상 맨 앞
+        if (keyB === "미지정") return 1; // "미지정"은 항상 맨 앞
+        return Number(keyA) - Number(keyB); // 숫자는 오름차순 정렬
+      }
+    );
+
+    return new Map(sortedEntries);
   };
 
   const groupedUsers = groupByTeam(partyUsers);
+  console.log(groupedUsers);
+
+  // 팀 변경 처리 함수
+  const handleTeamChange = (userId: number, newTeam: number | null) => {
+    setPartyUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, team: newTeam } : user
+      )
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -101,8 +122,8 @@ function PartyUserList() {
           조 배정
         </button>
         <div className={styles.user_list_box}>
-          {Object.keys(groupedUsers).length > 0 ? (
-            Object.entries(groupedUsers).map(([team, users]) => (
+          {groupedUsers.size > 0 ? (
+            Array.from(groupedUsers.entries()).map(([team, users]) => (
               <div key={team} className={styles.team_section}>
                 <TeamDropDown
                   team={team === "미지정" ? "미지정" : `${team}조`}
@@ -110,10 +131,12 @@ function PartyUserList() {
                 {users.map((user) => (
                   <UserListCard
                     key={user.id}
+                    id={user.id}
                     team={user.team}
                     userName={user.name}
                     gender={user.gender}
                     maxTeam={maxTeam != null ? maxTeam : null}
+                    onTeamChange={handleTeamChange} // 팀 변경 핸들러 전달
                   />
                 ))}
               </div>

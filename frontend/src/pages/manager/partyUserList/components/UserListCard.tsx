@@ -2,34 +2,59 @@ import { useState } from "react";
 import styles from "./styles/userListCard.module.scss";
 
 interface UserListCardProps {
+  id: number;
   team: number | null; // 팀 번호 또는 null
   userName: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
   maxTeam: number | null; // 최대 팀
+  onTeamChange: (userId: number, newTeam: number | null) => void; // 팀 변경 처리 함수
 }
 
-function UserListCard({ team, userName, gender, maxTeam }: UserListCardProps) {
+function UserListCard({
+  id,
+  team,
+  userName,
+  gender,
+  maxTeam,
+  onTeamChange,
+}: UserListCardProps) {
   // 팀 상태 관리
-  const [selectedTeam, setSelectedTeam] = useState<number | "없음" | null>(
-    team ?? "없음"
-  );
+  const [selectedTeam, setSelectedTeam] = useState<number | null>(team);
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newTeam = event.target.value;
-    setSelectedTeam(newTeam === "없음" ? null : parseInt(newTeam, 10));
+    const newTeamValue = newTeam === "없음" ? null : parseInt(newTeam, 10);
+
+    setSelectedTeam(newTeamValue);
+    onTeamChange(id, newTeamValue); // 팀 변경 처리
   };
 
   const renderOptions = () => {
-    if (maxTeam === null) {
-      return <option value="없음">없음</option>;
-    } else if (typeof maxTeam === "number") {
-      return Array.from({ length: maxTeam }, (_, index) => (
-        <option key={index + 1} value={index + 1}>
-          {index + 1}조
+    const options = [];
+    if (team === null) {
+      // 미지정 조일 경우 "없음" 옵션을 표시
+      options.push(
+        <option key="없음" value="">
+          없음
         </option>
-      ));
+      );
     }
-    return null;
+
+    if (maxTeam === null) {
+      return options; // maxTeam이 null일 경우 "없음" 옵션만 렌더링
+    }
+
+    // maxTeam이 존재할 경우, 1조부터 maxTeam까지의 팀 번호 옵션을 렌더링
+    for (let index = 1; index <= maxTeam; index++) {
+      // 미지정 조일 경우에도 다른 조를 선택할 수 있도록 함
+      options.push(
+        <option key={index} value={index}>
+          {index}조
+        </option>
+      );
+    }
+
+    return options;
   };
 
   return (
@@ -56,7 +81,6 @@ function UserListCard({ team, userName, gender, maxTeam }: UserListCardProps) {
         </div>
       </div>
       <div className={styles.team_select_box}>
-        {/* team 값에 따라 초기값 설정 */}
         <select
           className={styles.team_select}
           value={selectedTeam === null ? "없음" : selectedTeam}
