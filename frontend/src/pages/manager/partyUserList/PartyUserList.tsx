@@ -8,6 +8,7 @@ import styles from "./styles/partyUserList.module.scss";
 import { useRecoilValue } from "recoil";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface UserPartyInfo {
   id: number; // User 테이블 Primary key
@@ -23,11 +24,13 @@ function PartyUserList() {
   const partyDate = state.partyDate;
   const maxTeam = state.team;
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
+  const [originalUsers, setOriginalUsers] = useState<UserPartyInfo[]>([]); // 원본 데이터 저장
   const accomodation = useRecoilValue(accomoAtoms);
   const manager = useRecoilValue(authAtoms);
   const guestHouseName = accomodation.accomodation_name;
   const navigate = useNavigate();
 
+  // 유저 리스트 가져오기 API
   useEffect(() => {
     async function fetchPartyUsers() {
       try {
@@ -50,6 +53,7 @@ function PartyUserList() {
         const responseData = await response.json();
         const data: UserPartyInfo[] = responseData.data;
         setPartyUsers(data);
+        setOriginalUsers(data); // 원본 데이터 초기화
       } catch (error) {
         console.error("API 호출 에러:", error);
         alert("참여자 정보를 불러오는 데 실패했습니다.");
@@ -59,10 +63,10 @@ function PartyUserList() {
     fetchPartyUsers();
   }, [manager, navigate]);
 
+  // 유저 리스트 팀으로 그룹화
   const groupByTeam = (
     users: UserPartyInfo[]
   ): Map<string | number, UserPartyInfo[]> => {
-    // 그룹화
     const grouped = users.reduce((acc, user) => {
       const teamKey = user.team ?? "미지정";
       if (!acc.has(teamKey)) acc.set(teamKey, []);
@@ -70,12 +74,11 @@ function PartyUserList() {
       return acc;
     }, new Map<string | number, UserPartyInfo[]>());
 
-    // 키 정렬
     const sortedEntries = Array.from(grouped.entries()).sort(
       ([keyA], [keyB]) => {
-        if (keyA === "미지정") return -1; // "미지정"은 항상 맨 앞
-        if (keyB === "미지정") return 1; // "미지정"은 항상 맨 앞
-        return Number(keyA) - Number(keyB); // 숫자는 오름차순 정렬
+        if (keyA === "미지정") return -1;
+        if (keyB === "미지정") return 1;
+        return Number(keyA) - Number(keyB);
       }
     );
 
@@ -84,13 +87,42 @@ function PartyUserList() {
 
   const groupedUsers = groupByTeam(partyUsers);
 
-  // 팀 변경 처리 함수
+  // 팀 변경 Change 함수
   const handleTeamChange = (userId: number, newTeam: number | null) => {
     setPartyUsers((prevUsers) =>
       prevUsers.map((user) =>
         user.id === userId ? { ...user, team: newTeam } : user
       )
     );
+  };
+
+  // 변경된 사용자 데이터 필터링
+  const getChangedUsers = () => {
+    return partyUsers.filter(
+      (user) =>
+        originalUsers.find((orig) => orig.id === user.id)?.team !== user.team
+    );
+  };
+
+  // 변경 사항 저장 API 호출
+  const handleSaveChanges = async () => {
+    const changedUsers = getChangedUsers();
+    if (changedUsers.length === 0) {
+      alert("변경된 데이터가 없습니다.");
+      return;
+    }
+
+    try {
+      const payload = {
+        data: changedUsers.map(({ id, team }) => ({ id, team })),
+      };
+      await axios.put(`/api/manager/partyUserInfo`, payload);
+      alert("변경 사항이 저장되었습니다.");
+      setOriginalUsers(partyUsers); // 원본 데이터 동기화
+    } catch (error) {
+      console.error("저장 중 오류 발생:", error);
+      alert("저장 중 문제가 발생했습니다.");
+    }
   };
 
   return (
@@ -118,8 +150,12 @@ function PartyUserList() {
             <p className={styles.participant_status}>{partyUsers.length}</p>
           </div>
         </div>
-        <button className={styles.team_assign_button} type="button">
-          조 배정
+        <button
+          className={styles.team_assign_button}
+          type="button"
+          onClick={handleSaveChanges} // 변경 사항 저장 버튼
+        >
+          조 변경
         </button>
         <div className={styles.user_list_box}>
           {groupedUsers.size > 0 ? (

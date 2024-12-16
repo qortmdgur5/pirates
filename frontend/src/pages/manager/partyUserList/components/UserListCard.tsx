@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./styles/userListCard.module.scss";
+import axios from "axios";
 
 interface UserListCardProps {
   id: number;
@@ -37,16 +38,9 @@ function UserListCard({
 
     try {
       // 서버에 PUT 요청
-      const response = await fetch(
-        `/api/manager/partyUserOn/${id}?partyOn=${newPartyOnState}`,
-        {
-          method: "PUT",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("파티 상태 변경 요청에 실패했습니다.");
-      }
+      await axios.put(`/api/manager/partyUserOn/${id}`, null, {
+        params: { partyOn: newPartyOnState },
+      });
 
       // 요청 성공 시 상태 업데이트
       setPartyOn(newPartyOnState);
