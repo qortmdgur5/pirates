@@ -86,6 +86,7 @@ function PartyUserList() {
   };
 
   const groupedUsers = groupByTeam(partyUsers);
+  console.log(groupedUsers);
 
   // 팀 변경 Change 함수
   const handleTeamChange = (userId: number, newTeam: number | null) => {
@@ -171,7 +172,7 @@ function PartyUserList() {
                     team={user.team}
                     userName={user.name}
                     gender={user.gender}
-                    partyOn={true}
+                    partyOn={user.partyOn}
                     maxTeam={maxTeam != null ? maxTeam : null}
                     onTeamChange={handleTeamChange} // 팀 변경 핸들러 전달
                   />

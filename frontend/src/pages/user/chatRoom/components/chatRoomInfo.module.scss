@@ -1,58 +1,69 @@
-.container{
+.container {
   display: flex;
-  gap: 6px;
+  gap: 19px;
   width: 100%;
+  border-bottom: 3px solid $color-gray-800;
+  padding: 21px 0 16px 0;
 
-  .user_image_box{
-    width: 32px;
-    height: 32px;
+  .user_image_box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 82px;
+    height: 82px;
     border-radius: 50%;
-    background-color: aquamarine;
+    background-color: $color-gray-800;
+    overflow: hidden;
+
+    img {
+      width: 90%;
+      height: 90%;
+    }
   }
 
-  .user_chat_info_box{
+  .user_chat_info_box {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
-    border-bottom: 1px solid $color-gray-000;
-    margin-bottom: 18px;
 
-    .user_chat_info_left{
+    .user_chat_info_left {
 
-      .user_name{
-        font-size: 16px;
+      .user_name {
+        font-size: 28px;
         font-weight: bold;
-        font-family: 'NanumSquareR', sans-serif;
+        font-family: 'NanumSquareEB', sans-serif;
       }
 
-      .user_chat_text{
-        font-size: 12px;
-        line-height: 32px;
+      .user_chat_text {
+        font-size: 22px;
         font-weight: lighter;
         font-family: 'NanumSquareR', sans-serif;
+        margin-top: 12px;
       }
     }
 
-    .user_chat_info_right{
+    .user_chat_info_right {
 
-      .user_chat_time{
-        font-size: 12px;
+      .user_chat_time {
+        font-size: 22px;
         font-weight: lighter;
         font-family: 'NanumSquareR', sans-serif;
+        color: $color-black-000;
       }
 
-      .user_chat_new_alert{
+      .user_chat_new_alert {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 16px;
-        height: 16px;
+        width: 25px;
+        height: 25px;
         border-radius: 50%;
-        background-color: aqua;
-        color: $color-white-000;
-        font-size: 12px;
+        background-color: $color-blue-000;
+        color: $color-white-100;
+        font-size: 14px;
         font-weight: lighter;
-        font-family: 'NanumSquareR', sans-serif;
+        font-family: 'NanumSquareB', sans-serif;
         margin-top: 8px;
         margin-left: auto;
       }
