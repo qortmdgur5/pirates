@@ -535,7 +535,8 @@ async def get_managerPartyInfo(
                     "id": user[0].id, 
                     "name": user[0].username,
                     "gender": user[1].gender if user[1] else True,
-                    "team": user[2].team if user[2] else None
+                    "team": user[2].team if user[2] else None,
+                    "partyOn": user[2].partyOn,
                 }
                 for user in users
             ]
@@ -612,7 +613,7 @@ async def put_managerPartyUserInfo(db: AsyncSession, data: schemas.managerPartyU
 
 async def put_managerPartyUserOn(id: int, db: AsyncSession, partyOn: bool):
     result = await db.execute(
-        select(models.PartyUserInfo).filter(models.PartyUserInfo.id == id)
+        select(models.PartyUserInfo).filter(models.PartyUserInfo.user_id == id)
     )
     
     db_party = result.scalar_one_or_none()
