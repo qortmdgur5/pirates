@@ -1,0 +1,92 @@
+.container {
+  width: 100%;
+
+  .container_contents {
+    padding: 105px 44px 60px 44px;
+
+    .home_and_back_box {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .team_and_time_box {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      height: 81px;
+      margin-top: 54px;
+
+      .team_text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 304px;
+        height: 100%;
+        border-radius: 27px;
+        background-color: $color-blue-000;
+        font-size: 33px;
+        color: $color-white-000;
+        font-family: "NanumSquareB", sans-serif;
+      }
+
+      .time_box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 151px;
+        height: 100%;
+        border-radius: 27px;
+        filter: drop-shadow(3.776px 4.663px 2.5px rgba(4, 0, 0, 0.17));
+        background-color: $color-gray-700;
+        font-size: 33px;
+        color: $color-balck-700;
+        font-family: "NanumSquareB", sans-serif;
+      }
+    }
+
+    .info_intro_box {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 70px;
+      padding: 20px 0 20px 0;
+      border-radius: 23px;
+      background-color: $color-white-000;
+      border: 3px solid $color-gray-1100;
+      margin-top: 62px;
+      text-align: center;
+      font-size: 26px;
+      color: $color-gray-1000;
+      font-family: "NanumSquareB", sans-serif;
+      text-align: center;
+
+      .img_intro {
+        flex-grow: 0.176;
+        border-right: 3px solid $color-gray-1000;
+      }
+
+      .name_and_gender_intro {
+        flex-grow: 1;
+        border-right: 3px solid $color-gray-1000;
+      }
+
+      .check_intro {
+        flex-grow: 0.221;
+        border-right: 3px solid $color-gray-1000;
+      }
+
+      .rank_intro {
+        flex-grow: 0.205;
+      }
+    }
+
+    .user_list_box{
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      width: 100%;
+      margin-top: 72px;
+    }
+  }
+}

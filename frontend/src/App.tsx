@@ -16,6 +16,7 @@ import UserPartyPage from "./pages/user/party/Party"
 import UserChatPage from "./pages/user/chat/Chat"
 import UserChatRoomsPage from "./pages/user/chatRoom/ChatRoom"
 import UserPartyUserListPage from "./pages/user/partyUserList/PartyUserList"
+import UserLoveSelectPage from "./pages/user/loveSelect/LoveSelect"
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/user/chat" element={<UserChatPage />} />
         <Route path="/user/chatRooms" element={<UserChatRoomsPage />} />
         <Route path="/user/party/userList/:party_id" element={<UserPartyUserListPage />} />
+        <Route path="/user/party/loveSelect" element={<UserLoveSelectPage />} />
       </Routes>
     </BrowserRouter>
   );

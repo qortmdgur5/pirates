@@ -1,0 +1,89 @@
+.container {
+  display: flex;
+  width: 100%;
+  height: 66px;
+
+  .img_box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 0.176;
+
+    .img_info {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 66px;
+      height: 100%;
+      border-radius: 50%;
+      background-color: $color-gray-800;
+      overflow: hidden;
+
+      img {
+        width: 85%;
+        height: 100%;
+      }
+    }
+
+
+  }
+
+  .name_and_gender_box {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+
+    .name_and_gender_info {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      width: 90%;
+      height: 100%;
+      border-radius: 18px;
+      filter: drop-shadow(3.776px 4.663px 2.5px rgba(4, 0, 0, 0.17));
+      background-color: $color-white-000;
+      border: 3px solid $color-gray-900;
+      font-size: 26px;
+      color: $color-black-100;
+      font-family: "NanumSquareB", sans-serif;
+
+      .gender_box {
+        width: 20px;
+        height: 30px;
+
+        img {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
+
+  }
+
+  .check_box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0.221;
+
+    img {
+      width: 46px;
+      height: 46px;
+    }
+  }
+
+  .rank_box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0.29;
+
+    .rank_text {
+      font-size: 26px;
+      color: $color-black-100;
+      font-family: "NanumSquareB", sans-serif;
+    }
+  }
+}
