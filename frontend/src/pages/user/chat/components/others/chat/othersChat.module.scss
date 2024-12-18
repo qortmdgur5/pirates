@@ -1,15 +1,49 @@
-.chat_box{
-  max-width: 70%;
-  padding: 8px 8px 8px 8px;
-  border-radius: 0 4px 4px 4px;
-  background-color: cornflowerblue;
-  margin-bottom: 5px;
+.container {
+  width: 100%;
+  display: flex;
+  margin-top: 8px;
 
-  .chat_text{
-    font-size: 12px;
-    color: $color-white-000;
-    word-wrap: break-word;  // 긴 단어도 줄바꿈 처리
-    white-space: normal;  // 기본적인 줄바꿈 허용
-    line-height: 16px;
+  .info_image {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background-color: $color-gray-800;
+    overflow: hidden;
+    margin-right: 28px;
+
+    img {
+      width: 95%;
+      height: 100%;
+    }
+  }
+
+  .chat_box {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 60%;
+    font-size: 26px;
+    color: $color-black-100;
+    font-family: "NanumSquareEB", sans-serif;
+    margin-top: 38px;
+    margin-right: 12px;
+
+    .chat_text {
+      width: 100%;
+      background-color: $color-blue-300;
+      padding: 20px 15px 19px 18px;
+      word-wrap: break-word; // 오래된 브라우저 호환성
+      overflow-wrap: break-word; // 최신 브라우저 표준
+      white-space: normal; // 기본 줄바꿈 허용
+      line-height: 34px;
+      border-radius: 0 18px 18px 18px;
+    }
+  }
+
+  .time_text {
+    font-size: 15px;
+    color: $color-black-100;
+    font-family: "NanumSquareR", sans-serif;
+    margin-top: auto;
   }
 }

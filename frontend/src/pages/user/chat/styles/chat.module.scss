@@ -12,15 +12,22 @@
       top: 0;
       display: flex;
       align-items: center;
+      gap: 36px;
       height: 60px;
       background-color: #f8f9fa;
       flex-shrink: 0;
       padding-left: 20px;
 
+      .back_button {
+        font-size: 46px;
+        color: $color-black-100;
+        font-family: 'NanumSquareEB', sans-serif;
+        background-color: transparent;
+      }
+
       .chat_header_text {
         font-size: 32px;
-        font-family: 'VITROCORE', sans-serif;
-        font-weight: lighter;
+        font-family: 'NanumSquareEB', sans-serif;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -28,41 +35,48 @@
     }
 
     .chat_contents {
-      display: flex;
-      flex-direction: column;
       width: 100%;
-      padding: 12px 20px 12px 20px;
-      border-top: 1px solid $color-gray-000;
-      border-bottom: 1px solid $color-gray-000;
-      flex-grow: 1;
+      padding: 8px 32px 12px 23px;
       overflow-y: auto;
       background-color: #ffffff;
     }
 
     .chat_input_box {
       position: sticky;
-      height: 50px;
-      background-color: #f8f9fa;
+      background-color: transparent;
       flex-shrink: 0;
       bottom: 0;
+      width: 100%;
+      height: 76px;
       padding: 12px 20px 12px 20px;
 
       .chat_box {
         display: flex;
+        gap: 14px;
         width: 100%;
         height: 100%;
-        border-radius: 6px;
-        border: 1px solid $color-gray-000;
       }
 
       .chat_input {
         flex: 1;
         height: 100%;
+        border-radius: 15px;
+        background-color: transparent;
+        border: 3px solid $color-gray-900;
+        font-size: 26px;
+        color: $color-gray-1000;
+        font-family: "NanumSquareR", sans-serif;
+        padding: 0 37px 0 37px;
+        resize: none;
+        overflow-y: hidden;
       }
 
-      .send_button{
-        flex: 0.2;
+      .send_button {
+        width: 124px;
         height: 100%;
+        border-radius: 15px;
+        background-color: $color-gray-700;
+        border: 3px solid $color-gray-900;
       }
     }
   }

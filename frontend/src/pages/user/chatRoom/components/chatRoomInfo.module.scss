@@ -4,6 +4,12 @@
   width: 100%;
   border-bottom: 3px solid $color-gray-800;
   padding: 21px 0 16px 0;
+  cursor: pointer;
+  transition: transform 0.2s ease; // 부드러운 확대 효과
+
+  &:hover {
+    transform: scale(1.05); // 5% 확대
+  }
 
   .user_image_box {
     display: flex;
