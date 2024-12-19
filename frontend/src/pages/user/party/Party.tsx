@@ -152,7 +152,11 @@ function Party() {
               >
                 파티방 참여
               </button>
-              <button className={styles.personal_chat_button} type="button">
+              <button
+                className={styles.personal_chat_button}
+                type="button"
+                onClick={() => navigation('/user/chatRooms')}
+              >
                 개인 채팅방
               </button>
               <button className={styles.love_button} type="button">

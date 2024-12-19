@@ -4,7 +4,7 @@ interface ChatRoomInfoProps {
   name: string;
   text: string;
   time: string;
-  newAlert: number;
+  newAlert: number | null;
 }
 
 function ChatRoomInfo({ name, text, time, newAlert }: ChatRoomInfoProps) {
@@ -20,7 +20,12 @@ function ChatRoomInfo({ name, text, time, newAlert }: ChatRoomInfoProps) {
         </div>
         <div className={styles.user_chat_info_right}>
           <p className={styles.user_chat_time}>{time}</p>
-          <p className={styles.user_chat_new_alert}>{newAlert}</p>
+          <p
+            className={styles.user_chat_new_alert}
+            style={{ visibility: newAlert === null ? "hidden" : "visible" }}
+          >
+            {newAlert}
+          </p>
         </div>
       </div>
     </div>
