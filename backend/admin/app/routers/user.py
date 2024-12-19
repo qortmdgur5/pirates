@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, APIRouter
 from ..db import errorLog, userService, database
@@ -22,7 +23,9 @@ async def kakao_login(
 ):
     try:
         kakao_auth_url = await kakaoLogin.kakao_login_data(id, db)
+
         return RedirectResponse(kakao_auth_url)
+        # return {"kakao_auth_url": kakao_auth_url}
     except ValueError as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=400, detail={"msg": str(e)})
@@ -46,7 +49,14 @@ async def kakao_callback(
         user_info = await kakaoLogin.kakao_callback_data(db, code, state)
         grouped_data = await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
         access_token = oauth.create_access_token(data={"data": grouped_data})
-        return {"access_token": access_token, "token_type": "bearer"}
+        # return {"access_token": access_token, "token_type": "bearer"}
+
+        ip_address = os.getenv("BACKEND_IP")
+        port = os.getenv("FRONTEND_PORT")
+        redirect_url = f"http://{ip_address}:{port}/user/login/success?access_token={access_token}"
+        
+        return RedirectResponse(url=redirect_url)
+    
     except ValueError as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=400, detail={"msg": str(e)})
