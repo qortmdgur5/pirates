@@ -7,7 +7,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-grow: 0.176;
+    width: 17.6%;
 
     .img_info {
       display: flex;
@@ -30,7 +30,7 @@
 
   .name_and_gender_box {
     display: flex;
-    flex-grow: 1;
+    width: 39.8%;
     justify-content: center;
 
     .name_and_gender_info {
@@ -66,7 +66,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-grow: 0.221;
+    width: 22.1%;
 
     img {
       width: 46px;
@@ -78,7 +78,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-grow: 0.29;
+    width: 20.5%;
 
     .rank_text {
       font-size: 26px;

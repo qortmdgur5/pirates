@@ -62,22 +62,22 @@
       text-align: center;
 
       .img_intro {
-        flex-grow: 0.176;
+        width: 17.6%;
         border-right: 3px solid $color-gray-1000;
       }
 
       .name_and_gender_intro {
-        flex-grow: 1;
+        width: 39.8%;
         border-right: 3px solid $color-gray-1000;
       }
 
       .check_intro {
-        flex-grow: 0.221;
+        width: 22.1%;
         border-right: 3px solid $color-gray-1000;
       }
 
       .rank_intro {
-        flex-grow: 0.205;
+        width: 20.5%;
       }
     }
 

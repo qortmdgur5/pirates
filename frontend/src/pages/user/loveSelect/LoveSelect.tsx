@@ -17,16 +17,19 @@ function LoveSelect() {
           <p className={styles.team_text}>1조 짝 매칭</p>
           <p className={styles.time_box}>05:00</p>
         </div>
-        <div className={styles.info_intro_box}>
-          <p className={styles.img_intro}>이미지</p>
-          <p className={styles.name_and_gender_intro}>이름 및 성별</p>
-          <p className={styles.check_intro}>체크</p>
-          <p className={styles.rank_intro}>순위</p>
+        <div className={styles.love_select_container}>
+          <div className={styles.info_intro_box}>
+            <p className={styles.img_intro}>이미지</p>
+            <p className={styles.name_and_gender_intro}>이름 및 성별</p>
+            <p className={styles.check_intro}>체크</p>
+            <p className={styles.rank_intro}>순위</p>
+          </div>
+          <div className={styles.user_list_box}>
+            <UserListCard />
+            <UserListCard />
+          </div>
         </div>
-        <div className={styles.user_list_box}>
-          <UserListCard />
-          <UserListCard />
-        </div>
+        <div className={styles.love_match_container}></div>
       </div>
     </div>
   );

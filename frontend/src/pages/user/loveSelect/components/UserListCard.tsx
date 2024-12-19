@@ -10,7 +10,7 @@ function UserListCard() {
       </div>
       <div className={styles.name_and_gender_box}>
         <div className={styles.name_and_gender_info}>
-          <p className={styles.name_text}>1조 철수</p>
+          <p className={styles.name_text}>김철수</p>
           <div className={styles.gender_box}>
             <img
               src="/src/assets/image/gender_woman.png"
