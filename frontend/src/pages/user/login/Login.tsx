@@ -10,16 +10,18 @@ function Login() {
   //     setLoading(true);
 
   //     // 카카오 로그인 API 호출
-  //     const response = await fetch("http://localhost:9000/user/auth/kakao/login/1", {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
+  //     const response = await fetch(
+  //       "/api/user/auth/kakao/login?id=1",
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
   //     if (response.ok) {
   //       console.log("로그인 성공");
-  //       // 추가적인 응답 처리 로직이 필요하면 이곳에서 처리
   //     } else {
   //       alert("로그인에 실패했습니다.");
   //     }
@@ -30,10 +32,12 @@ function Login() {
   //     setLoading(false);
   //   }
   // };
-  // 카카오 로그인 버튼 클릭 시 리디렉션
+
+  // 카카오 로그인 버튼 클릭 시 이동
   const handleLogin = () => {
+    setLoading(true); // 로그인 중 상태로 설정
     // 백엔드 로그인 엔드포인트로 리디렉션
-    window.location.href = "http://localhost:9000/user/auth/kakao/login?id=1";
+    window.location.href = "/api/user/auth/kakao/login?id=1";
   };
 
   return (
