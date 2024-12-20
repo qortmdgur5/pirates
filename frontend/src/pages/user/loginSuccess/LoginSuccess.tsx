@@ -32,12 +32,18 @@ function LoginSuccess() {
       }
 
       // user 상태 설정
-      setUser({
+      const userData = {
         token: access_token,
         id: decodedUser.id,
         party_id: decodedUser.party_id,
         userInfo: decodedUser.userInfo,
-      });
+      };
+
+      // user 상태 설정
+      setUser(userData);
+
+      // 로컬 스토리지에 사용자 데이터 저장
+      sessionStorage.setItem("user", JSON.stringify(userData));
 
       // userInfo가 없으면 /user/signup으로 있으면 /user/party 페이지로 리다이렉트
       if (!decodedUser.userInfo || decodedUser.userInfo.length === 0) {

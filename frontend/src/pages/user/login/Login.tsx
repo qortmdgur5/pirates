@@ -1,39 +1,32 @@
+import { useRecoilState, useRecoilValue } from "recoil";
 import styles from "./styles/login.module.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { userAtom } from "../../../atoms/userAtoms";
+import { useNavigate } from "react-router-dom";
+import useSessionUser from "../../hook/useSessionUser";
 
 function Login() {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const user = useSessionUser();
 
-  // 카카오 로그인 버튼 클릭 시 API 호출 - api 호출로 하면 안됨 url 로 리다이렉트 바로 연결시켜줘야 하기에 일단 주석
-  // const handleLogin = async () => {
-  //   try {
-  //     setLoading(true);
+  useEffect(() => {
+    if (user) {
+      // userInfo가 배열인지 확인하고, 배열이 비어있지 않은지 확인
+      if (
+        !user.userInfo ||
+        !Array.isArray(user.userInfo) ||
+        user.userInfo.length === 0
+      ) {
+        alert("추가 회원정보를 입력해주세요.");
+        navigate("/user/signup");
+      } else {
+        navigate("/user/party");
+      }
+    }
+  }, [user, navigate]);
 
-  //     // 카카오 로그인 API 호출
-  //     const response = await fetch(
-  //       "/api/user/auth/kakao/login?id=1",
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     if (response.ok) {
-  //       console.log("로그인 성공");
-  //     } else {
-  //       alert("로그인에 실패했습니다.");
-  //     }
-  //   } catch (error) {
-  //     console.error("로그인 중 오류 발생:", error);
-  //     alert("로그인 중 오류가 발생했습니다.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // 카카오 로그인 버튼 클릭 시 이동
+  // 카카오 로그인 진행
   const handleLogin = () => {
     setLoading(true); // 로그인 중 상태로 설정
     // 백엔드 로그인 엔드포인트로 리디렉션
