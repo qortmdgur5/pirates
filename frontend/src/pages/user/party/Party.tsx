@@ -4,8 +4,7 @@ import styles from "./styles/party.module.scss";
 import { useEffect, useState } from "react";
 import axios from "axios"; // API 호출을 위한 axios 사용
 import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { userAtom } from "../../../atoms/userAtoms";
+import useSessionUser from "../../hook/useSessionUser";
 
 // 파티 정보 타입 정의
 interface PartyInfo {
@@ -23,13 +22,13 @@ function Party() {
   const [partyInfo, setPartyInfo] = useState<PartyInfo | null>(null); // 파티 정보 상태 추가
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 추가
   const [error, setError] = useState<string | null>(null); // 에러 상태 추가
-  const user = useRecoilValue(userAtom);
+  const user = useSessionUser();
   const navigation = useNavigate();
 
   const getPartyInfo = async (partyId: number) => {
     try {
-      const response = await axios.get(`/user/party/${partyId}`);
-      setPartyInfo(response.data);
+      const response = await axios.get(`/api/user/party/${partyId}`);
+      setPartyInfo(response.data.data[0]);
     } catch (err) {
       console.error("파티 정보 가져오기 오류:", err);
       setError("파티 정보를 불러오는 데 실패했습니다.");
@@ -78,27 +77,27 @@ function Party() {
                 </div>
               </div>
               <div className={styles.house_info_lane}>
-                <div className={styles.house_info_left}>전화번호</div>
+                <div className={styles.house_info_left}>하우스 전화번호</div>
                 <div className={styles.house_info_right}>
-                  {partyInfo.number}
+                  {partyInfo.number || "없음"}
                 </div>
               </div>
               <div className={styles.house_info_lane}>
                 <div className={styles.house_info_left}>사장님 전화번호</div>
                 <div className={styles.house_info_right}>
-                  {partyInfo.phoneNumber}
+                  {partyInfo.phoneNumber || "없음"}
                 </div>
               </div>
               <div className={styles.house_info_lane}>
                 <div className={styles.house_info_left}>평점</div>
                 <div className={styles.house_info_right}>
-                  ⭐ {partyInfo.score}
+                  ⭐ {partyInfo.score !== null ? partyInfo.score : 0}
                 </div>
               </div>
               <div className={styles.house_info_lane}>
                 <div className={styles.house_info_left}>짝 매칭 카운트</div>
                 <div className={styles.house_info_right}>
-                  ❤️ {partyInfo.loveCount}
+                  ❤️ {partyInfo.loveCount !== null ? partyInfo.score : 0}
                 </div>
               </div>
             </div>
