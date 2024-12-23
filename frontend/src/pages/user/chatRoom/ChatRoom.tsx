@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ChatRoomInfo from "./components/ChatRoomInfo";
 import styles from "./styles/chatRoom.module.scss";
-import { useRecoilValue } from "recoil";
-import { userAtom } from "../../../atoms/userAtoms";
+import useSessionUser from "../../hook/useSessionUser";
+import { useNavigate } from "react-router-dom";
 
 // ChatRoomResponse 타입을 정의합니다.
 type ChatRoomResponse = {
@@ -23,8 +23,11 @@ const ChatRoom = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 네비게이션 훅
+  const navigate = useNavigate();
+
   // 유저 상태 관리 변수 Recoil
-  const user = useRecoilValue(userAtom);
+  const user = useSessionUser();
   // const user_id = user?.id;
   // const party_id = user?.party_id;
 
@@ -72,19 +75,30 @@ const ChatRoom = () => {
           <p className={styles.header_text}>채팅방</p>
         </div>
         <div className={styles.chat_rooms_contents}>
-          {/* 채팅방 리스트를 렌더링합니다. */}
           {chatRooms.map((chatRoom) => (
-            <ChatRoomInfo
+            <div
               key={chatRoom.id}
-              name={
-                chatRoom.team
-                  ? `${chatRoom.team} ${chatRoom.name}`
-                  : chatRoom.name
+              onClick={() =>
+                navigate("/user/chat", {
+                  state: {
+                    chatRoom_id: chatRoom.id,
+                    gender: chatRoom.gender,
+                  },
+                })
               }
-              text={chatRoom.contents || ""}
-              time={chatRoom.date || ""}
-              newAlert={chatRoom.unreadCount || null}
-            />
+            >
+              <ChatRoomInfo
+                name={
+                  chatRoom.team
+                    ? `${chatRoom.team} ${chatRoom.name}`
+                    : chatRoom.name
+                }
+                text={chatRoom.contents || ""}
+                time={chatRoom.date || ""}
+                newAlert={chatRoom.unreadCount || null}
+                gender={chatRoom.gender}
+              />
+            </div>
           ))}
         </div>
       </div>

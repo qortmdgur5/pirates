@@ -27,8 +27,7 @@ function PartyUserList() {
     async function fetchPartyUsers() {
       try {
         if (!user) {
-          alert("로그인을 진행해주세요.");
-          navigate("/");
+          // 유저 로그인 정보 초기화 대기
           return;
         }
 
@@ -85,7 +84,7 @@ function PartyUserList() {
         <HouseNameAndDate guestHouseName={guestHouseName || "게스트 하우스"} />
         <div className={styles.home_and_back_box}>
           <HomeButton />
-          <BackButton />
+          <BackButton navigateTo="/user/party" />
         </div>
         <div className={styles.search_and_participant_box}>
           <div className={styles.search_box}>
