@@ -1,9 +1,8 @@
 import { useState, ChangeEvent, useEffect } from "react";
-import { useRecoilValue } from "recoil";
-import { userAtom } from "../../../atoms/userAtoms";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/signup.module.scss";
 import { useNavigate } from "react-router-dom";
+import useSessionUser from "../../hook/useSessionUser";
 
 // 타입 정의
 interface SignupFormData {
@@ -31,9 +30,7 @@ function Signup() {
   };
 
   const [formData, setFormData] = useState<SignupFormData>(initialFormData);
-
-  // Recoil에서 userAtom 상태 가져오기
-  const user = useRecoilValue(userAtom);
+  const user = useSessionUser(); // 커스텀 훅 세션 로그인 유저 정보
 
   // useNavigate 훅 초기화
   const navigate = useNavigate();
@@ -44,7 +41,7 @@ function Signup() {
       alert("로그인을 진행하여야 합니다.");
       navigate("/"); // 홈으로 이동
     }
-  }, [user?.id, navigate]);
+  }, [user, navigate]);
 
   // 지역 및 MBTI 데이터
   const regions = [
@@ -146,12 +143,16 @@ function Signup() {
   };
 
   // 옵션 렌더링 함수
-  const renderOptions = (options: string[]) =>
-    options.map((option) => (
+  const renderOptions = (options: string[], placeholder: string) => [
+    <option key="placeholder" value="" disabled>
+      {placeholder}
+    </option>,
+    ...options.map((option) => (
       <option key={option} value={option}>
         {option}
       </option>
-    ));
+    )),
+  ];
 
   return (
     <div className={styles.container}>
@@ -174,32 +175,37 @@ function Signup() {
               name: "name",
               type: "text",
               placeholder: "이름 입력",
+              value: formData.name,
             },
             {
               label: "핸드폰번호",
               name: "phone",
-              type: "text",
+              type: "number",
               placeholder: "010xxxxxxxx",
+              value: formData.phone,
             },
             {
               label: "이메일",
               name: "email",
               type: "text",
               placeholder: "example@naver.com",
+              value: formData.email,
             },
             {
               label: "직업",
               name: "job",
               type: "text",
               placeholder: "회사원, 학생 ...",
+              value: formData.job,
             },
             {
               label: "나이",
               name: "age",
-              type: "text",
+              type: "number",
               placeholder: "나이 입력",
+              value: formData.age ? formData.age.toString() : "", // 숫자를 문자열로 변환
             },
-          ].map(({ label, name, type, placeholder }) => (
+          ].map(({ label, name, type, placeholder, value }) => (
             <div className={styles.signup_input_line} key={name}>
               <label className={styles.signup_input_label}>{label}</label>
               <div className={styles.signup_input_input_area}>
@@ -207,7 +213,7 @@ function Signup() {
                   type={type}
                   name={name}
                   placeholder={placeholder}
-                  value={formData.name}
+                  value={value}
                   onChange={handleInputChange}
                 />
               </div>
@@ -243,7 +249,7 @@ function Signup() {
                 value={formData.mbti}
                 onChange={handleInputChange}
               >
-                {renderOptions(mbtiList)}
+                {renderOptions(mbtiList, "MBTI 선택")}
               </select>
             </div>
           </div>
@@ -256,7 +262,7 @@ function Signup() {
                 value={formData.region}
                 onChange={handleInputChange}
               >
-                {renderOptions(regions)}
+                {renderOptions(regions, "지역 선택")}
               </select>
             </div>
           </div>

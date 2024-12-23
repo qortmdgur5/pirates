@@ -1,7 +1,5 @@
-import { useRecoilState, useRecoilValue } from "recoil";
 import styles from "./styles/login.module.scss";
 import { useEffect, useState } from "react";
-import { userAtom } from "../../../atoms/userAtoms";
 import { useNavigate } from "react-router-dom";
 import useSessionUser from "../../hook/useSessionUser";
 
