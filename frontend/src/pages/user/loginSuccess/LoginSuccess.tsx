@@ -39,7 +39,7 @@ function LoginSuccess() {
         userInfo: decodedUser.userInfo,
       };
 
-      // user 상태 설정
+      // user Recoil 상태 설정
       setUser(userData);
 
       // 로컬 스토리지에 사용자 데이터 저장

@@ -3,6 +3,8 @@ import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/signup.module.scss";
 import { useNavigate } from "react-router-dom";
 import useSessionUser from "../../hook/useSessionUser";
+import { useSetRecoilState } from "recoil";
+import { userAtom } from "../../../atoms/userAtoms";
 
 // 타입 정의
 interface SignupFormData {
@@ -31,6 +33,7 @@ function Signup() {
 
   const [formData, setFormData] = useState<SignupFormData>(initialFormData);
   const user = useSessionUser(); // 커스텀 훅 세션 로그인 유저 정보
+  const setUser = useSetRecoilState(userAtom); // Recoil 상태 업데이트
 
   // useNavigate 훅 초기화
   const navigate = useNavigate();
@@ -101,7 +104,7 @@ function Signup() {
   };
 
   const handleSignup = async () => {
-    const { name, phone, email, age, region, mbti, gender } = formData;
+    const { name, phone, email, age, job, region, mbti, gender } = formData;
 
     if (
       !name ||
@@ -110,6 +113,7 @@ function Signup() {
       !age ||
       !region ||
       !mbti ||
+      !job ||
       gender === null
     ) {
       alert("모든 필드를 입력해주세요.");
@@ -135,7 +139,18 @@ function Signup() {
       }
 
       const result = await response.json();
+
+      // 세션 스토리지에 새로운 user 데이터 덮어쓰기
+      const updatedUserData = {
+        token: user?.token, // user에서 access_token을 가져옴
+        id: user?.id, // user에서 id를 가져옴
+        party_id: user?.party_id, // user에서 party_id를 가져옴
+        userInfo: formData, // 추가된 userInfo 데이터
+      };
+
+      sessionStorage.setItem("user", JSON.stringify(updatedUserData));
       alert("회원가입이 완료되었습니다.");
+      navigate("/user/party");
     } catch (error) {
       console.error(error);
       alert("오류가 발생했습니다. 다시 시도해주세요.");
