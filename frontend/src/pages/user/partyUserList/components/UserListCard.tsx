@@ -1,12 +1,13 @@
 import styles from "./styles/userListCard.module.scss";
 
 interface UserListCardProps {
+  id: number; // 해당 유저 id 값
   team: number | null; // 팀 번호 또는 null
   userName: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
 }
 
-function UserListCard({ team, userName, gender }: UserListCardProps) {
+function UserListCard({ id, team, userName, gender }: UserListCardProps) {
   return (
     <div className={styles.container}>
       <div className={styles.user_img_box}>

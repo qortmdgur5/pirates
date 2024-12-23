@@ -6,8 +6,7 @@ import TeamDropDown from "../../../components/common/teamDropDown/TeamDropDown";
 import UserListCard from "./components/UserListCard";
 import styles from "./styles/partyUserList.module.scss";
 import { useEffect, useState } from "react";
-import { useRecoilValue } from "recoil";
-import { userAtom } from "../../../atoms/userAtoms";
+import useSessionUser from "../../hook/useSessionUser";
 
 // API 응답 타입 정의
 interface UserPartyInfo {
@@ -21,7 +20,7 @@ function PartyUserList() {
   const location = useLocation();
   const { guestHouseName } = location.state || {}; // /user/party 페이지에서 useNavigate state 로 데이터 추출
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
-  const user = useRecoilValue(userAtom); // userAtom에서 현재 로그인된 사용자 정보 가져오기
+  const user = useSessionUser(); // userAtom에서 현재 로그인된 사용자 정보 가져오기
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +43,8 @@ function PartyUserList() {
           throw new Error("데이터를 가져오는 데 실패했습니다.");
         }
 
-        const data: UserPartyInfo[] = await response.json();
+        // response.json 의 데이터가 data, totalCount 로 2개로 오므로 구조분해 해서 사용해야함
+        const { data }: { data: UserPartyInfo[] } = await response.json();
         setPartyUsers(data);
       } catch (error) {
         console.error("API 호출 에러:", error);
@@ -55,14 +55,26 @@ function PartyUserList() {
     fetchPartyUsers();
   }, [user, navigate]);
 
-  // 팀별로 유저를 그룹화하는 함수
-  const groupByTeam = (users: UserPartyInfo[]) => {
-    return users.reduce((acc, user) => {
+  // 유저 리스트 팀으로 그룹화
+  const groupByTeam = (
+    users: UserPartyInfo[]
+  ): Map<string | number, UserPartyInfo[]> => {
+    const grouped = users.reduce((acc, user) => {
       const teamKey = user.team ?? "미지정";
-      if (!acc[teamKey]) acc[teamKey] = [];
-      acc[teamKey].push(user);
+      if (!acc.has(teamKey)) acc.set(teamKey, []);
+      acc.get(teamKey)?.push(user);
       return acc;
-    }, {} as Record<string | number, UserPartyInfo[]>);
+    }, new Map<string | number, UserPartyInfo[]>());
+
+    const sortedEntries = Array.from(grouped.entries()).sort(
+      ([keyA], [keyB]) => {
+        if (keyA === "미지정") return -1;
+        if (keyB === "미지정") return 1;
+        return Number(keyA) - Number(keyB);
+      }
+    );
+
+    return new Map(sortedEntries);
   };
 
   const groupedUsers = groupByTeam(partyUsers);
@@ -70,7 +82,7 @@ function PartyUserList() {
   return (
     <div className={styles.container}>
       <div className={styles.container_contents}>
-        <HouseNameAndDate guestHouseName={guestHouseName} />
+        <HouseNameAndDate guestHouseName={guestHouseName || "게스트 하우스"} />
         <div className={styles.home_and_back_box}>
           <HomeButton />
           <BackButton />
@@ -90,8 +102,8 @@ function PartyUserList() {
           </div>
         </div>
         <div className={styles.user_list_box}>
-          {Object.keys(groupedUsers).length > 0 ? (
-            Object.entries(groupedUsers).map(([team, users]) => (
+          {groupedUsers.size > 0 ? (
+            Array.from(groupedUsers.entries()).map(([team, users]) => (
               <div key={team} className={styles.team_section}>
                 <TeamDropDown
                   team={team === "미지정" ? "미지정" : `${team}조`}
@@ -99,6 +111,7 @@ function PartyUserList() {
                 {users.map((user) => (
                   <UserListCard
                     key={user.id}
+                    id={user.id}
                     team={user.team}
                     userName={user.name}
                     gender={user.gender}
