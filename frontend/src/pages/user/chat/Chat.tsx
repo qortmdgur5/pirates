@@ -6,7 +6,6 @@ import MeChat from "./components/me/chat/MeChat";
 import OthersChat from "./components/others/chat/OthersChat";
 import useSessionUser from "../../hook/useSessionUser";
 
-// Chat 데이터 타입 (인터페이스로 변경)
 interface ChatData {
   id: number;
   user_id: number;
@@ -26,6 +25,7 @@ function Chat() {
   const [chatData, setChatData] = useState<ChatResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string>(""); // 입력된 메시지 상태 추가
 
   // 채팅 데이터 가져오기
   const fetchChatContents = async () => {
@@ -41,6 +41,22 @@ function Chat() {
       setError("채팅 데이터를 불러오는 데 실패했습니다.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 채팅 데이터 전송
+  const sendChat = async () => {
+    if (!message.trim()) return; // 메시지가 비어있으면 전송하지 않음
+    try {
+      await axios.post("/api/user/chat", {
+        user_id: userId,
+        contents: message,
+        chatRoom_id,
+      });
+      setMessage(""); // 메시지 전송 후 입력 필드 초기화
+      fetchChatContents(); // 전송 후 최신 데이터 다시 가져오기
+    } catch (e) {
+      alert("메시지 전송에 실패했습니다.");
     }
   };
 
@@ -96,8 +112,19 @@ function Chat() {
         </div>
         <div className={styles.chat_input_box}>
           <div className={styles.chat_box}>
-            <input className={styles.chat_input} placeholder="메시지 입력" />
-            <button className={styles.send_button}>전송</button>
+            <input
+              className={styles.chat_input}
+              placeholder="메시지 입력"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button
+              className={styles.send_button}
+              onClick={sendChat}
+              disabled={!message.trim()} // 메시지가 비어있으면 비활성화
+            >
+              전송
+            </button>
           </div>
         </div>
       </div>
