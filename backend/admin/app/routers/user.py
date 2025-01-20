@@ -1,12 +1,11 @@
 import os
-from fastapi import APIRouter
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, Query, WebSocket, WebSocketDisconnect
 from ..db import errorLog, userService, database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..oauth import kakaoLogin, oauth
 from fastapi.responses import RedirectResponse
-from typing import Optional
+from typing import Optional, List
 
 router = APIRouter(
     prefix="/user",
@@ -118,3 +117,93 @@ async def read_userPartyInfo(
     except Exception as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+@router.post(
+    "/chatRoom", 
+    summary="채팅방 생성 API")
+async def create_userChatRoom(
+    userChatRoomRequest: schemas.userChatRoomRequest,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        return await userService.post_userChatRoom(db, userChatRoomRequest)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+
+@router.post(
+    "/chatRooms", 
+    summary="ChatRoom 테이블의 동일한 해당 유저의 채팅방 리스트 가져오기 API")
+async def create_userChatRooms(
+    userChatRoomsRequest: schemas.userChatRoomsRequest,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        return await userService.post_userChatRooms(db, userChatRoomsRequest)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+@router.post(
+    "/chat/contents", 
+    summary="해당 채팅방의 채팅 내역 가져오기 API")
+async def create_userChatContents(
+    userChatContentsRequest: schemas.userChatContentsRequest,
+    db: AsyncSession = Depends(database.get_db),
+    page: int = Query(0),
+    pageSize: int = Query(10), 
+):
+    try:
+        return await userService.post_userChatContents(db, userChatContentsRequest, page, pageSize)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+@router.post(
+    "/chat",
+    summary="채팅 전송(생성) API")
+async def create_chat(
+    chat: schemas.chatCreateRequest, 
+    db: AsyncSession = Depends(database.get_db),
+    ):
+    try:
+        return await userService.post_chat(db, chat)
+
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+
+
+manager = userService.ConnectionManager()
+
+@router.websocket("/ws/chat/{chatRoom_id}/{user_id}")
+async def websocket_endpoint(
+    websocket: WebSocket, 
+    chatRoom_id: int, 
+    user_id: int,
+    db: AsyncSession = Depends(database.get_db),):
+    print(websocket, chatRoom_id, user_id)
+    await manager.connect(websocket, chatRoom_id, user_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
+            await userService.post_chat(db, chat)
+            await manager.broadcast(f"User {user_id} says: {data}", chatRoom_id)
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, chatRoom_id, user_id)
+        await manager.broadcast(f"User {user_id} left ChatRoom {chatRoom_id}", chatRoom_id)

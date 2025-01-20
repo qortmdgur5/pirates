@@ -1,10 +1,11 @@
-from sqlalchemy import func, select, and_
+from sqlalchemy import func, select, and_, or_, case
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import HTTPException
-from .errorLog import log_error
+from fastapi import HTTPException, WebSocket, WebSocketDisconnect
+from .errorLog import format_date, log_error, format_dates
 from ..utils import models, schemas
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, timedelta, timezone, time
 from operator import itemgetter
 from itertools import groupby
@@ -337,3 +338,262 @@ async def get_userPartyInfo(
     
 
 
+
+async def post_userChatRoom(
+    db: AsyncSession, 
+    userChatRoomRequest: schemas.userChatRoomRequest
+):
+    try:
+
+        db_chatRoom = models.ChatRoom(user_id_1=userChatRoomRequest.user_id_1, user_id_2=userChatRoomRequest.user_id_2, party_id=userChatRoomRequest.party_id)
+        db.add(db_chatRoom)
+        await db.commit()
+        await db.refresh(db_chatRoom)
+
+        return {"msg": "ChatRoom created successfully"}
+        
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
+    
+
+async def post_userChatRooms(
+    db: AsyncSession, 
+    userChatRoomsRequest: schemas.userChatRoomsRequest
+):
+    try:
+        party_id = userChatRoomsRequest.party_id
+        user_id = userChatRoomsRequest.user_id
+
+        query = (
+            select(
+                models.ChatRoom.id.label("chat_room_id"),
+                models.ChatRoom.user_id_1.label("user_id_1"),
+                models.ChatRoom.user_id_2.label("user_id_2")
+            )
+            .where(
+                and_(
+                    models.ChatRoom.party_id == party_id,
+                    or_(
+                        models.ChatRoom.user_id_1 == user_id,
+                        models.ChatRoom.user_id_2 == user_id
+                    )
+                )
+            )
+        )
+        
+        result = await db.execute(query)
+        chat_room_data = result.fetchall()  
+        if not chat_room_data:
+            raise HTTPException(status_code=404, detail="Chat rooms not found")
+
+        response = []
+        for chat_room in chat_room_data:
+            chat_room_id = chat_room[0]  
+            user_id_1 = chat_room[1]  
+            user_id_2 = chat_room[2]  
+
+
+            other_user_id = user_id_1 if user_id != user_id_1 else user_id_2
+
+            user_info_query = (
+                select(models.UserInfo.name, models.UserInfo.gender, models.PartyUserInfo.team)
+                .join(models.PartyUserInfo, models.PartyUserInfo.user_id == models.UserInfo.user_id)
+                .where(models.UserInfo.user_id == other_user_id)
+            )
+            
+            user_info_result = await db.execute(user_info_query)
+            user_info = user_info_result.fetchone()
+
+            user_name = user_info[0] if user_info else None
+            user_gender = user_info[1] if user_info else None
+            user_team = user_info[2] if user_info else None
+
+            latest_chat_query = (
+                select(models.Chat.contents, models.Chat.date)
+                .join(models.ChatRoom, models.Chat.chatRoom_id == models.ChatRoom.id)
+                .where(models.ChatRoom.id == chat_room_id)
+                .order_by(models.Chat.date.desc())
+            )
+            
+            latest_chat_result = await db.execute(latest_chat_query)
+            latest_chat = latest_chat_result.fetchone()
+
+            chat_contents = latest_chat[0] if latest_chat else ""
+            chat_date = latest_chat[1] if latest_chat else ""
+
+            unread_count_query = (
+                select(
+                    func.count(models.Chat.id).label("unread_count")
+                )
+                .select_from(models.Chat)
+                .join(models.ChatRoom, models.Chat.chatRoom_id == models.ChatRoom.id)
+                .join(models.ChatReadStatus, models.ChatRoom.id == models.ChatReadStatus.chatRoom_id)
+                .where(models.ChatReadStatus.user_id == user_id)
+                .where(
+                    case(
+                        (models.ChatReadStatus.lastReadChat_id.is_(None), True),  
+                        (models.Chat.id > models.ChatReadStatus.lastReadChat_id, True),  
+                        else_=False  
+                    )
+                )
+                .where(models.ChatRoom.id == chat_room_id)
+                .where(models.Chat.user_id != user_id)
+            )
+
+            
+            unread_count_result = await db.execute(unread_count_query)
+            unread_count = unread_count_result.scalar()
+
+            response.append({
+                "id": chat_room_id,
+                "user_id_2": other_user_id,
+                "gender": user_gender,
+                "team": user_team,
+                "name": user_name,
+                "contents": chat_contents,
+                "date": chat_date,
+                "unreadCount": unread_count,
+            })
+
+        return {
+            "data": response,
+            "totalCount": len(response)
+        }
+
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+
+async def post_userChatContents(
+    db: AsyncSession, 
+    userChatContentsRequest: schemas.userChatContentsRequest,
+    page: int = 0,
+    pageSize: int = 10
+):
+    try:
+        chatRoom_id = userChatContentsRequest.chatRoom_id
+        
+        query = (
+                select(models.Chat)
+                .where(models.Chat.chatRoom_id == chatRoom_id)
+                .order_by(models.Chat.date.desc())
+            )    
+        
+        offset = max(page * pageSize, 0)
+        query = query.offset(offset).limit(pageSize)
+        
+        result = await db.execute(query)
+        chat_room_datas = result.fetchall()  
+
+        response = [{
+                "id": chat_room_data[0].id,
+                "user_id": chat_room_data[0].user_id,
+                "contents": chat_room_data[0].contents,
+                "date": chat_room_data[0].date
+                } for chat_room_data in chat_room_datas   
+            ]
+
+        return {
+            "data": response,
+            "totalCount": len(response)
+        }
+        
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
+        await websocket.accept()
+        if chatRoom_id not in self.chat_room_connections:
+            self.chat_room_connections[chatRoom_id] = {}
+        self.chat_room_connections[chatRoom_id][user_id] = websocket
+
+    def disconnect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
+        if chatRoom_id in self.chat_room_connections:
+            del self.chat_room_connections[chatRoom_id][user_id]
+
+    async def broadcast(self, message: str, chatRoom_id: int):
+        if chatRoom_id in self.chat_room_connections:
+            for user_id, connection in self.chat_room_connections[chatRoom_id].items():
+                await connection.send_text(message)
+
+    async def get_connections_for_chat_room(self, chatRoom_id: int):
+        return self.chat_room_connections.get(chatRoom_id, [])
+    
+manager = ConnectionManager()
+
+
+async def post_chat(
+    db: AsyncSession, 
+    chat: schemas.chatCreateRequest,
+):
+    try:
+        db_chat = models.Chat(user_id=chat.user_id, contents=chat.contents, chatRoom_id=chat.chatRoom_id, date=format_dates(datetime.now()))
+        db.add(db_chat)
+        await db.commit()
+        await db.refresh(db_chat)
+        
+        await manager.broadcast(f"User {chat.user_id} says: {chat.contents}", chat.chatRoom_id)
+        return {"msg": "Chat created successfully"}
+        
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    

@@ -73,6 +73,7 @@ class Party(Base):
     partys = relationship("Accomodation", back_populates="party") 
     participant = relationship("Participant", back_populates="participants") 
     users = relationship("User", back_populates="party") 
+    chatRooms = relationship("ChatRoom", back_populates="party")
     
 class Manager(Base):
     __tablename__ = "Manager"
@@ -114,6 +115,8 @@ class User(Base):
     party = relationship("Party", back_populates="users")  
     userInfo = relationship("UserInfo", back_populates="user") 
     partyUserInfo = relationship("PartyUserInfo", back_populates="user") 
+    chat = relationship("Chat", back_populates="user") 
+    chatReadStatus = relationship("ChatReadStatus", back_populates="user") 
 
 class UserInfo(Base):
     __tablename__ = "UserInfo"
@@ -140,3 +143,41 @@ class PartyUserInfo(Base):
     partyOn = Column(Boolean)
 
     user = relationship("User", back_populates="partyUserInfo")
+
+class Chat(Base):
+    __tablename__ = "Chat"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('User.id'))
+    contents = Column(Text)
+    date = Column(DateTime, default=func.now())
+    chatRoom_id = Column(Integer, ForeignKey('ChatRoom.id'))
+
+    user = relationship("User", back_populates="chat")
+    chatRooms = relationship("ChatRoom", back_populates="chat")
+
+
+class ChatReadStatus(Base):
+    __tablename__ = "ChatReadStatus"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chatRoom_id = Column(Integer, ForeignKey('ChatRoom.id'))
+    user_id = Column(Integer, ForeignKey('User.id'))
+    lastReadChat_id = Column(Integer)
+    date = Column(DateTime, default=func.now())
+
+    user = relationship("User", back_populates="chatReadStatus")
+    chatRooms = relationship("ChatRoom", back_populates="chatReadStatus")
+
+
+class ChatRoom(Base):
+    __tablename__ = "ChatRoom"
+
+    id = Column(Integer, primary_key=True, index=True)
+    party_id = Column(Integer, ForeignKey('Party.id'))
+    user_id_1 = Column(Integer)
+    user_id_2 = Column(Integer)
+
+    party = relationship("Party", back_populates="chatRooms")
+    chat = relationship("Chat", back_populates="chatRooms")
+    chatReadStatus = relationship("ChatReadStatus", back_populates="chatRooms")

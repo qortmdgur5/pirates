@@ -207,3 +207,20 @@ class userPartyInfoResponse(BaseModel):
 class UserLoginResponse(BaseModel):
     msg: str
     user: str
+
+class userChatRoomRequest(BaseModel):
+    user_id_1: int
+    user_id_2: int
+    party_id: int
+
+class userChatRoomsRequest(BaseModel):
+    user_id: int
+    party_id: int
+
+class userChatContentsRequest(BaseModel):
+    chatRoom_id: int
+
+class chatCreateRequest(BaseModel):
+    user_id: int
+    contents: str
+    chatRoom_id: int
