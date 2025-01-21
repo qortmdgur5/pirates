@@ -207,3 +207,21 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         manager.disconnect(websocket, chatRoom_id, user_id)
         await manager.broadcast(f"User {user_id} left ChatRoom {chatRoom_id}", chatRoom_id)
+        
+
+@router.post(
+    "/chat/lastReadChat",
+    summary="해당 채팅방의 마지막 읽은 채팅이 무엇인지 알게 해주는 상태 업데이트 API")
+async def create_lastReadChat(
+    chat: schemas.lastReadChatRequest, 
+    db: AsyncSession = Depends(database.get_db),
+    ):
+    try:
+        return await userService.post_lastReadChat(db, chat)
+
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})

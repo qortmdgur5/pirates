@@ -597,3 +597,60 @@ async def post_chat(
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
+async def post_lastReadChat(
+    db: AsyncSession, 
+    chat: schemas.chatCreateRequest,
+):
+    try:
+        chatRoom_id = chat.chatRoom_id
+        user_id = chat.user_id
+        lastReadChat_id=chat.lastReadChat_id
+        
+        query = (
+            select(
+                models.ChatReadStatus
+            )
+            .where(
+                and_(
+                    models.ChatReadStatus.chatRoom_id == chatRoom_id,
+                    models.ChatReadStatus.user_id == user_id
+                )
+            )
+        )
+        
+        result = await db.execute(query)
+        existing_chat_status = result.scalar_one_or_none()
+
+        if existing_chat_status:
+            existing_chat_status.lastReadChat_id = lastReadChat_id
+            existing_chat_status.date = format_dates(datetime.now())
+            msg = "ChatReadStatus updated successfully"
+        
+        else:
+            db_chat = models.ChatReadStatus(
+                chatRoom_id=chatRoom_id, 
+                user_id=user_id, 
+                lastReadChat_id=lastReadChat_id, 
+                date=format_dates(datetime.now())
+            )
+            db.add(db_chat)
+            msg = "ChatReadStatus created successfully"
+
+        await db.commit()
+        return {"msg": msg}
+        
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
