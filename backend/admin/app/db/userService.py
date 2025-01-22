@@ -244,7 +244,8 @@ async def get_userParty(
                 models.Owner.phoneNumber,
                 models.Accomodation.score,
                 models.Accomodation.loveCount,
-                models.Party.partyOn
+                models.Party.partyOn,
+                models.Party.matchStartTime
             )
             .select_from(models.Party) 
             .join(models.Accomodation, models.Party.accomodation_id == models.Accomodation.id)
@@ -265,7 +266,8 @@ async def get_userParty(
                     "score": party.score,
                     "loveCount": party.loveCount,
                     "party_id": userParty.party_id,
-                    "party_on": party.partyOn
+                    "party_on": party.partyOn,
+                    "matchStartTime": format_dates(party.matchStartTime)
                 }
             ]
         return {
@@ -289,32 +291,38 @@ async def get_userParty(
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
 
+
 async def get_userPartyInfo(
-    id: int,
+    party_id: int,
     db: AsyncSession
 ) -> List[dict]:
     try:
         query = (
-            select(models.User, models.UserInfo, models.PartyUserInfo, models.Party)
+            select(
+                models.User.id, 
+                models.User.username, 
+                models.UserInfo.gender,
+                models.PartyUserInfo.team,
+            )
             .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
-            .join(models.Party, models.Party.id == models.User.party_id, isouter=True)
             .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
-            .filter(models.User.party_id == id, models.PartyUserInfo.partyOn == True)
+            .filter(models.User.party_id == party_id, models.PartyUserInfo.partyOn == True)
+            .distinct(models.User.id)  
             .order_by(models.User.id.desc())
         )
 
         result = await db.execute(query)
         users = result.all()
-        
+
         response = [
-                {
-                    "id": user[0].id, 
-                    "name": user[0].username,
-                    "gender": user[1].gender if user[1] else True,
-                    "team": user[2].team if user[2] else None
-                }
-                for user in users
-            ]
+            {
+                "id": user.id, 
+                "name": user.username,
+                "gender": user.gender if user.gender is not None else True,  
+                "team": user.team if user.team else None,
+            }
+            for user in users
+        ]
         return {
             "data": response,
             "totalCount": 0
@@ -337,15 +345,72 @@ async def get_userPartyInfo(
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
 
+async def get_userPartyInfoChatExist(
+    party_id: int,
+    user_id: int,
+    db: AsyncSession
+) -> List[dict]:
+    try:
+        query = (
+            select(
+                models.ChatRoom.id.label("chatRoom_id"),
+                models.ChatRoom.user_id_1,
+                models.ChatRoom.user_id_2
+            )
+            .where(
+                models.ChatRoom.party_id == party_id, 
+                or_(
+                    models.ChatRoom.user_id_1 == user_id, 
+                    models.ChatRoom.user_id_2 == user_id  
+                )
+            )
+        )
 
+        result = await db.execute(query)
+        chatRooms = result.all()
+
+        response = [
+            {
+                "chatRoom_id": chatRoom.chatRoom_id, 
+                "id": chatRoom.user_id_2 if chatRoom.user_id_1 == user_id else chatRoom.user_id_1 
+            }
+            for chatRoom in chatRooms
+        ]
+        return {
+            "data": response,
+            "totalCount": 0
+        }
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
 
 async def post_userChatRoom(
     db: AsyncSession, 
     userChatRoomRequest: schemas.userChatRoomRequest
 ):
     try:
-
-        db_chatRoom = models.ChatRoom(user_id_1=userChatRoomRequest.user_id_1, user_id_2=userChatRoomRequest.user_id_2, party_id=userChatRoomRequest.party_id)
+        user_id_1 = max(userChatRoomRequest.user_id_1, userChatRoomRequest.user_id_2)
+        user_id_2 = min(userChatRoomRequest.user_id_1, userChatRoomRequest.user_id_2)
+        
+        db_chatRoom = models.ChatRoom(
+            user_id_1=user_id_1, 
+            user_id_2=user_id_2,
+            party_id=userChatRoomRequest.party_id)
+        
         db.add(db_chatRoom)
         await db.commit()
         await db.refresh(db_chatRoom)
@@ -642,6 +707,113 @@ async def post_lastReadChat(
     except SQLAlchemyError as e:
         error_message = str(e)
         print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
+    
+async def post_userMatchSelect(
+    db: AsyncSession, 
+    userChatRoomRequest: schemas.userChatRoomRequest
+):
+    try:
+        db_matchSelect = models.UserMatch(
+            user_id_1=userChatRoomRequest.user_id_1, 
+            user_id_2=userChatRoomRequest.user_id_2,
+            party_id=userChatRoomRequest.party_id,
+            date=format_dates(datetime.now()))
+        
+        db.add(db_matchSelect)
+        await db.commit()
+        await db.refresh(db_matchSelect)
+
+        return {"msg": "ChatRoom created successfully"}
+        
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
+    
+async def get_userMatchSelect(
+    party_id: int,
+    db: AsyncSession
+) -> List[dict]:
+    try:
+        query = (
+            select(
+                models.UserMatch.user_id_1,
+                models.UserMatch.user_id_2,
+                models.UserInfo.phone,
+                models.UserInfo.gender,
+                models.PartyUserInfo.team
+            )
+            .where(
+                models.UserMatch.party_id == party_id
+            )
+            .join(
+                models.UserInfo,
+                or_(
+                    models.UserMatch.user_id_1 == models.UserInfo.user_id,
+                    models.UserMatch.user_id_2 == models.UserInfo.user_id
+                )
+            )
+            .join(
+                models.PartyUserInfo,
+                models.UserInfo.user_id == models.PartyUserInfo.user_id
+            )
+        )
+
+        result = await db.execute(query)
+        matchSelect = result.all()
+
+        man_list = []
+        woman_list = []
+
+        for row in matchSelect:
+            user_data = {
+                "user_id": row.user_id_1 if row.gender else row.user_id_2,
+                "phone": row.phone,
+                "team": row.team
+            }
+            if row.gender: 
+                man_list.append(user_data)
+            else:  
+                woman_list.append(user_data)
+
+        response = {
+            "data": {
+                "man": man_list,
+                "woman": woman_list
+            },
+            "totalCount": 0
+        }
+        
+        return response
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail="Database Error")
     except ValueError as e:

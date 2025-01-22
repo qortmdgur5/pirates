@@ -70,10 +70,13 @@ class Party(Base):
     number = Column(Integer)
     partyOn = Column(Integer)
     team = Column(Integer)
+    matchStartTime = Column(DateTime, default=func.now())
+    
     partys = relationship("Accomodation", back_populates="party") 
     participant = relationship("Participant", back_populates="participants") 
     users = relationship("User", back_populates="party") 
     chatRooms = relationship("ChatRoom", back_populates="party")
+    userMatch = relationship("UserMatch", back_populates="party")
     
 class Manager(Base):
     __tablename__ = "Manager"
@@ -181,3 +184,16 @@ class ChatRoom(Base):
     party = relationship("Party", back_populates="chatRooms")
     chat = relationship("Chat", back_populates="chatRooms")
     chatReadStatus = relationship("ChatReadStatus", back_populates="chatRooms")
+    
+class UserMatch(Base):
+    __tablename__ = "UserMatch"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    party_id = Column(Integer, ForeignKey('Party.id'))
+    user_id_1 = Column(Integer)
+    user_id_2 = Column(Integer)
+    date = Column(DateTime, default=func.now())
+    
+    party = relationship("Party", back_populates="userMatch")
+    
+    

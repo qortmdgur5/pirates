@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -189,20 +190,30 @@ class userPartyResponses(BaseModel):
     loveCount: Optional[int] = None   
     party_id: Optional[int] = None
     party_on: bool
+    matchStartTime: Optional[datetime] = None
 
 class userPartyResponse(BaseModel):
     data: List[userPartyResponses]
     totalCount: int
 
-class userPartyIntoResponses(BaseModel):
+class userPartyInfoResponses(BaseModel):
     id: int
     name: str
     gender: bool
     team: int 
 
 class userPartyInfoResponse(BaseModel):
-    data: List[userPartyIntoResponses]
+    data: List[userPartyInfoResponses]
     totalCount: int
+    
+class userPartyInfoChatExistResponses(BaseModel):
+    id: int
+    chatRoom_id: int
+
+class userPartyInfoChatExistResponse(BaseModel):
+    data: List[userPartyInfoChatExistResponses]
+    totalCount: int
+    
     
 class UserLoginResponse(BaseModel):
     msg: str
@@ -230,3 +241,12 @@ class lastReadChatRequest(BaseModel):
     chatRoom_id: int
     user_id: int
     lastReadChat_id: Optional[int] = None
+    
+class userMatchSelectResponses(BaseModel):
+    user_id: int
+    phone: str
+    team: int
+    
+class userMatchSelectResponse(BaseModel):
+    data: Optional[dict] = None  
+    totalCount: int

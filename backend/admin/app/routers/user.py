@@ -101,15 +101,15 @@ async def read_userPartyInfo(
 
 
 @router.get(
-    "/partyInfo/{id}", 
+    "/partyInfo/{party_id}", 
     response_model=schemas.userPartyInfoResponse, 
     summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true 인 경우의 유저들 정보만 가져오기")
 async def read_userPartyInfo( 
-    id: int, 
-    db: AsyncSession = Depends(database.get_db)
+    party_id: int, 
+    db: AsyncSession = Depends(database.get_db),
 ):
     try:
-        data = await userService.get_userPartyInfo(id, db)
+        data = await userService.get_userPartyInfo(party_id, db)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -117,6 +117,28 @@ async def read_userPartyInfo(
     except Exception as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+    
+@router.get(
+    "/partyInfo/chatExist/{party_id}/{user_id}", 
+    response_model=schemas.userPartyInfoChatExistResponse, 
+    summary="ChatRoom 테이블의 party_id = party_id & ( user_id_1 = user_id OR user_id_2 = user_id ) 조건에 해당하는 데이터")
+async def read_userPartyInfoChatExist( 
+    party_id: int, 
+    user_id: int,
+    db: AsyncSession = Depends(database.get_db),
+):
+    try:
+        data = await userService.get_userPartyInfoChatExist(party_id, user_id, db)
+        return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+    
     
 @router.post(
     "/chatRoom", 
@@ -225,3 +247,40 @@ async def create_lastReadChat(
     except Exception as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=500, detail={"msg": str(e)})
+
+
+@router.post(
+    "/match/select", 
+    summary="짝 매칭 선택 API")
+async def create_userMatchSelect(
+    userChatRoomRequest: schemas.userChatRoomRequest,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        return await userService.post_userMatchSelect(db, userChatRoomRequest)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+    
+@router.get(
+    "/match/select/{party_id}", 
+    response_model=schemas.userMatchSelectResponse, 
+    summary="짝 매칭 결과보기 API")
+async def read_userMatchSelect( 
+    party_id: int, 
+    db: AsyncSession = Depends(database.get_db),
+):
+    try:
+        data = await userService.get_userMatchSelect(party_id, db)
+        return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
