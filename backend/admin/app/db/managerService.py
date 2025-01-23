@@ -166,6 +166,7 @@ async def get_managerParties(
                 models.Party.partyTime,
                 func.count(models.Participant.id).label("participant_count"),
                 func.coalesce(models.Party.team, 0).label("team"),
+                models.Party.matchStartTime
             )
             .join(models.Participant, models.Party.id == models.Participant.party_id, isouter=True)
             .filter(models.Party.accomodation_id == id)
@@ -192,7 +193,8 @@ async def get_managerParties(
                 "partyOpen": managerParty.partyOpen,
                 "partyTime": format_party_time(managerParty.partyTime),
                 "participant": managerParty.participant_count,
-                "team": managerParty.team
+                "team": managerParty.team,
+                "matchStartTime": managerParty.matchStartTime.strftime('%Y-%m-%d %H:%M:%S') if managerParty.matchStartTime else None
             }
             for managerParty in managerParties
         ]
@@ -621,6 +623,39 @@ async def put_managerPartyUserOn(id: int, db: AsyncSession, partyOn: bool):
     if db_party:
         try:  
             db_party.partyOn = partyOn
+            await db.commit()
+            await db.refresh(db_party)
+            return {"msg": "ok"}  
+        
+        except SQLAlchemyError as e:
+            error_message = str(e)
+            print("SQLAlchemyError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail="Database Error")
+        except ValueError as e:
+            error_message = str(e)
+            print("ValueError:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=400, detail={"msg": error_message})
+        except Exception as e:
+            error_message = str(e)
+            print("Exception:", error_message)
+            await log_error(db, error_message)
+            raise HTTPException(status_code=500, detail={"msg": error_message})
+    else:
+        return {"msg": "fail"}
+    
+    
+async def put_managerPartyMatchStart(id: int, db: AsyncSession):
+    result = await db.execute(
+        select(models.Party).filter(models.Party.id == id)
+    )
+    
+    db_party = result.scalar_one_or_none()
+    
+    if db_party:
+        try:  
+            db_party.matchStartTime = format_dates(datetime.now())
             await db.commit()
             await db.refresh(db_party)
             return {"msg": "ok"}  

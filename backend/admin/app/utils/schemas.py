@@ -80,6 +80,7 @@ class managerParties(BaseModel):
     partyTime: str
     participant: int
     team: int
+    matchStartTime: Optional[str]
 
 class managerParty(BaseModel):
     data: List[managerParties]    

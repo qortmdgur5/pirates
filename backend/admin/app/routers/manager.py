@@ -331,3 +331,19 @@ async def update_managerPartyUserOn(
     except Exception as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+@router.put(
+    "/party/matchStart/{id}", 
+    summary="매니저용 파티 유저 리스트 페이지 - 유저의 partyOn 상태 변경 API")
+async def update_managerPartyMatchStart(
+    id: int,
+    db: AsyncSession = Depends(database.get_db)
+):
+    try:
+        return await managerService.put_managerPartyMatchStart(id, db)
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
