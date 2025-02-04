@@ -21,7 +21,7 @@ function Chat() {
   const user = useSessionUser();
   const userId = user?.id;
   const location = useLocation();
-  const { chatRoom_id, gender } = location.state || {}; // state에서 chatRoom_id 받아오기
+  const { chatRoom_id, gender } = location.state || {}; // state에서 chatRoom_id, gender 받아오기
   const [chatData, setChatData] = useState<ChatResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,11 @@ function Chat() {
           chatRoom_id,
         }
       );
-      setChatData(response.data);
+      if (response.data.data) {
+        setChatData({
+          data: response.data.data.reverse(), // 최신순으로 정렬
+        });
+      }
     } catch (e) {
       setError("채팅 데이터를 불러오는 데 실패했습니다.");
     } finally {
@@ -72,17 +76,43 @@ function Chat() {
   // 같은 유저의 연속된 메시지 그룹화
   const groupedChats: { user_id: number; contents: string[]; time: string }[] =
     [];
+
+  // date 속성 2025-01-31T16:05:11 -> 오전 or 오후 hh:tt 형식 변환
+  const formatTime = (dateString: string | null): string => {
+    if (!dateString) return ""; // null일 경우 빈 문자열 반환
+
+    const date = new Date(dateString);
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0"); // 항상 두 자리 유지
+    const period = hours < 12 ? "오전" : "오후";
+
+    // 12시간 형식으로 변환 (0시는 12시로 처리)
+    const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+
+    return `${period} ${formattedHours}:${minutes}`;
+  };
+
   chatData?.data?.forEach((chat) => {
+    const chatTime = new Date(chat.date); // 날짜를 Date 객체로 변환
     const isSameUser =
       groupedChats.length > 0 &&
       groupedChats[groupedChats.length - 1].user_id === chat.user_id;
-    if (isSameUser) {
+
+    // 이전 그룹과 시간이 같으면 계속 이어서 그룹화
+    const isSameTime =
+      groupedChats.length > 0 &&
+      groupedChats[groupedChats.length - 1].time ===
+        chatTime.toISOString().substring(0, 16); // ISO 시간 포맷에서 년-월-일 T 시:분 형태 비교
+
+    if (isSameUser && isSameTime) {
+      // 같은 유저, 같은 시간(분 까지만 비교)에 이어지는 메시지
       groupedChats[groupedChats.length - 1].contents.push(chat.contents);
     } else {
+      // 새로운 그룹 (유저가 다르거나 시간대가 다르면 새로운 그룹 생성)
       groupedChats.push({
         user_id: chat.user_id,
         contents: [chat.contents],
-        time: chat.date,
+        time: chatTime.toISOString().substring(0, 16), // 시간을 년-월-일 T 시:분 형식으로 저장
       });
     }
   });
@@ -104,7 +134,7 @@ function Chat() {
               <ChatComponent
                 key={index}
                 text={chatGroup.contents.join("\n")}
-                time={chatGroup.time}
+                time={formatTime(chatGroup.time)}
                 gender={gender}
               />
             );
