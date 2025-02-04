@@ -28,11 +28,11 @@ const ChatRoom = () => {
 
   // 유저 상태 관리 변수 Recoil
   const user = useSessionUser();
-  // const user_id = user?.id;
+  const user_id = user?.id;
   // const party_id = user?.party_id;
 
   // user_id와 party_id는 예시로 설정합니다. 실제로는 로그인된 유저 정보를 사용해야 합니다.
-  const user_id = 45;
+  // const user_id = 45;
   const party_id = 2;
 
   // 채팅방 리스트를 가져오는 함수입니다.

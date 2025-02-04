@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import styles from "./styles/chat.module.scss";
@@ -26,6 +26,7 @@ function Chat() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string>(""); // 입력된 메시지 상태 추가
+  const chatEndRef = useRef<HTMLDivElement>(null); // 채팅 전송 후 스크롤을 맨 밑으로 이동시키기 위한 ref 추가
 
   // 채팅 데이터 가져오기
   const fetchChatContents = async () => {
@@ -69,6 +70,13 @@ function Chat() {
       fetchChatContents();
     }
   }, [chatRoom_id]);
+
+  // 최신 메시지가 추가되었을 때 스크롤을 최하단으로 이동
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatData]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -139,6 +147,8 @@ function Chat() {
               />
             );
           })}
+          {/* 채팅을 작성하고 최신 채팅으로 이동시켜 줄 ref */}
+          <div ref={chatEndRef} />
         </div>
         <div className={styles.chat_input_box}>
           <div className={styles.chat_box}>
