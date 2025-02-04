@@ -135,7 +135,7 @@ function PartyUserList() {
         </button>
         <div className={styles.home_and_back_box}>
           <HomeButton />
-          <BackButton />
+          <BackButton navigateTo="" />
         </div>
         <div className={styles.search_and_participant_box}>
           <div className={styles.search_box}>

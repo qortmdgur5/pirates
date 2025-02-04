@@ -32,14 +32,14 @@ const ChatRoom = () => {
   // const party_id = user?.party_id;
 
   // user_id와 party_id는 예시로 설정합니다. 실제로는 로그인된 유저 정보를 사용해야 합니다.
-  const user_id = 1;
-  const party_id = 123;
+  const user_id = 45;
+  const party_id = 2;
 
   // 채팅방 리스트를 가져오는 함수입니다.
   const fetchChatRooms = async () => {
     try {
       // API 요청을 보냅니다.
-      const response = await axios.post<ChatRoomResponse[]>(
+      const response = await axios.post<{ data: ChatRoomResponse[] }>(
         "/api/user/chatRooms",
         {
           user_id,
@@ -48,13 +48,28 @@ const ChatRoom = () => {
       );
 
       // 응답 데이터를 상태에 저장합니다.
-      setChatRooms(response.data);
+      setChatRooms(response.data.data);
     } catch (error) {
       // 에러를 처리합니다.
       setError("채팅방 데이터를 가져오는 데 실패했습니다.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // date 속성 2025-01-31T16:05:11 -> 오전 or 오후 hh:tt 형식 변환
+  const formatTime = (dateString: string | null): string => {
+    if (!dateString) return ""; // null일 경우 빈 문자열 반환
+
+    const date = new Date(dateString);
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0"); // 항상 두 자리 유지
+    const period = hours < 12 ? "오전" : "오후";
+
+    // 12시간 형식으로 변환 (0시는 12시로 처리)
+    const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+
+    return `${period} ${formattedHours}:${minutes}`;
   };
 
   // 컴포넌트가 처음 렌더링될 때 채팅방 리스트를 가져옵니다.
@@ -90,11 +105,11 @@ const ChatRoom = () => {
               <ChatRoomInfo
                 name={
                   chatRoom.team
-                    ? `${chatRoom.team} ${chatRoom.name}`
+                    ? `${chatRoom.team}조 ${chatRoom.name}`
                     : chatRoom.name
                 }
                 text={chatRoom.contents || ""}
-                time={chatRoom.date || ""}
+                time={formatTime(chatRoom.date) || ""}
                 newAlert={chatRoom.unreadCount || null}
                 gender={chatRoom.gender}
               />
