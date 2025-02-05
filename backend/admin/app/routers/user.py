@@ -179,11 +179,9 @@ async def create_userChatRooms(
 async def create_userChatContents(
     userChatContentsRequest: schemas.userChatContentsRequest,
     db: AsyncSession = Depends(database.get_db),
-    page: int = Query(0),
-    pageSize: int = Query(10), 
 ):
     try:
-        return await userService.post_userChatContents(db, userChatContentsRequest, page, pageSize)
+        return await userService.post_userChatContents(db, userChatContentsRequest)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=400, detail={"msg": str(e)})

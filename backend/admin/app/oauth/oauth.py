@@ -24,6 +24,19 @@ def create_access_token(data: dict):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=TOKEN)
 
+def verify_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except jwt.ExpiredSignatureError:
+        raise credentials_exception
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+    return user_id
+
+
 def get_current_owner(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)

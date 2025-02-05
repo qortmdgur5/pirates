@@ -231,6 +231,7 @@ class userChatRoomsRequest(BaseModel):
 
 class userChatContentsRequest(BaseModel):
     chatRoom_id: int
+    lastChat_id: Optional[int] = None
 
 class chatCreateRequest(BaseModel):
     user_id: int

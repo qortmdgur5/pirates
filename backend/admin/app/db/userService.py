@@ -560,20 +560,28 @@ async def post_userChatRooms(
 async def post_userChatContents(
     db: AsyncSession, 
     userChatContentsRequest: schemas.userChatContentsRequest,
-    page: int = 0,
-    pageSize: int = 10
 ):
     try:
         chatRoom_id = userChatContentsRequest.chatRoom_id
+        lastChat_id = userChatContentsRequest.lastChat_id 
         
-        query = (
+        if lastChat_id is None:
+            query = (
                 select(models.Chat)
                 .where(models.Chat.chatRoom_id == chatRoom_id)
-                .order_by(models.Chat.date.desc())
-            )    
-        
-        offset = max(page * pageSize, 0)
-        query = query.offset(offset).limit(pageSize)
+                .order_by(models.Chat.date.desc(), models.Chat.id.desc())
+                .limit(30)
+            )
+        else:
+            query = (
+                select(models.Chat)
+                .where(
+                    models.Chat.chatRoom_id == chatRoom_id,
+                    models.Chat.id < lastChat_id  
+                )
+                .order_by(models.Chat.date.desc(), models.Chat.id.desc())
+                .limit(30)
+            )
         
         result = await db.execute(query)
         chat_room_datas = result.fetchall()  
@@ -588,7 +596,7 @@ async def post_userChatContents(
 
         return {
             "data": response,
-            "totalCount": len(response)
+            "totalCount": 0
         }
         
     except SQLAlchemyError as e:
