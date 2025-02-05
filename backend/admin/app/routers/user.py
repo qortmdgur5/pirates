@@ -1,3 +1,4 @@
+import json
 import os
 from fastapi import Depends, HTTPException, APIRouter, Query, WebSocket, WebSocketDisconnect
 from ..db import errorLog, userService, database
@@ -222,7 +223,13 @@ async def websocket_endpoint(
             data = await websocket.receive_text()
             chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
             await userService.post_chat(db, chat)
-            await manager.broadcast(f"User {user_id} says: {data}", chatRoom_id)
+            
+            message = {
+                    "user_id": user_id,
+                    "chatRoom_id": chatRoom_id,
+                    "content": data,
+                }
+            await manager.broadcast(json.dumps(message, ensure_ascii=False), chatRoom_id)
             
     except WebSocketDisconnect:
         manager.disconnect(websocket, chatRoom_id, user_id)
