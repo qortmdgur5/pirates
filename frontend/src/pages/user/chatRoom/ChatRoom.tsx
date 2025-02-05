@@ -98,6 +98,7 @@ const ChatRoom = () => {
                   state: {
                     chatRoom_id: chatRoom.id,
                     gender: chatRoom.gender,
+                    yourName: chatRoom.name,
                   },
                 })
               }
