@@ -28,6 +28,8 @@ function Chat() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string>(""); // 입력된 메시지 상태 추가
   const [isMyMessageSent, setIsMyMessageSent] = useState(false); // 내가 보낸 채팅 여부
+  const [hasMore, setHasMore] = useState(true);
+  const pageSize = 30; // 우리가 임의로 정해준 한번에 가져오는 데이터 수. 서버에서 정함
   const chatEndRef = useRef<HTMLDivElement>(null); // 새로운 채팅 전송 하면 최하단으로 스크롤 위한 ref
   const chatContainerRef = useRef<HTMLDivElement>(null); // 최상단 스크롤 할 시 이전 채팅 내역 로드 위한 ref
   const isFetchingRef = useRef(false); // 중복 요청 방지
@@ -36,7 +38,7 @@ function Chat() {
   // chatData가 업데이트될 때마다 lastChatId를 계산
   useEffect(() => {
     if (chatData.length > 0) {
-      setLastChatId(chatData[0].id); // 가장 오래된 채팅의 ID를 lastChatId로 설정
+      setLastChatId(chatData[0].id);
     }
   }, [chatData]);
 
@@ -57,9 +59,16 @@ function Chat() {
 
       const newData = response?.data?.data || [];
 
+      // 로드한 데이터가 pageSize 보다 더 작으면 더 가져올 데이터가 없으므로
+      if (newData.length < pageSize) setHasMore(false);
+
       setChatData((prevData) =>
         append ? [...newData, ...prevData] : [...prevData, ...newData]
       );
+
+      if (newData.length > 0 && isFirstRender) {
+        setLastChatId(newData[0].id);
+      }
 
       // 이전 채팅이 추가된 후에도 스크롤 위치 유지
       requestAnimationFrame(() => {
@@ -119,10 +128,11 @@ function Chat() {
   // 스크롤 최상단 도달 시 이전 채팅 불러오기
   const handleScroll = () => {
     const chatBox = chatContainerRef.current;
-    if (!chatBox) return;
+    if (!chatBox || !hasMore) return;
 
     if (chatBox.scrollTop === 0) {
       fetchChatContents(true);
+      console.log(chatData);
     }
   };
 
