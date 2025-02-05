@@ -569,7 +569,7 @@ async def post_userChatContents(
             query = (
                 select(models.Chat)
                 .where(models.Chat.chatRoom_id == chatRoom_id)
-                .order_by(models.Chat.date.asc(), models.Chat.id.asc())
+                .order_by(models.Chat.id.desc())
                 .limit(30)
             )
         else:
@@ -579,7 +579,7 @@ async def post_userChatContents(
                     models.Chat.chatRoom_id == chatRoom_id,
                     models.Chat.id < lastChat_id  
                 )
-                .order_by(models.Chat.date.asc(), models.Chat.id.asc())
+                .order_by(models.Chat.id.desc())
                 .limit(30)
             )
         
@@ -594,6 +594,8 @@ async def post_userChatContents(
                 } for chat_room_data in chat_room_datas   
             ]
 
+        response.reverse()
+        
         return {
             "data": response,
             "totalCount": 0
