@@ -15,14 +15,17 @@
   .chat_box {
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 16px;
-    width: 60%;
+    max-width: 60%;
+    width: fit-content;
     font-size: 26px;
     color: $color-black-100;
     font-family: "NanumSquareEB", sans-serif;
 
     .chat_text {
-      width: 100%;
+      max-width: 100%;
+      width: fit-content;
       background-color: $color-gray-300;
       padding: 20px 15px 19px 18px;
       word-wrap: break-word; // 오래된 브라우저 호환성

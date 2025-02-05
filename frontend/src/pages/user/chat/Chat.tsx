@@ -35,6 +35,9 @@ function Chat() {
   const isFetchingRef = useRef(false); // 중복 요청 방지
   const isFirstRender = useRef(true); // 첫 렌더링 여부 체크
 
+  // WebSocket 연결을 위한 ref
+  const socketRef = useRef<WebSocket | null>(null);
+
   // chatData가 업데이트될 때마다 lastChatId를 계산
   useEffect(() => {
     if (chatData.length > 0) {
@@ -91,6 +94,85 @@ function Chat() {
     }
   }, [chatRoom_id]);
 
+  // WebSocket 연결 설정
+  useEffect(() => {
+    if (chatRoom_id && userId) {
+      socketRef.current = new WebSocket(
+        `ws://localhost:9000/user/ws/chat/${chatRoom_id}/${userId}`
+      );
+
+      socketRef.current.onopen = () => {
+        console.log("WebSocket 연결됨.");
+      };
+
+      socketRef.current.onmessage = (event) => {
+        const messageData = JSON.parse(event.data); // 서버에서 온 메시지가 JSON 형식이라면 파싱
+
+        const { user_id, content } = messageData; // 서버에서 받은 메시지 데이터
+
+        // 서버에서 메시지를 받으면 채팅 데이터에 추가
+        setChatData((prevData) => [
+          ...prevData,
+          {
+            id: prevData.length > 0 ? prevData[prevData.length - 1].id + 1 : 1, // 마지막 id에 1을 더함, 첫 번째 채팅은 1부터 시작 - 임시로 처리
+            user_id: user_id, // 채팅을 보낸 사람의 user_id
+            contents: content, // 메시지 내용
+            date: new Date().toISOString(), // 메시지 전송 시간
+          },
+        ]);
+      };
+
+      socketRef.current.onerror = (error) => {
+        console.error("WebSocket 에러:", error);
+      };
+
+      socketRef.current.onclose = () => {
+        console.log("WebSocket 연결 종료");
+      };
+    }
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
+  }, [chatRoom_id, userId]);
+
+  // 채팅 전송
+  // const sendChat = async () => {
+  //   if (!message.trim()) return;
+  //   try {
+  //     await axios.post("/api/user/chat", {
+  //       user_id: userId,
+  //       contents: message,
+  //       chatRoom_id,
+  //     });
+  //     setMessage("");
+  //     setIsMyMessageSent(true);
+  //   } catch (e) {
+  //     alert("메시지 전송에 실패했습니다.");
+  //   }
+  // };
+  const sendChat = async () => {
+    if (!message.trim()) return;
+
+    // WebSocket이 연결된 상태일 때만 메시지 전송
+    if (socketRef.current) {
+      if (socketRef.current.readyState === WebSocket.OPEN) {
+        // 연결 완료된 경우 메시지 전송
+        socketRef.current.send(message);
+        setMessage("");
+        setIsMyMessageSent(true);
+      } else if (socketRef.current.readyState === WebSocket.CONNECTING) {
+        console.log("WebSocket 연결 중입니다...");
+      } else {
+        console.error("WebSocket 연결이 완료되지 않았습니다.");
+      }
+    } else {
+      console.error("WebSocket 객체가 존재하지 않습니다.");
+    }
+  };
+
   // 초기 페이지 진입시 최초 렌더링 후 스크롤 최하단으로 이동
   useEffect(() => {
     if (isFirstRender.current && chatData.length > 0) {
@@ -100,22 +182,6 @@ function Chat() {
       isFirstRender.current = false; // 첫 렌더링 완료 후 false로 설정
     }
   }, [chatData]);
-
-  // 채팅 전송
-  const sendChat = async () => {
-    if (!message.trim()) return;
-    try {
-      await axios.post("/api/user/chat", {
-        user_id: userId,
-        contents: message,
-        chatRoom_id,
-      });
-      setMessage("");
-      setIsMyMessageSent(true);
-    } catch (e) {
-      alert("메시지 전송에 실패했습니다.");
-    }
-  };
 
   // 내가 채팅을 보낸 경우에만 스크롤 최하단 이동
   useEffect(() => {
