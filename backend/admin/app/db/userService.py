@@ -672,6 +672,40 @@ async def post_chat(
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
+    
+async def get_chatId(
+    db: AsyncSession,
+    chatRoom_id: int,
+    user_id: int
+):
+    try:
+        query = (
+            select(models.Chat.id)
+            .where(models.Chat.chatRoom_id == chatRoom_id, models.Chat.user_id == user_id)
+            .order_by(models.Chat.id.desc())
+            .limit(1)
+        )
+        result = await db.execute(query)
+        existing_chat_id = result.scalar_one_or_none()
+        
+        return existing_chat_id  
+        
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
 async def post_lastReadChat(
     db: AsyncSession, 
     chat: schemas.chatCreateRequest,

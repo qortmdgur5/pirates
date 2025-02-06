@@ -224,9 +224,11 @@ async def websocket_endpoint(
             chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
             await userService.post_chat(db, chat)
             
+            chat_id = await userService.get_chatId(db, chatRoom_id, user_id)
             message = {
                     "user_id": user_id,
                     "chatRoom_id": chatRoom_id,
+                    "chat_id": chat_id,
                     "content": data,
                 }
             await manager.broadcast(json.dumps(message, ensure_ascii=False), chatRoom_id)
