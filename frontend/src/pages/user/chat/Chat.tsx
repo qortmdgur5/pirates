@@ -21,9 +21,10 @@ function Chat() {
   const user = useSessionUser();
   const userId = user?.id;
   const location = useLocation();
-  const { chatRoom_id, gender, yourName } = location.state || {}; // state에서 chatRoom_id, gender 받아오기
+  const { chatRoom_id, gender, yourName, yourId } = location.state || {}; // state에서 chatRoom_id, gender 받아오기
   const [chatData, setChatData] = useState<ChatData[]>([]);
-  const [lastChatId, setLastChatId] = useState<number | null>(null); // 현재 채팅 데이터 중 가장 오래된 채팅 id
+  const [lastChatId, setLastChatId] = useState<number | null>(null); // 현재 채팅 데이터 중 가장 오래된 채팅 id, 이전 채팅목록 불러오기 위한 변수
+  const [lastReadChatId, setLastReadChatId] = useState<number | null>(null); // 유저가 채팅방에서 마지막으로 읽은 상대방의 채팅 id
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string>(""); // 입력된 메시지 상태 추가
@@ -108,18 +109,23 @@ function Chat() {
       socketRef.current.onmessage = (event) => {
         const messageData = JSON.parse(event.data); // 서버에서 온 메시지가 JSON 형식이라면 파싱
 
-        const { user_id, content } = messageData; // 서버에서 받은 메시지 데이터
+        const { id, user_id, content } = messageData; // 서버에서 받은 메시지 데이터
 
         // 서버에서 메시지를 받으면 채팅 데이터에 추가
         setChatData((prevData) => [
           ...prevData,
           {
-            id: prevData.length > 0 ? prevData[prevData.length - 1].id + 1 : 1, // 마지막 id에 1을 더함, 첫 번째 채팅은 1부터 시작 - 임시로 처리
+            id: id, // 채팅 데이터의 id
             user_id: user_id, // 채팅을 보낸 사람의 user_id
             contents: content, // 메시지 내용
             date: new Date().toISOString(), // 메시지 전송 시간
           },
         ]);
+
+        if (user_id !== userId) {
+          // 상대방의 채팅이면 마지막 읽은 채팅 id 를 업데이트
+          setLastReadChatId(id);
+        }
       };
 
       socketRef.current.onerror = (error) => {
@@ -139,20 +145,6 @@ function Chat() {
   }, [chatRoom_id, userId]);
 
   // 채팅 전송
-  // const sendChat = async () => {
-  //   if (!message.trim()) return;
-  //   try {
-  //     await axios.post("/api/user/chat", {
-  //       user_id: userId,
-  //       contents: message,
-  //       chatRoom_id,
-  //     });
-  //     setMessage("");
-  //     setIsMyMessageSent(true);
-  //   } catch (e) {
-  //     alert("메시지 전송에 실패했습니다.");
-  //   }
-  // };
   const sendChat = async () => {
     if (!message.trim()) return;
 
@@ -173,13 +165,47 @@ function Chat() {
     }
   };
 
-  // 초기 페이지 진입시 최초 렌더링 후 스크롤 최하단으로 이동
+  // 마지막 읽은 상대방의 채팅 id 업데이트 API
+  const updateReadChat = async (
+    chatRoomId: number,
+    userId: number,
+    lastReadChatId: number
+  ) => {
+    try {
+      const response = await axios.post("/api/user/chat/lastReadChat", {
+        chatRoom_id: chatRoomId,
+        user_id: userId,
+        lastReadChat_id: lastReadChatId,
+      });
+      console.log(response);
+    } catch (e) {
+      setError("채팅 데이터를 불러오는 데 실패했습니다.");
+    }
+  };
+
+  useEffect(() => {
+    if (lastReadChatId) {
+      updateReadChat(chatRoom_id, yourId, lastReadChatId);
+    }
+  }, [lastReadChatId]);
+
+  // 초기 페이지 진입시 렌더링 후 스크롤 최하단으로 이동 & 마지막 읽은 상대방 톡 체크
   useEffect(() => {
     if (isFirstRender.current && chatData.length > 0) {
-      if (chatData.length > 0 && chatEndRef.current) {
-        chatEndRef.current.scrollIntoView({ behavior: "auto" });
-      }
+      // 스크롤을 최하단으로 이동
+      chatEndRef.current?.scrollIntoView({ behavior: "auto" });
       isFirstRender.current = false; // 첫 렌더링 완료 후 false로 설정
+
+      // 채팅 데이터의 끝에서부터 첫 번째로 user_id가 다른 데이터를 찾아 lastReadChatId로 설정
+      for (let i = chatData.length - 1; i >= 0; i--) {
+        const message = chatData[i];
+
+        if (message.user_id !== userId) {
+          // 상대방이 보낸 메세지면
+          setLastReadChatId(message.id);
+          break;
+        }
+      }
     }
   }, [chatData]);
 
@@ -198,7 +224,6 @@ function Chat() {
 
     if (chatBox.scrollTop === 0) {
       fetchChatContents(true);
-      console.log(chatData);
     }
   };
 
