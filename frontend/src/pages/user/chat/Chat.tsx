@@ -21,7 +21,7 @@ function Chat() {
   const user = useSessionUser();
   const userId = user?.id;
   const location = useLocation();
-  const { chatRoom_id, gender, yourName, yourId } = location.state || {}; // state에서 chatRoom_id, gender 받아오기
+  const { chatRoom_id, gender, yourName } = location.state || {}; // state에서 chatRoom_id, gender 받아오기
   const [chatData, setChatData] = useState<ChatData[]>([]);
   const [lastChatId, setLastChatId] = useState<number | null>(null); // 현재 채팅 데이터 중 가장 오래된 채팅 id, 이전 채팅목록 불러오기 위한 변수
   const [lastReadChatId, setLastReadChatId] = useState<number | null>(null); // 유저가 채팅방에서 마지막으로 읽은 상대방의 채팅 id
@@ -184,8 +184,8 @@ function Chat() {
   };
 
   useEffect(() => {
-    if (lastReadChatId) {
-      updateReadChat(chatRoom_id, yourId, lastReadChatId);
+    if (lastReadChatId && userId) {
+      updateReadChat(chatRoom_id, userId, lastReadChatId);
     }
   }, [lastReadChatId]);
 
