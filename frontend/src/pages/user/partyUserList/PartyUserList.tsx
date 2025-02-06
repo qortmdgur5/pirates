@@ -23,6 +23,11 @@ function PartyUserList() {
   const user = useSessionUser(); // userAtom에서 현재 로그인된 사용자 정보 가져오기
   const navigate = useNavigate();
 
+  // 각 팀의 토글 상태 관리 (팀마다 열기/닫기 상태를 저장)
+  const [teamVisibility, setTeamVisibility] = useState<
+    Map<string | number, boolean>
+  >(new Map());
+
   useEffect(() => {
     async function fetchPartyUsers() {
       try {
@@ -78,6 +83,28 @@ function PartyUserList() {
 
   const groupedUsers = groupByTeam(partyUsers);
 
+  // 예시 수정
+  useEffect(() => {
+    // groupedUsers가 변경될 때만 팀을 열려있는 상태로 설정
+    if (groupedUsers.size > 0) {
+      // 초기화 된 상태라면, setTeamVisibility를 한 번만 호출
+      groupedUsers.forEach((_, team) => {
+        setTeamVisibility((prev) => {
+          // 이미 해당 팀이 있으면 상태 업데이트를 하지 않음
+          if (!prev.has(team)) {
+            return new Map(prev).set(team, true);
+          }
+          return prev;
+        });
+      });
+    }
+  }, [groupedUsers]); // groupedUsers가 변경될 때만 실행
+
+  const toggleTeamVisibility = (team: string | number) => {
+    setTeamVisibility((prev) => new Map(prev).set(team, !prev.get(team)));
+    console.log(teamVisibility);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.container_contents}>
@@ -106,16 +133,18 @@ function PartyUserList() {
               <div key={team} className={styles.team_section}>
                 <TeamDropDown
                   team={team === "미지정" ? "미지정" : `${team}조`}
+                  onClick={() => toggleTeamVisibility(team)} // 클릭 시 토글
                 />
-                {users.map((user) => (
-                  <UserListCard
-                    key={user.id}
-                    id={user.id}
-                    team={user.team}
-                    userName={user.name}
-                    gender={user.gender}
-                  />
-                ))}
+                {teamVisibility.get(team) && // 토글된 상태가 true일 때만 보여줌
+                  users.map((user) => (
+                    <UserListCard
+                      key={user.id}
+                      id={user.id}
+                      team={user.team}
+                      userName={user.name}
+                      gender={user.gender}
+                    />
+                  ))}
               </div>
             ))
           ) : (
