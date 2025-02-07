@@ -7,6 +7,7 @@ import UserListCard from "./components/UserListCard";
 import styles from "./styles/partyUserList.module.scss";
 import { useEffect, useState } from "react";
 import useSessionUser from "../../hook/useSessionUser";
+import axios from "axios";
 
 // API 응답 타입 정의
 interface UserPartyInfo {
@@ -14,6 +15,7 @@ interface UserPartyInfo {
   name: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
   team: number | null; // 팀 번호 (nullable)
+  chatRoomId: number | null; // 서로의 채팅방 번호
 }
 
 function PartyUserList() {
@@ -31,10 +33,7 @@ function PartyUserList() {
   useEffect(() => {
     async function fetchPartyUsers() {
       try {
-        if (!user) {
-          // 유저 로그인 정보 초기화 대기
-          return;
-        }
+        if (!user) return; // 유저 로그인 정보가 없으면 대기
 
         const partyId = user.party_id;
         if (!partyId) {
@@ -42,14 +41,31 @@ function PartyUserList() {
           return;
         }
 
-        const response = await fetch(`/api/user/partyInfo/${partyId}`);
-        if (!response.ok) {
-          throw new Error("데이터를 가져오는 데 실패했습니다.");
-        }
+        // 1. 첫 번째 API 호출 (파티 참여자 목록)
+        const { data: partyResponse } = await axios.get(
+          `/api/user/partyInfo/${partyId}`
+        );
+        const partyUsers: UserPartyInfo[] = partyResponse.data;
 
-        // response.json 의 데이터가 data, totalCount 로 2개로 오므로 구조분해 해서 사용해야함
-        const { data }: { data: UserPartyInfo[] } = await response.json();
-        setPartyUsers(data);
+        // 2. 두 번째 API 호출 (현재 사용자와 이미 채팅방이 있는 유저 목록)
+        const { data: chatResponse } = await axios.get(
+          `/api/user/partyInfo/chatExist/${partyId}/${user.id}`
+        );
+        const chatUsers: { id: number; chatRoom_id: number }[] =
+          chatResponse.data;
+
+        // 3. 서로 채팅중인 유저들의 정보를 Map 으로 저장 (빠른검색 위해)
+        const chatUserMap = new Map(
+          chatUsers.map((chatUser) => [chatUser.id, chatUser.chatRoom_id])
+        );
+
+        // 4. 모든 유저 정보를 저장 (채팅방 여부 추가)
+        const usersWithChatInfo = partyUsers.map((partyUser) => ({
+          ...partyUser,
+          chatRoomId: chatUserMap.get(partyUser.id) || null, // 채팅방이 서로 존재하면 ID 추가 없으면 null
+        }));
+
+        setPartyUsers(usersWithChatInfo);
       } catch (error) {
         console.error("API 호출 에러:", error);
         alert("참여자 정보를 불러오는 데 실패했습니다.");
@@ -82,6 +98,7 @@ function PartyUserList() {
   };
 
   const groupedUsers = groupByTeam(partyUsers);
+  console.log(groupedUsers);
 
   // 예시 수정
   useEffect(() => {
@@ -102,7 +119,6 @@ function PartyUserList() {
 
   const toggleTeamVisibility = (team: string | number) => {
     setTeamVisibility((prev) => new Map(prev).set(team, !prev.get(team)));
-    console.log(teamVisibility);
   };
 
   return (
@@ -143,6 +159,7 @@ function PartyUserList() {
                       team={user.team}
                       userName={user.name}
                       gender={user.gender}
+                      chatRoomId={user.chatRoomId}
                     />
                   ))}
               </div>

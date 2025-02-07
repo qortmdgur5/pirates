@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./styles/userListCard.module.scss";
 
 interface UserListCardProps {
@@ -5,9 +6,27 @@ interface UserListCardProps {
   team: number | null; // 팀 번호 또는 null
   userName: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
+  chatRoomId: number | null; // 채팅방 ID
 }
 
-function UserListCard({ id, team, userName, gender }: UserListCardProps) {
+function UserListCard({
+  id,
+  team,
+  userName,
+  gender,
+  chatRoomId,
+}: UserListCardProps) {
+  const navigate = useNavigate();
+
+  const handleChatClick = () => {
+    if (chatRoomId) {
+      navigate(`/chat/${chatRoomId}`); // 기존 채팅방으로 이동
+    } else {
+      console.log(`새로운 채팅 시작: 상대 유저 ID = ${id}`);
+      // 새로운 채팅방 생성 API 호출 로직 추가 가능
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.user_img_box}>
@@ -31,8 +50,12 @@ function UserListCard({ id, team, userName, gender }: UserListCardProps) {
           />
         </div>
       </div>
-      <button className={styles.chat_button} type="button">
-        채팅
+      <button
+        className={chatRoomId ? styles.chat_button_enter : styles.chat_button}
+        type="button"
+        onClick={handleChatClick}
+      >
+        {chatRoomId ? "입장" : "채팅"}
       </button>
     </div>
   );
