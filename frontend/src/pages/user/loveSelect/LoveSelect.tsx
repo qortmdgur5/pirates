@@ -25,12 +25,13 @@ function LoveSelect() {
   const [userList, setUserList] = useState<UserListProps[]>([]); // 짝 매칭 같은 조 유저 리스트
   const [team, setTeam] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null); // 남은 시간
-  const [matchStatus, setMatchStatus] = useState<
-    "notStarted" | "inProgress" | "finished"
-  >("notStarted"); // 짝매칭 상태
+
   const [endTime, setEndTime] = useState<dayjs.Dayjs | null>(null); // 짝매칭 종료 시간
   const user = useSessionUser();
   const userId = user?.id; // 본인 id
+  const [matchStatus, setMatchStatus] = useState<
+    "notStarted" | "inProgress" | "finished"
+  >("notStarted"); // 짝매칭 상태
 
   useEffect(() => {
     if (!matchStartTime) return; // matchStartTime이 없으면 종료
@@ -93,6 +94,14 @@ function LoveSelect() {
     getMatchUserList();
   }, [matchStatus]);
 
+  // 본인의 gender 값을 userList에서 찾기
+  const userGender = userList.find((user) => user.id === userId)?.gender;
+
+  // 필터링된 유저 리스트 -> 자신 제외 && 동성 제외
+  const filteredUserList = userList.filter(
+    (user) => user.id !== userId && user.gender !== userGender
+  );
+
   // matchStatus가 "notStarted"일 경우 대기 메시지 표시
   if (matchStatus === "notStarted") return <p>매칭 시작 대기 중...</p>;
 
@@ -117,7 +126,7 @@ function LoveSelect() {
           </div>
           <div className={styles.user_list_box}>
             {/* UserListCard 컴포넌트를 map으로 돌려 렌더링 */}
-            {userList.map((user) => (
+            {filteredUserList.map((user) => (
               <UserListCard
                 key={user.id}
                 id={user.id}
