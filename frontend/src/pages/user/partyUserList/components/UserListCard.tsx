@@ -44,7 +44,8 @@ function UserListCard({
         party_id: partyId,
       });
 
-      const newChatRoomId = response.data.chatRoom_id; // 생성된 채팅방 id
+      const newChatRoomId = response.data.data.chatRoom_id; // 생성된 채팅방 id
+
       if (newChatRoomId) {
         navigate("/user/chat", {
           state: {
@@ -76,6 +77,8 @@ function UserListCard({
     }
   };
 
+  const isSelf = id === userId; // 본인인지 확인
+
   return (
     <div className={styles.container}>
       <div className={styles.user_img_box}>
@@ -100,11 +103,18 @@ function UserListCard({
         </div>
       </div>
       <button
-        className={chatRoomId ? styles.chat_button_enter : styles.chat_button}
+        className={
+          isSelf
+            ? styles.chat_button_self
+            : chatRoomId
+            ? styles.chat_button_enter
+            : styles.chat_button
+        }
         type="button"
         onClick={handleChatClick}
+        disabled={isSelf} // 본인일 경우 버튼 비활성화
       >
-        {chatRoomId ? "입장" : "채팅"}
+        {isSelf ? "본인" : chatRoomId ? "입장" : "채팅"}
       </button>
     </div>
   );

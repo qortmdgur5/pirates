@@ -76,5 +76,20 @@
     font-weight: bold;
   }
 
+  .chat_button_self {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 152px;
+    height: 100%;
+    border-radius: 18px;
+    filter: drop-shadow(3.776px 4.663px 2.5px rgba(4, 0, 0, 0.17));
+    font-size: 28px;
+    font-family: "NanumSquareB", sans-serif;
+    background-color: $color-green-000;
+    color: $color-white-000;
+    font-weight: bold;
+  }
+
 
 }

@@ -11,7 +11,7 @@ function LoveSelect() {
         <HouseNameAndDate guestHouseName={"솔 게스트 하우스 짝매칭"} />
         <div className={styles.home_and_back_box}>
           <HomeButton />
-          <BackButton />
+          <BackButton navigateTo="/user/party"/>
         </div>
         <div className={styles.team_and_time_box}>
           <p className={styles.team_text}>1조 짝 매칭</p>

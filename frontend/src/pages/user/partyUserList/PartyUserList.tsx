@@ -100,7 +100,6 @@ function PartyUserList() {
   };
 
   const groupedUsers = groupByTeam(partyUsers);
-  console.log(groupedUsers);
 
   // 예시 수정
   useEffect(() => {
