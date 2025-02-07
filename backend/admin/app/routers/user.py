@@ -102,8 +102,8 @@ async def read_userPartyInfo(
 
 
 @router.get(
-    "/party/matchTime/{id}", 
-    summary="게스트 하우스의 당일 파티정보 가져오기 API")
+    "/party/matchTime/{party_id}", 
+    summary="Party 테이블 짝매칭 시작시간(matchStartTime 필드) 가져오기 API")
 async def read_userPartyInfo( 
     party_id: int,
     db: AsyncSession = Depends(database.get_db)
