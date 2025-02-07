@@ -415,7 +415,20 @@ async def post_userChatRoom(
         await db.commit()
         await db.refresh(db_chatRoom)
 
-        return {"msg": "ChatRoom created successfully"}
+        query = (
+            select(models.ChatRoom.id)
+            .where(models.ChatRoom.user_id_1 == user_id_1, 
+                   models.ChatRoom.user_id_2 == user_id_2, 
+                   models.ChatRoom.party_id == userChatRoomRequest.party_id)
+        )
+        result = await db.execute(query)
+        chatRoom_id = result.scalar_one_or_none()
+
+        response = {"chatRoom_id":chatRoom_id}
+        return {
+            "data": response,
+            "totalCount": 0
+        }
         
     except SQLAlchemyError as e:
         error_message = str(e)
