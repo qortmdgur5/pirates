@@ -23,6 +23,8 @@ function PartyUserList() {
   const { guestHouseName } = location.state || {}; // /user/party 페이지에서 useNavigate state 로 데이터 추출
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
   const user = useSessionUser(); // userAtom에서 현재 로그인된 사용자 정보 가져오기
+  const userId = user?.id || null;
+  const partyId = user?.party_id || null;
   const navigate = useNavigate();
 
   // 각 팀의 토글 상태 관리 (팀마다 열기/닫기 상태를 저장)
@@ -160,6 +162,8 @@ function PartyUserList() {
                       userName={user.name}
                       gender={user.gender}
                       chatRoomId={user.chatRoomId}
+                      userId={userId}
+                      partyId={partyId}
                     />
                   ))}
               </div>
