@@ -252,3 +252,18 @@ class userMatchSelectResponses(BaseModel):
 class userMatchSelectResponse(BaseModel):
     data: Optional[dict] = None  
     totalCount: int
+
+
+class userMatchUserListRequest(BaseModel):
+    user_id: int
+    party_id: int
+
+class userMatchUserListResponses(BaseModel):
+    id: int
+    name: str
+    gender: bool
+    team: Optional[int] = None
+    
+class userMatchUserListResponse(BaseModel):
+    data: List[userMatchUserListResponses]
+    totalCount: int

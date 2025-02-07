@@ -777,7 +777,72 @@ async def post_lastReadChat(
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
+
+async def get_userMatchUserList(
+    userList: schemas.userMatchUserListRequest,
+    db: AsyncSession
+) -> List[dict]:
+    try:
+        party_id = userList.party_id
+        user_id = userList.user_id
+
+        subquery = (
+            select(models.PartyUserInfo.team)
+            .filter(models.PartyUserInfo.user_id == user_id)
+            .scalar_subquery()
+        )
+
+        query = (
+            select(
+                models.User.id, 
+                models.User.username, 
+                models.UserInfo.gender,
+                models.PartyUserInfo.team,
+            )
+            .join(models.UserInfo, models.User.id == models.UserInfo.user_id, isouter=True)
+            .join(models.PartyUserInfo, models.User.id == models.PartyUserInfo.user_id, isouter=True)
+            .filter(
+                models.User.party_id == party_id,  
+                models.PartyUserInfo.partyOn == True,
+                models.PartyUserInfo.team == subquery 
+            )
+            .distinct(models.User.id)
+            .order_by(models.User.id.desc())
+        )
+
+        result = await db.execute(query)
+        users = result.all()
+
+        response = [
+            {
+                "id": user.id, 
+                "name": user.username,
+                "gender": user.gender if user.gender is not None else True,  
+                "team": user.team if user.team else None,
+            }
+            for user in users
+        ]
+        return {
+            "data": response,
+            "totalCount": 0
+        }
     
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
 async def post_userMatchSelect(
     db: AsyncSession, 
     userChatRoomRequest: schemas.userChatRoomRequest

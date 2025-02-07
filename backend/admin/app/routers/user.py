@@ -255,6 +255,25 @@ async def create_lastReadChat(
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=500, detail={"msg": str(e)})
 
+@router.post(
+    "/match/userList", 
+    response_model=schemas.userMatchUserListResponse, 
+    summary="짝매칭 같은 조 유저 리스트 가져오기 API")
+async def read_userMatchUserList( 
+    userList: schemas.userMatchUserListRequest, 
+    db: AsyncSession = Depends(database.get_db),
+):
+    try:
+        data = await userService.get_userMatchUserList(userList, db)
+        return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+
 
 @router.post(
     "/match/select", 
