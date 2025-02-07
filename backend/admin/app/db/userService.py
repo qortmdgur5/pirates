@@ -267,7 +267,7 @@ async def get_userParty(
                     "loveCount": party.loveCount,
                     "party_id": userParty.party_id,
                     "party_on": party.partyOn,
-                    "matchStartTime": format_dates(party.matchStartTime)
+                    "matchStartTime": format_dates(party.matchStartTime) if party.matchStartTime else None
                 }
             ]
         return {
@@ -290,6 +290,43 @@ async def get_userParty(
         print("Exception:", error_message)
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
+
+
+async def get_userPartyMatchTime(
+    db: AsyncSession,
+    party_id: int
+) -> List[dict]:
+    try:
+        query = (
+            select(models.Party.matchStartTime)
+            .where(models.Party.id == party_id)
+        )
+
+        result = await db.execute(query)
+        party = result.first()
+
+        response = {"matchStartTime": format_dates(party.matchStartTime) if party.matchStartTime else None}
+        return {
+            "data": response,
+            "totalCount": 0
+        } 
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
 
 
 async def get_userPartyInfo(
