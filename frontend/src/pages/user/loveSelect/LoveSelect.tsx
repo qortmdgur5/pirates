@@ -25,10 +25,12 @@ function LoveSelect() {
   const [userList, setUserList] = useState<UserListProps[]>([]); // 짝 매칭 같은 조 유저 리스트
   const [team, setTeam] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null); // 남은 시간
-
   const [endTime, setEndTime] = useState<dayjs.Dayjs | null>(null); // 짝매칭 종료 시간
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null); // 선택한 유저 ID
+  const [confirm, setConfirm] = useState<boolean>(false);
   const user = useSessionUser();
-  const userId = user?.id; // 본인 id
+  const userId = user?.id || null; // 본인 id
+  const partyId = user?.party_id || null;
   const [matchStatus, setMatchStatus] = useState<
     "notStarted" | "inProgress" | "finished"
   >("notStarted"); // 짝매칭 상태
@@ -60,6 +62,7 @@ function LoveSelect() {
       }
     };
 
+    updateTimer();
     const interval = setInterval(updateTimer, 1000); // 1초마다 카운트 갱신
 
     return () => clearInterval(interval); // cleanup 함수
@@ -69,11 +72,11 @@ function LoveSelect() {
   const displayTime =
     matchStatus === "finished"
       ? "끝"
-      : `${Math.floor(remainingTime! / 60)
-          .toString()
-          .padStart(2, "0")}:${(remainingTime! % 60)
-          .toString()
-          .padStart(2, "0")}`;
+      : remainingTime !== null
+      ? `${String(Math.floor(remainingTime / 60)).padStart(2, "0")}:${String(
+          remainingTime % 60
+        ).padStart(2, "0")}`
+      : "--:--";
 
   const getMatchUserList = async () => {
     try {
@@ -83,7 +86,7 @@ function LoveSelect() {
       });
       const data = response.data.data;
       setUserList(data);
-      setTeam(data[0].team);
+      setTeam(data[0].team || "X");
     } catch (err) {
       console.log("짝매칭 유저 리스트 가져오기 실패:", err);
     }
@@ -132,6 +135,12 @@ function LoveSelect() {
                 id={user.id}
                 userName={user.name}
                 gender={user.gender}
+                isChecked={user.id === selectedUserId} // 선택된 유저 ID 비교
+                onSelect={() => setSelectedUserId(user.id)} // 유저 선택 시 selectedUserId 업데이트
+                userId={userId}
+                partyId={partyId}
+                confirm={confirm}
+                setConfirm={setConfirm}
               />
             ))}
           </div>

@@ -67,6 +67,7 @@
     align-items: center;
     justify-content: center;
     width: 22.1%;
+    background-color: transparent;
 
     img {
       width: 46px;
@@ -74,15 +75,29 @@
     }
   }
 
-  .rank_box {
+  .select_box {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 20.5%;
 
-    .rank_text {
+    .select_button {
+      width: 70%;
+      height: 100%;
+      border-radius: 18px;
+      background-color: $color-green-000;
       font-size: 26px;
-      color: $color-black-100;
+      color: #ffffff;
+      font-family: "NanumSquareB", sans-serif;
+    }
+
+    .confirm_button {
+      width: 70%;
+      height: 100%;
+      border-radius: 18px;
+      background-color: $color-blue-000;
+      font-size: 26px;
+      color: #ffffff;
       font-family: "NanumSquareB", sans-serif;
     }
   }
