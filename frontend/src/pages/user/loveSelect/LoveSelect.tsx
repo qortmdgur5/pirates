@@ -30,7 +30,7 @@ function LoveSelect() {
   const [confirm, setConfirm] = useState<boolean>(false);
   const user = useSessionUser();
   const userId = user?.id || null; // 본인 id
-  const partyId = user?.party_id || null;
+  const partyId = user?.party_id || null; // 파티 id
   const [matchStatus, setMatchStatus] = useState<
     "notStarted" | "inProgress" | "finished"
   >("notStarted"); // 짝매칭 상태
@@ -104,6 +104,28 @@ function LoveSelect() {
   const filteredUserList = userList.filter(
     (user) => user.id !== userId && user.gender !== userGender
   );
+
+  // 이미 선택한 상대방 데이터 가져오기
+  const getConfirmUser = async () => {
+    try {
+      const response = await axios.get(
+        `/api/user/match/confirm/${partyId}/${userId}`
+      );
+      const confirmedUserId = response.data.user_id_2;
+      if (confirmedUserId) {
+        setSelectedUserId(confirmedUserId);
+        setConfirm(true); // 이미 확정된 경우 confirm을 true로 설정
+      }
+    } catch (err) {
+      console.log("선택한 상대방 데이터 가져오기 에러:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (userId && partyId && matchStatus === "inProgress") {
+      getConfirmUser(); // 페이지가 로드될 때 & 진행중일때 확인
+    }
+  }, [userId, partyId, matchStatus]);
 
   // matchStatus가 "notStarted"일 경우 대기 메시지 표시
   if (matchStatus === "notStarted") return <p>매칭 시작 대기 중...</p>;
