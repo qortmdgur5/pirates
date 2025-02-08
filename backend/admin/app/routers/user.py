@@ -311,6 +311,26 @@ async def create_userMatchSelect(
     
     
 @router.get(
+    "/match/confirm/{party_id}/{user_id}", 
+    response_model=schemas.userMatchConfirmResponse, 
+    summary="짝 매칭 결과보기 API")
+async def read_userMatchConfirm( 
+    party_id: int, 
+    user_id: int,
+    db: AsyncSession = Depends(database.get_db),
+):
+    try:
+        data = await userService.get_userMatchConfirm(party_id, user_id, db)
+        return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+    
+@router.get(
     "/match/select/{party_id}", 
     response_model=schemas.userMatchSelectResponse, 
     summary="짝 매칭 결과보기 API")

@@ -244,13 +244,11 @@ class lastReadChatRequest(BaseModel):
     user_id: int
     lastReadChat_id: Optional[int] = None
     
-class userMatchSelectResponses(BaseModel):
-    user_id: int
-    phone: str
-    team: int
+class userMatchConfirmResponse(BaseModel):
+    user_id_2: Optional[int] = None
     
 class userMatchSelectResponse(BaseModel):
-    data: Optional[dict] = None  
+    data: Optional[list] = None  
     totalCount: int
 
 

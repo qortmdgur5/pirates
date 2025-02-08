@@ -913,6 +913,43 @@ async def post_userMatchSelect(
         await log_error(db, error_message)
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
+
+async def get_userMatchConfirm(
+    party_id: int,
+    user_id: int,
+    db: AsyncSession
+) -> List[dict]:
+    try:
+        query = (
+            select(models.UserMatch.user_id_2)
+            .where(models.UserMatch.party_id == party_id, models.UserMatch.user_id_1 == user_id))
+
+        result = await db.execute(query)
+        user_id_2 = result.scalar_one_or_none()
+
+
+        response = {
+            "user_id_2": user_id_2
+        }
+
+        return response
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message) 
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+    
     
 async def get_userMatchSelect(
     party_id: int,
@@ -946,28 +983,37 @@ async def get_userMatchSelect(
         result = await db.execute(query)
         matchSelect = result.all()
 
-        man_list = []
-        woman_list = []
-
+        data = []
+        seen_users = set()
+        
         for row in matchSelect:
-            user_data = {
-                "user_id": row.user_id_1 if row.gender else row.user_id_2,
-                "phone": row.phone,
-                "team": row.team
-            }
-            if row.gender: 
-                man_list.append(user_data)
-            else:  
-                woman_list.append(user_data)
+            man_user_id = row.user_id_1 if row.gender else row.user_id_2
+            woman_user_id = row.user_id_2 if row.gender else row.user_id_1
+            
+            if man_user_id in seen_users or woman_user_id in seen_users:
+                continue
+            
+            seen_users.add(man_user_id)
+            seen_users.add(woman_user_id)
+            
+            data.append({
+                "man": {
+                    "user_id": man_user_id,
+                    "phone": row.phone,
+                    "team": row.team
+                },
+                "woman": {
+                    "user_id": woman_user_id,
+                    "phone": row.phone,
+                    "team": row.team
+                }
+            })
 
         response = {
-            "data": {
-                "man": man_list,
-                "woman": woman_list
-            },
+            "data": data if data else None, 
             "totalCount": 0
         }
-        
+
         return response
     
     except SQLAlchemyError as e:
