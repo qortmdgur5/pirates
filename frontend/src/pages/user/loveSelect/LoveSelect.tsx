@@ -3,6 +3,7 @@ import BackButton from "../../../components/common/backButton/BackButton";
 import HomeButton from "../../../components/common/homeButton/HomeButton";
 import HouseNameAndDate from "../../../components/common/houseNameAndDate/HouseNameAndDate";
 import UserListCard from "./components/UserListCard";
+import MatchListCard from "./components/MatchListCard";
 import styles from "./styles/loveSelect.module.scss";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
@@ -138,36 +139,55 @@ function LoveSelect() {
           <HomeButton />
           <BackButton navigateTo="/user/party" />
         </div>
-        <div className={styles.team_and_time_box}>
-          <p className={styles.team_text}>{team}조 짝 매칭</p>
-          <p className={styles.time_box}>{displayTime}</p> {/* 시간 표시 */}
-        </div>
-        <div className={styles.love_select_container}>
-          <div className={styles.info_intro_box}>
-            <p className={styles.img_intro}>짝</p>
-            <p className={styles.name_and_gender_intro}>이름 및 성별</p>
-            <p className={styles.check_intro}>체크</p>
-            <p className={styles.rank_intro}>확정</p>
+        {/* {matchStatus !== "finished" && ( */}
+        {
+          // 짝매칭이 진행중일때 컴포넌트
+          <div>
+            <div className={styles.team_and_time_box}>
+              <p className={styles.team_text}>{team}조 짝 매칭</p>
+              <p className={styles.time_box}>{displayTime}</p> {/* 시간 표시 */}
+            </div>
+            <div className={styles.love_select_container}>
+              <div className={styles.info_intro_box}>
+                <p className={styles.img_intro}>짝</p>
+                <p className={styles.name_and_gender_intro}>이름 및 성별</p>
+                <p className={styles.check_intro}>체크</p>
+                <p className={styles.rank_intro}>확정</p>
+              </div>
+              <div className={styles.user_list_box}>
+                {/* UserListCard 컴포넌트를 map으로 돌려 렌더링 */}
+                {filteredUserList.map((user) => (
+                  <UserListCard
+                    key={user.id}
+                    id={user.id}
+                    userName={user.name}
+                    gender={user.gender}
+                    isChecked={user.id === selectedUserId} // 선택된 유저 ID 비교
+                    onSelect={() => setSelectedUserId(user.id)} // 유저 선택 시 selectedUserId 업데이트
+                    userId={userId}
+                    partyId={partyId}
+                    confirm={confirm}
+                    setConfirm={setConfirm}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-          <div className={styles.user_list_box}>
-            {/* UserListCard 컴포넌트를 map으로 돌려 렌더링 */}
-            {filteredUserList.map((user) => (
-              <UserListCard
-                key={user.id}
-                id={user.id}
-                userName={user.name}
-                gender={user.gender}
-                isChecked={user.id === selectedUserId} // 선택된 유저 ID 비교
-                onSelect={() => setSelectedUserId(user.id)} // 유저 선택 시 selectedUserId 업데이트
-                userId={userId}
-                partyId={partyId}
-                confirm={confirm}
-                setConfirm={setConfirm}
-              />
-            ))}
+        }
+
+        {matchStatus === "finished" && (
+          // 짝매칭 결과 컴포넌트
+          <div>
+            <p className={styles.match_result_text}>매칭 결과</p>
+            <div className={styles.match_list_container}>
+              <MatchListCard />
+              <MatchListCard />
+              <MatchListCard />
+              <MatchListCard />
+              <MatchListCard />
+            </div>
           </div>
-        </div>
-        <div className={styles.love_match_container}></div>
+        )}
       </div>
     </div>
   );
