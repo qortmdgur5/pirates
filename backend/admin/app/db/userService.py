@@ -832,7 +832,7 @@ async def get_userMatchUserList(
         query = (
             select(
                 models.User.id, 
-                models.User.username, 
+                models.UserInfo.name, 
                 models.UserInfo.gender,
                 models.PartyUserInfo.team,
             )
@@ -853,7 +853,7 @@ async def get_userMatchUserList(
         response = [
             {
                 "id": user.id, 
-                "name": user.username,
+                "name": user.name,
                 "gender": user.gender if user.gender is not None else True,  
                 "team": user.team if user.team else None,
             }
