@@ -1,5 +1,5 @@
 from sqlalchemy import func, select, and_, or_, case
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, WebSocket, WebSocketDisconnect
@@ -956,39 +956,56 @@ async def get_userMatchSelect(
     db: AsyncSession
 ) -> List[dict]:
     try:
+        UserInfo_1 = aliased(models.UserInfo)
+        UserInfo_2 = aliased(models.UserInfo)
+
         query = (
             select(
                 models.UserMatch.user_id_1,
                 models.UserMatch.user_id_2,
-                models.UserInfo.phone,
-                models.UserInfo.gender,
+                UserInfo_1.phone.label("man_phone"), 
+                UserInfo_1.name.label("man_name"),    
+                UserInfo_2.phone.label("woman_phone"), 
+                UserInfo_2.name.label("woman_name"),    
+                UserInfo_1.gender,
                 models.PartyUserInfo.team
             )
-            .where(
-                models.UserMatch.party_id == party_id
+            .where(models.UserMatch.party_id == party_id)
+            .join(
+                UserInfo_1, models.UserMatch.user_id_1 == UserInfo_1.user_id  
             )
             .join(
-                models.UserInfo,
-                or_(
-                    models.UserMatch.user_id_1 == models.UserInfo.user_id,
-                    models.UserMatch.user_id_2 == models.UserInfo.user_id
-                )
+                UserInfo_2, models.UserMatch.user_id_2 == UserInfo_2.user_id 
             )
             .join(
                 models.PartyUserInfo,
-                models.UserInfo.user_id == models.PartyUserInfo.user_id
+                UserInfo_1.user_id == models.PartyUserInfo.user_id
             )
         )
+            
 
         result = await db.execute(query)
         matchSelect = result.all()
 
         data = []
         seen_users = set()
-        
+
         for row in matchSelect:
-            man_user_id = row.user_id_1 if row.gender else row.user_id_2
-            woman_user_id = row.user_id_2 if row.gender else row.user_id_1
+            if row.gender:  
+                man_user_id = row.user_id_1
+                woman_user_id = row.user_id_2
+                man_name = row.man_name  
+                man_phone = row.man_phone  
+                woman_name = row.woman_name  
+                woman_phone = row.woman_phone  
+            else:  
+                man_user_id = row.user_id_2
+                woman_user_id = row.user_id_1
+                man_name = row.woman_name  
+                man_phone = row.woman_phone  
+                woman_name = row.man_name 
+                woman_phone = row.man_phone  
+            
             
             if man_user_id in seen_users or woman_user_id in seen_users:
                 continue
@@ -999,19 +1016,21 @@ async def get_userMatchSelect(
             data.append({
                 "man": {
                     "user_id": man_user_id,
-                    "phone": row.phone,
+                    "name": man_name,
+                    "phone": man_phone,
                     "team": row.team
                 },
                 "woman": {
                     "user_id": woman_user_id,
-                    "phone": row.phone,
+                    "name": woman_name,
+                    "phone": woman_phone,
                     "team": row.team
                 }
             })
 
         response = {
             "data": data if data else None, 
-            "totalCount": 0
+            "totalCount": len(data)  
         }
 
         return response
