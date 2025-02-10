@@ -63,7 +63,7 @@ async def login_owner(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        access_token = oauth.create_access_token(data={
+        access_token = await oauth.create_access_token(data={
             "sub": str(user.id),
             "accomodation_id": accomodation_id,
             "role": user.role
@@ -83,9 +83,15 @@ async def read_ownerAccomodation(
     id: int, 
     page: int = Query(0),
     pageSize: int = Query(10), 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.owner_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_NOTAUTH_OWNER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await ownerService.get_ownerAccomodation(id, db, page, pageSize)
         return data
     except Exception as e:
@@ -99,9 +105,15 @@ async def read_ownerAccomodation(
     summary="사장님용 게스트 하우스 등록 관리 페이지 - 숙소 등록 API, QR 주소 컬럼 추가")
 async def create_ownerAccomdation(
     accomodation: schemas.OwnerAccomodationsPost,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.owner_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_NOTAUTH_OWNER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await ownerService.post_ownerAccomodation(db, accomodation)
     except Exception as e:
         error_message = str(e)
@@ -115,9 +127,15 @@ async def create_ownerAccomdation(
 async def update_ownerAccomodation(
     id: int,
     accomodation: schemas.OwnerAccomodationsPut,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.owner_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_NOTAUTH_OWNER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await ownerService.put_ownerAccomodation(db, id, accomodation)
     except Exception as e:
         error_message = str(e)
@@ -135,9 +153,15 @@ async def read_ownermanagers(
     isOldestOrders: bool = Query(True), 
     page: int = Query(0),
     pageSize: int = Query(10), 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.owner_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await ownerService.get_ownermanagers(id, db, isOldestOrders, page, pageSize)
         return data
     except Exception as e:
@@ -151,9 +175,15 @@ async def read_ownermanagers(
     summary="사장님용 매니저 등록 관리 페이지 - 매니저 승인 API , 승인 요청 시 해당 매니저 role 컬럼을 ROLE_AUTH_MANAGER 로 변경")
 async def update_auth_ownerOwners(
     id: int, 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.owner_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await ownerService.put_auth_ownerOwners(db, id)
     except Exception as e:
         error_message = str(e)
@@ -166,9 +196,15 @@ async def update_auth_ownerOwners(
     summary="사장님용 매니저 등록 관리 페이지 - 매니저 삭제 API , 삭제 요청 시 해당 매니저 정보 삭제")
 async def update_deny_ownerOwners(
     id: int, 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.owner_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await ownerService.put_deny_ownerOwners(db, id)
     except Exception as e:
         error_message = str(e)

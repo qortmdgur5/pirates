@@ -86,7 +86,7 @@ async def login_mananger(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        access_token = oauth.create_access_token(data={
+        access_token = await oauth.create_access_token(data={
             "sub": str(user.id),
             "accomodation_id": accomodation_id,
             "role": user.role
@@ -110,9 +110,15 @@ async def read_managerParties(
     isOldestOrders: bool = Query(True),
     page: int = Query(0),
     pageSize: int = Query(10), 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await managerService.get_managerParties(id, db, isOldestOrders, page, pageSize)
         return data
     except ValueError as e:
@@ -128,9 +134,15 @@ async def read_managerParties(
     summary="매니저용 파티방 관리 페이지 - 파티방 개설 API")
 async def create_managerParty(
     party: schemas.managerPartiesPost,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.post_managerParty(db, party)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -145,9 +157,15 @@ async def create_managerParty(
 async def update_managerParty(
     id: int,
     party: schemas.managerPartyUpdate,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.put_managerParty(db, id, party)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -161,9 +179,15 @@ async def update_managerParty(
     summary="매니저용 파티방 관리 페이지 - 파티방 삭제 API, 요청시 해당 파티방 삭제")
 async def delete_managerParty(
     id: int,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.del_managerParty(db, id)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -181,9 +205,15 @@ async def read_managerParty(
     id: int, 
     page: int = Query(0),
     pageSize: int = Query(10), 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await managerService.get_managerParty(id, db, page, pageSize)
         return data
     except ValueError as e:
@@ -200,9 +230,15 @@ async def read_managerParty(
     summary="매니저용 파티 상세 페이지 - 참석자 추가 API")
 async def create_managerParticipant(
     party: schemas.managerParticipantPost,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.post_managerParticipant(db, party)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -217,9 +253,15 @@ async def create_managerParticipant(
     summary="매니저용 파티 상세 페이지 - 참석자 삭제 API, 요청시 해당 참석자 삭제")
 async def delete_managerParticipant(
     id: int,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.del_managerParticipant(db, id)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -234,9 +276,15 @@ async def delete_managerParticipant(
 async def update_managerPartyOn(
     id: int,
     party: schemas.managerPartyOn,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.put_managerPartyOn(db, id, party)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -250,9 +298,15 @@ async def update_managerPartyOn(
     summary="QR 코드 주소 데이터 요청")
 async def read_managerAccomodationQR(
     id: int, 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         file_path  = await managerService.get_managerAccomodationQR(id, db)
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail={"msg": "QR code file not found"})
@@ -285,9 +339,15 @@ async def read_managerAccomodationQR(
     summary="User 테이블의 party_id 에 해당하는 유저들의 정보를 가져오는 API - PartyUserInfo 테이블의 해당 유저의 partyOn 데이터가 true, false 모든 유저들 정보 가져오기")
 async def read_managerPartyInfo(
     id: int, 
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await managerService.get_managerPartyInfo(id, db)
         return data
     except ValueError as e:
@@ -303,9 +363,15 @@ async def read_managerPartyInfo(
     summary="매니저용 파티 유저 리스트 페이지 - 유저의 PartyUserInfo 테이블 team 조 배정 및 수정 API")
 async def update_managerPartyUserInfo(
     data: schemas.managerPartyUserInfoDatas,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.put_managerPartyUserInfo(db, data)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -321,9 +387,15 @@ async def update_managerPartyUserInfo(
 async def update_managerPartyUserOn(
     id: int,
     partyOn: bool,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.put_managerPartyUserOn(id, db, partyOn)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -337,9 +409,15 @@ async def update_managerPartyUserOn(
     summary="매니저용 파티 유저 리스트 페이지 - 유저의 partyOn 상태 변경 API")
 async def update_managerPartyMatchStart(
     id: int,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
+        if token != "ROLE_AUTH_OWNER" or token != "ROLE_AUTH_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await managerService.put_managerPartyMatchStart(id, db)
     except ValueError as e:
         await errorLog.log_error(db, str(e))

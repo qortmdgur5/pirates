@@ -7,7 +7,6 @@ from .errorLog import format_date, log_error, format_dates
 from ..utils import models, schemas
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta, timezone, time
-from operator import itemgetter
 from itertools import groupby
 
 ## user
@@ -40,13 +39,14 @@ async def post_userLoginKakaoCallback(
         
         if accomodation_id in [None, "", "None"]:
             if not user:
-                new_user = models.User(username=username, nickname=nickname, date=kst_now)
+                new_user = models.User(username=username, nickname=nickname, date=kst_now, role="ROLE_USER")
                 db.add(new_user)
                 await db.commit()
                 await db.refresh(new_user)
 
                 grouped_data = [{
                     "id": new_user.id,
+                    "role": new_user.role,
                     "party_id": None,
                     "userInfo": []
                 }]
@@ -56,6 +56,7 @@ async def post_userLoginKakaoCallback(
             else:
                 grouped_data = [{
                         "id": user.id,
+                        "role": user.role,
                         "party_id": None,
                         "userInfo": []
                     }]
@@ -74,13 +75,14 @@ async def post_userLoginKakaoCallback(
                 result_party = await db.execute(query_accomodation)
                 party_id = result_party.scalar()
 
-                new_user = models.User(username=username, party_id=party_id, nickname=nickname, date=kst_now)
+                new_user = models.User(username=username, party_id=party_id, nickname=nickname, date=kst_now, role="ROLE_USER")
                 db.add(new_user)
                 await db.commit()
                 await db.refresh(new_user)
 
                 grouped_data = [{
                     "id": new_user.id,
+                    "role": new_user.role,
                     "party_id": party_id,
                     "userInfo": []
                 }]
@@ -109,12 +111,14 @@ async def post_userLoginKakaoCallback(
                     existing_user = result_user.scalar()
 
                     existing_user.party_id = party_id
+                    existing_user.role = "ROLE_USER"
                     db.add(existing_user)
                     await db.commit()
                     await db.refresh(existing_user)
                     
                     grouped_data = [{
                         "id": user.id,
+                        "role": user.role,
                         "party_id": party_id,
                         "userInfo": []
                     }]
@@ -141,6 +145,7 @@ async def post_userLoginKakaoCallback(
                     if not user_info:
                         grouped_data = [{
                             "id": user.id,
+                            "role": user.role,
                             "party_id": user.party_id,
                             "userInfo": []
                         }]
@@ -149,8 +154,8 @@ async def post_userLoginKakaoCallback(
                         
                     else:
                         grouped_data = []
-                        rows_sorted = sorted(user_info, key=itemgetter(0, 1))
-                        for (user_id, party_id), group in groupby(rows_sorted, key=itemgetter(0, 1)):
+                        rows_sorted = sorted(user_info, key=lambda x: (x[0], x[1]))
+                        for (user_id, party_id), group in groupby(rows_sorted, key=lambda x: (x[0], x[1])):
                             user_info_list = [
                                 {
                                     "name": info[3],
@@ -165,6 +170,7 @@ async def post_userLoginKakaoCallback(
                             ]
                             grouped_data.append({
                                 "id": user_id,
+                                "role": user.role,
                                 "party_id": party_id,
                                 "userInfo": user_info_list,
                             })

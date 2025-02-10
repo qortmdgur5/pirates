@@ -1,6 +1,6 @@
 import json
 import os
-from fastapi import Depends, HTTPException, APIRouter, Query, WebSocket, WebSocketDisconnect
+from fastapi import Depends, HTTPException, APIRouter, Query, WebSocket, WebSocketDisconnect, status
 from ..db import errorLog, userService, database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +25,6 @@ async def kakao_login(
         kakao_auth_url = await kakaoLogin.kakao_login_data(id, db)
 
         return RedirectResponse(kakao_auth_url)
-        # return {"kakao_auth_url": kakao_auth_url}
     except ValueError as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=400, detail={"msg": str(e)})
@@ -48,7 +47,7 @@ async def kakao_callback(
     try:
         user_info = await kakaoLogin.kakao_callback_data(db, code, state)
         grouped_data = await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
-        access_token = oauth.create_access_token(data={"data": grouped_data})
+        access_token = await oauth.create_access_token(data={"data": grouped_data})
         # return {"access_token": access_token, "token_type": "bearer"}
 
         ip_address = os.getenv("BACKEND_IP")
@@ -87,9 +86,16 @@ async def create_userSignup(
     summary="게스트 하우스의 당일 파티정보 가져오기 API")
 async def read_userPartyInfo( 
     id: int,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
+            
         userParty = schemas.userPartyRequest(party_id=id)
         data = await userService.get_userParty(db, userParty)
         return data
@@ -106,9 +112,15 @@ async def read_userPartyInfo(
     summary="Party 테이블 짝매칭 시작시간(matchStartTime 필드) 가져오기 API")
 async def read_userPartyInfo( 
     party_id: int,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await userService.get_userPartyMatchTime(db, party_id)
         return data
     except ValueError as e:
@@ -126,8 +138,14 @@ async def read_userPartyInfo(
 async def read_userPartyInfo( 
     party_id: int, 
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await userService.get_userPartyInfo(party_id, db)
         return data
     except ValueError as e:
@@ -146,8 +164,14 @@ async def read_userPartyInfoChatExist(
     party_id: int, 
     user_id: int,
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await userService.get_userPartyInfoChatExist(party_id, user_id, db)
         return data
     except ValueError as e:
@@ -164,9 +188,15 @@ async def read_userPartyInfoChatExist(
     summary="채팅방 생성 API")
 async def create_userChatRoom(
     userChatRoomRequest: schemas.userChatRoomRequest,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await userService.post_userChatRoom(db, userChatRoomRequest)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -181,9 +211,15 @@ async def create_userChatRoom(
     summary="ChatRoom 테이블의 동일한 해당 유저의 채팅방 리스트 가져오기 API")
 async def create_userChatRooms(
     userChatRoomsRequest: schemas.userChatRoomsRequest,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await userService.post_userChatRooms(db, userChatRoomsRequest)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -198,8 +234,14 @@ async def create_userChatRooms(
 async def create_userChatContents(
     userChatContentsRequest: schemas.userChatContentsRequest,
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await userService.post_userChatContents(db, userChatContentsRequest)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -214,8 +256,14 @@ async def create_userChatContents(
 async def create_chat(
     chat: schemas.chatCreateRequest, 
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
     ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await userService.post_chat(db, chat)
 
     except ValueError as e:
@@ -233,10 +281,17 @@ async def websocket_endpoint(
     websocket: WebSocket, 
     chatRoom_id: int, 
     user_id: int,
-    db: AsyncSession = Depends(database.get_db),):
-    print(websocket, chatRoom_id, user_id)
-    await manager.connect(websocket, chatRoom_id, user_id)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
+):
+    
     try:
+        await manager.connect(websocket, chatRoom_id, user_id)
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         while True:
             data = await websocket.receive_text()
             chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
@@ -262,8 +317,14 @@ async def websocket_endpoint(
 async def create_lastReadChat(
     chat: schemas.lastReadChatRequest, 
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
     ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await userService.post_lastReadChat(db, chat)
 
     except ValueError as e:
@@ -280,8 +341,14 @@ async def create_lastReadChat(
 async def read_userMatchUserList( 
     userList: schemas.userMatchUserListRequest, 
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await userService.get_userMatchUserList(userList, db)
         return data
     except ValueError as e:
@@ -298,9 +365,15 @@ async def read_userMatchUserList(
     summary="짝 매칭 선택 API")
 async def create_userMatchSelect(
     userChatRoomRequest: schemas.userChatRoomRequest,
-    db: AsyncSession = Depends(database.get_db)
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         return await userService.post_userMatchSelect(db, userChatRoomRequest)
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -318,8 +391,14 @@ async def read_userMatchConfirm(
     party_id: int, 
     user_id: int,
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await userService.get_userMatchConfirm(party_id, user_id, db)
         return data
     except ValueError as e:
@@ -337,8 +416,14 @@ async def read_userMatchConfirm(
 async def read_userMatchSelect( 
     party_id: int, 
     db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.user_verify_token)
 ):
     try:
+        if token != "ROLE_USER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await userService.get_userMatchSelect(party_id, db)
         return data
     except ValueError as e:

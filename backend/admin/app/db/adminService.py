@@ -5,8 +5,42 @@ from fastapi import HTTPException
 from .errorLog import format_date, log_error
 from ..utils import models
 from typing import List, Optional
+from ..oauth.password import hash_password, verify_password
 
 ## admin (관리자 사용 API)
+async def authenticate_admin(db: AsyncSession, username: str, password: str):
+    try:
+        query = select(models.Admin).filter(models.Admin.username == username)
+        result = await db.execute(query)
+        
+        row = result.first() 
+        if row is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        admin = row[0]
+        pw = verify_password(password, admin.password)
+
+        return admin, pw
+
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"Value Error msg": error_message})
+
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"Exception msg": error_message})
+
+    
 async def get_adminAccomodations(
     db: AsyncSession,
     isMostReviews: Optional[bool] = False,
