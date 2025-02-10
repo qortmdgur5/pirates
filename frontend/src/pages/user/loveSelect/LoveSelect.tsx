@@ -8,7 +8,7 @@ import styles from "./styles/loveSelect.module.scss";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { useEffect, useState } from "react";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 import axios from "axios";
 
 dayjs.extend(duration);

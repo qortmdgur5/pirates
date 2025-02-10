@@ -6,7 +6,7 @@ import TeamDropDown from "../../../components/common/teamDropDown/TeamDropDown";
 import UserListCard from "./components/UserListCard";
 import styles from "./styles/partyUserList.module.scss";
 import { useEffect, useState } from "react";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 import axios from "axios";
 
 // API 응답 타입 정의

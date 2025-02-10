@@ -1,13 +1,13 @@
 import styles from "./styles/login.module.scss";
 import { useNavigation } from "../../../utils/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { authAtoms, accomoAtoms } from "../../../atoms/authAtoms";
+import { authAtoms } from "../../../atoms/authAtoms";
 import { useRecoilState } from "recoil";
 
 interface DecodedToken {
-  id: number | null;
+  sub: number | null;
   role: string | null;
 }
 
@@ -51,18 +51,22 @@ function Login() {
       );
       const token = response.data.access_token; // 서버에서 반환한 토큰
       const decoded: DecodedToken = jwtDecode(token);
-      console.log("디코딩된 토큰 정보:", decoded);
-
       const userRole = decoded.role;
-      const userId = decoded.id;
+      const userId = decoded.sub;
 
-      // Recoil 상태 업데이트
-      setAuthAtom({
+      const userData = {
         userId: userId,
         role: userRole,
         token: token,
         username: null,
-      }); // 사용자 정보 저장
+      };
+
+      // Recoil 상태 업데이트
+      setAuthAtom(userData); // 사용자 정보 저장
+
+      // 로컬 스토리지에 사용자 데이터 저장
+      sessionStorage.setItem("user", JSON.stringify(userData));
+
       navigation("/admin/houseManage");
     } catch (error) {
       console.error("로그인 오류:", error);

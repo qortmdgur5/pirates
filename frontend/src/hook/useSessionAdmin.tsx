@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { userAtom } from "../../atoms/userAtoms";
+import { authAtoms } from "../atoms/authAtoms";
 
 function useSessionUser() {
-  const [user, setUser] = useRecoilState(userAtom);
+  const [user, setUser] = useRecoilState(authAtoms);
 
   // 초기화: sessionStorage 값을 Recoil 상태로 로드
   useEffect(() => {

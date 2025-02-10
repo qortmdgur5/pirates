@@ -4,7 +4,7 @@ import styles from "./styles/party.module.scss";
 import { useEffect, useState } from "react";
 import axios from "axios"; // API 호출을 위한 axios 사용
 import { useNavigate } from "react-router-dom";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 
 // 파티 정보 타입 정의
 interface PartyInfo {
