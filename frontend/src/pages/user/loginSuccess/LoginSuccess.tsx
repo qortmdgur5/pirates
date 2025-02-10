@@ -35,6 +35,7 @@ function LoginSuccess() {
       const userData = {
         token: access_token,
         id: decodedUser.id,
+        role: decodedUser.role,
         party_id: decodedUser.party_id,
         userInfo: decodedUser.userInfo,
       };

@@ -16,7 +16,6 @@ function Login() {
         !Array.isArray(user.userInfo) ||
         user.userInfo.length === 0
       ) {
-        alert("추가 회원정보를 입력해주세요.");
         navigate("/user/signup");
       } else {
         navigate("/user/party");

@@ -14,6 +14,7 @@ export interface UserInfo {
 export interface User {
   token: string;
   id: number;
+  role: string;
   party_id: number | null;
   userInfo: UserInfo | null;
 }
