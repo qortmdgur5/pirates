@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // 페이지 컴포넌트
-import ManagerLoginPage from "./pages/manager/login/Login"
+import AdminLoginPage from "./pages/admin/login/Login"
 import AdminHouseManagePage from "./pages/admin/houseManage/HouseManage"
 import AdminHouseApprovePage from "./pages/admin/houseApprove/HouseApprove"
+import ManagerLoginPage from "./pages/manager/login/Login"
 import ManageHousePage from "./pages/owner/manageHouse/ManageHouse"
 import ManagerApprovePage from "./pages/owner/managerApprove/ManagerApprove";
 import ManagePartyPage from "./pages/manager/manageParty/ManageParty"
@@ -23,6 +24,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/admin/login" element={<AdminLoginPage />}></Route>
         <Route path="/admin/houseManage" element={<AdminHouseManagePage />}></Route>
         <Route path="/admin/houseApprove" element={<AdminHouseApprovePage />}></Route>
         <Route path="/owner/manageHouse" element={<ManageHousePage />}></Route>
