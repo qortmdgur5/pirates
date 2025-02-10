@@ -13,11 +13,26 @@ import axios from "axios";
 
 dayjs.extend(duration);
 
+// 짝매칭 선택 리스트 props
 interface UserListProps {
   id: number; // 해당 유저 id 값
   team: number | null; // 팀 번호 또는 null
   name: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
+}
+
+// 짝매칭 결과 리스트 props
+interface MatchUserProps {
+  user_id: number; // 해당 유저 id 값
+  phone: string; // 해당 유저 핸드폰 번호
+  team: number; // 해당 유저 team
+  name: string; // 해당 유저 이름
+}
+
+// 매칭 페어 props
+interface MatchPairProps {
+  man: MatchUserProps;
+  woman: MatchUserProps;
 }
 
 function LoveSelect() {
@@ -29,6 +44,7 @@ function LoveSelect() {
   const [endTime, setEndTime] = useState<dayjs.Dayjs | null>(null); // 짝매칭 종료 시간
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null); // 선택한 유저 ID
   const [confirm, setConfirm] = useState<boolean>(false);
+  const [matchUserList, setMatchUserList] = useState<MatchPairProps[]>([]);
   const user = useSessionUser();
   const userId = user?.id || null; // 본인 id
   const partyId = user?.party_id || null; // 파티 id
@@ -43,7 +59,7 @@ function LoveSelect() {
 
     // 첫 렌더링 시에만 종료 시간을 설정
     if (!endTime) {
-      setEndTime(startTime.add(5, "minute")); // 5분 뒤를 종료 시간으로 설정
+      setEndTime(startTime.add(1, "minute")); // 5분 뒤를 종료 시간으로 설정
     }
 
     const updateTimer = () => {
@@ -94,7 +110,7 @@ function LoveSelect() {
   };
 
   useEffect(() => {
-    // if (matchStatus !== "inProgress") return; // 짝매칭 진행중 아니면 대기
+    if (matchStatus !== "inProgress") return; // 짝매칭 진행중 아니면 대기
     getMatchUserList();
   }, [matchStatus]);
 
@@ -128,6 +144,23 @@ function LoveSelect() {
     }
   }, [userId, partyId, matchStatus]);
 
+  // 매칭 결과 가져오기 API
+  const getMatchResults = async (partyId: number) => {
+    try {
+      const response = await axios.get(`/api/user/match/select/${partyId}`);
+      const pairData = response.data.data;
+      console.log(pairData);
+      setMatchUserList(pairData); // 상태 업데이트
+    } catch (error) {
+      console.error("매칭 결과 가져오기 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    // if (matchStatus === "finished" && partyId) getMatchResults(partyId);
+    if (partyId) getMatchResults(partyId);
+  }, [partyId]);
+
   // matchStatus가 "notStarted"일 경우 대기 메시지 표시
   if (matchStatus === "notStarted") return <p>매칭 시작 대기 중...</p>;
 
@@ -139,8 +172,7 @@ function LoveSelect() {
           <HomeButton />
           <BackButton navigateTo="/user/party" />
         </div>
-        {/* {matchStatus !== "finished" && ( */}
-        {
+        {matchStatus !== "finished" && (
           // 짝매칭이 진행중일때 컴포넌트
           <div>
             <div className={styles.team_and_time_box}>
@@ -173,18 +205,16 @@ function LoveSelect() {
               </div>
             </div>
           </div>
-        }
+        )}
 
         {matchStatus === "finished" && (
           // 짝매칭 결과 컴포넌트
           <div>
             <p className={styles.match_result_text}>매칭 결과</p>
             <div className={styles.match_list_container}>
-              <MatchListCard />
-              <MatchListCard />
-              <MatchListCard />
-              <MatchListCard />
-              <MatchListCard />
+              {matchUserList.map((match, index) => (
+                <MatchListCard key={index} match={match} />
+              ))}
             </div>
           </div>
         )}

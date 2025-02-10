@@ -1,6 +1,23 @@
 import styles from "./styles/matchListCard.module.scss";
 
-function MatListCard() {
+// 타입 정의
+interface MatchUser {
+  user_id: number;
+  phone: string;
+  team: number;
+  name: string;
+}
+
+interface MatchPairProps {
+  man: MatchUser;
+  woman: MatchUser;
+}
+
+interface MatchListCardProps {
+  match: MatchPairProps;
+}
+
+function MatListCard({ match }: MatchListCardProps) {
   return (
     <div className={styles.container}>
       <div className={styles.match_box}>
@@ -9,7 +26,7 @@ function MatListCard() {
             <img src="/src/assets/image/man_icon_img.png" alt="man_img" />
           </div>
           <div className={styles.name_and_gender_box}>
-            <p className={styles.name_info}>김병민</p>
+            <p className={styles.name_info}>{match.man.team} 조 {match.man.name}</p>
             <div className={styles.gender_box}>
               <img
                 src="/src/assets/image/gender_man.png"
@@ -26,7 +43,7 @@ function MatListCard() {
             <img src="/src/assets/image/woman_icon_img.png" alt="woman_img" />
           </div>
           <div className={styles.name_and_gender_box}>
-            <p className={styles.name_info}>구슬기</p>
+          <p className={styles.name_info}>{match.woman.team} 조 {match.woman.name}</p>
             <div className={styles.gender_box}>
               <img
                 src="/src/assets/image/gender_woman.png"
