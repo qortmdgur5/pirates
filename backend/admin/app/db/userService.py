@@ -988,30 +988,36 @@ async def get_userMatchSelect(
         matchSelect = result.all()
 
         data = []
-        seen_users = set()
+        seen_pairs = set()
+        valid_pairs = set()
+
+        match_dict = {}
+        for row in matchSelect:
+            user_pair = tuple(sorted([row.user_id_1, row.user_id_2]))
+            if user_pair in match_dict:
+                valid_pairs.add(user_pair)
+            else:
+                match_dict[user_pair] = True
 
         for row in matchSelect:
-            if row.gender:  
-                man_user_id = row.user_id_1
-                woman_user_id = row.user_id_2
-                man_name = row.man_name  
-                man_phone = row.man_phone  
-                woman_name = row.woman_name  
-                woman_phone = row.woman_phone  
-            else:  
-                man_user_id = row.user_id_2
-                woman_user_id = row.user_id_1
-                man_name = row.woman_name  
-                man_phone = row.woman_phone  
-                woman_name = row.man_name 
-                woman_phone = row.man_phone  
+            user_pair = tuple(sorted([row.user_id_1, row.user_id_2]))
             
+            if user_pair not in valid_pairs:
+                continue 
             
-            if man_user_id in seen_users or woman_user_id in seen_users:
+            if user_pair in seen_pairs:
                 continue
             
-            seen_users.add(man_user_id)
-            seen_users.add(woman_user_id)
+            seen_pairs.add(user_pair)
+            
+            if row.gender:  
+                man_user_id, woman_user_id = user_pair
+                man_name, man_phone = row.man_name, row.man_phone
+                woman_name, woman_phone = row.woman_name, row.woman_phone
+            else:  
+                woman_user_id, man_user_id = user_pair
+                woman_name, woman_phone = row.man_name, row.man_phone
+                man_name, man_phone = row.woman_name, row.woman_phone
             
             data.append({
                 "man": {
