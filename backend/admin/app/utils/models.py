@@ -114,7 +114,7 @@ class User(Base):
     provider_id = Column(String(255))
     date = Column(DateTime, default=func.now())
     nickname = Column(String(255))
-    role = Column(String(255))
+    role = Column(String(50))
 
     party = relationship("Party", back_populates="users")  
     userInfo = relationship("UserInfo", back_populates="user") 

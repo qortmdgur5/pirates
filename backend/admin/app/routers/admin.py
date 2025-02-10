@@ -14,7 +14,7 @@ router = APIRouter(
 @router.post(
     "/login", 
     response_model=schemas.loginResponse, 
-    summary="매니저용 로그인 API")
+    summary="관리자용 로그인 API")
 async def login_admin(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(database.get_db)
