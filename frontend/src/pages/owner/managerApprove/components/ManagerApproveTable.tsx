@@ -7,6 +7,8 @@ import DenyButton from "../../../../components/common/button/DenyButton";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "../../../../components/common/pagination/Pagination";
+import { useRecoilValue } from "recoil";
+import { authAtoms } from "../../../../atoms/authAtoms";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -39,7 +41,9 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   const [isDenyModalOpen, setIsDenyModalOpen] = useState<boolean>(false);
   const [selectedManagerName, setSelectedManagerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
   const [selectedManagerId, setSelectedManagerId] = useState<number>(); // 클릭한 아이템의 id 저장
-  const ownerId = 1; // 임시 사장님 번호 추후 로그인 구현하면 아톰으로 관리
+  const user = useRecoilValue(authAtoms);
+  const ownerId = user.userId; // 사장님 id
+  const token = user.token; // 로그인 token
 
   const customModalStyles: ReactModal.Styles = {
     // overlay 모달 창 외부 영역 디자인
@@ -79,7 +83,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
         const response = await axios.get<ManagerAPIResponse>(
           `/api/owner/managers/${id}`,
           {
-            params: { isOldestOrders, page, pageSize },
+            params: { isOldestOrders, page, pageSize, token },
             headers: { accept: "application/json" },
           }
         );
@@ -90,7 +94,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
       }
     };
 
-    fetchData(ownerId);
+    if (ownerId) fetchData(ownerId);
   }, [isOldestOrders, page, pageSize]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
@@ -121,8 +125,8 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
 
   // 취소 모달 open
   const openDenyModal = (name: string, id: number) => {
-    setSelectedManagerName(name); // 클릭한 아이템의 이름 저장
-    setSelectedManagerId(id); // 클릭한 아이템의 id 저장
+    setSelectedManagerName(name); // 클릭한 매니저의 이름 저장
+    setSelectedManagerId(id); // 클릭한 매니저의 id 저장
     setIsDenyModalOpen(true);
   };
 
@@ -148,9 +152,15 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   // 매니저 승인 API
   const approveManager = async (id: number) => {
     try {
-      const response = await axios.put(`/api/owner/manager/auth/${id}`, {
-        headers: { accept: "application/json" },
-      });
+      const response = await axios.put(
+        `/api/owner/manager/auth/${id}`,
+        {}, // request body (빈 객체)
+        {
+          params: { token },
+          headers: { accept: "application/json" },
+        }
+      );
+      console.log(response);
     } catch (error) {
       console.error("매니저 승인 요청을 실패하였습니다.", error);
     }
@@ -159,9 +169,14 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   // 매니저 취소 API
   const denyManager = async (id: number) => {
     try {
-      const response = await axios.put(`/api/owner/manager/deny/${id}`, {
-        headers: { accept: "application/json" },
-      });
+      const response = await axios.put(
+        `/api/owner/manager/deny/${id}`,
+        {}, // request body (빈 객체)
+        {
+          params: { token },
+          headers: { accept: "application/json" },
+        }
+      );
     } catch (error) {
       console.error("매니저 취소 요청을 실패하였습니다.", error);
     }

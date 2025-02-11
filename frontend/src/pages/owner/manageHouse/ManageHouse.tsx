@@ -39,7 +39,6 @@ function ManageHouse() {
       path: "/owner/managerApprove",
     },
     { text: "파티방 관리", isActive: false, path: "/manager/manageParty" },
-    { text: "마이페이지", isActive: false, path: "#" },
   ];
 
   const fetchAccommodation = async (id: number) => {

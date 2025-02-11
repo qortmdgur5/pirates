@@ -23,7 +23,6 @@ function ManagerApprove() {
       path: "/owner/managerApprove",
     },
     { text: "파티방 관리", isActive: false, path: "/manager/manageParty" },
-    { text: "마이페이지", isActive: false, path: "#" },
   ];
 
   // 최신 순 오래된 순 상태
