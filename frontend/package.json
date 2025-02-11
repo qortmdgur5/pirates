@@ -29,6 +29,7 @@
     "react-router-dom": "^6.26.2",
     "react-time-picker": "^7.0.0",
     "recoil": "^0.7.7",
+    "recoil-persist": "^5.1.0",
     "sort-by": "^1.2.0",
     "styled-components": "^6.1.13"
   },

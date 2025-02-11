@@ -4,7 +4,7 @@ import axios from "axios";
 import styles from "./styles/chat.module.scss";
 import MeChat from "./components/me/chat/MeChat";
 import OthersChat from "./components/others/chat/OthersChat";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 
 interface ChatData {
   id: number;

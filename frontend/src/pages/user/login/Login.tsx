@@ -1,7 +1,7 @@
 import styles from "./styles/login.module.scss";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 
 function Login() {
   const [loading, setLoading] = useState(false);

@@ -1,0 +1,176 @@
+.login_box {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+}
+
+.login_box_left {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 46.8%;
+  background: linear-gradient(152deg, #6d2972 0%, #3a52a9 100%);
+
+  &_inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+    p {
+      color: $color-white-000;
+    }
+
+    &_text_1 {
+      font-size: 4.896vw;
+      font-family: 'VITROCORE', sans-serif;
+    }
+
+    &_text_2 {
+      font-size: 5vw;
+      font-family: 'VITROCORE', sans-serif;
+    }
+
+    &_text_3 {
+      font-size: 1.771vw;
+      margin-top: 1.667vw;
+      font-family: 'NanumSquareR', sans-serif;
+    }
+
+    &_img_box {
+      width: 40%;
+      margin-top: 4.323vw;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
+
+.login_box_left::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("/src/assets/image/login_page_back_img_1.jpg") no-repeat right / cover;
+  opacity: 0.15;
+  z-index: 1;
+}
+
+.login_box_right {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &_inner {
+    display: flex;
+    flex-direction: column;
+
+    &_text_1 {
+      font-size: 2.5vw;
+      line-height: 3.177vw;
+      color: $color-black-000;
+      font-family: 'NanumSquareR', sans-serif;
+    }
+
+    &_text_2 {
+      font-size: 1.302vw;
+      line-height: 1.667vw;
+      color: $color-black-000;
+      margin: 2.083vw auto 1.042vw auto;
+      font-family: 'NanumSquareR', sans-serif;
+    }
+
+    &_input_box {
+      display: flex;
+      flex-direction: column;
+      gap: 1.823vw;
+      margin-top: 0.938vw;
+      font-family: 'NanumSquareR', sans-serif;
+
+      input {
+        width: 100%;
+        height: 4.375vw;
+        border-radius: 0.938vw;
+        font-size: 1.458vw;
+        border: 0.052vw solid #c9c9c9;
+        padding: 0 1.302vw 0 1.302vw;
+      }
+    }
+
+    .login_box_right_inner_login_button {
+      width: 100%;
+      height: 4.375vw;
+      border-radius: 0.938vw;
+      background-color: #404040;
+      border: 0.052vw solid #c9c9c9;
+      font-size: 1.458vw;
+      color: $color-white-000;
+      font-family: 'NanumSquareR', sans-serif;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .login_box_right_inner_signup_box {
+      display: flex;
+      gap: 1.458vw;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1.563vw;
+
+      .login_box_right_inner_signup_text {
+        font-size: 1.354vw;
+        color: $color-black-000;
+        font-family: 'NanumSquareR', sans-serif;
+      }
+
+      .login_box_right_inner_signup_button {
+        font-size: 1.354vw;
+        color: $color-black-000;
+        font-weight: bold;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        font-family: 'NanumSquareR', sans-serif;
+      }
+    }
+
+    &_sns_text {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      font-size: 1.458vw;
+      color: $color-black-000;
+      margin-top: 2.604vw;
+      font-family: 'NanumSquareR', sans-serif;
+
+      &::before,
+      &::after {
+        content: "";
+        flex: 1;
+        border-bottom: 0.104vw solid #c9c9c9;
+      }
+
+      &::before {
+        margin-right: 1.042vw;
+      }
+
+      &::after {
+        margin-left: 1.042vw;
+      }
+    }
+
+    .sns_login_button_box {
+      display: flex;
+      justify-content: center;
+      gap: 1.563vw;
+      margin: 3.646vw auto 5.208vw auto;
+    }
+  }
+}

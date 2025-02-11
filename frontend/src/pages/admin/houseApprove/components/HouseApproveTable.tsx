@@ -5,6 +5,8 @@ import DenyButton from "../../../../components/common/button/DenyButton";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "../../../../components/common/pagination/Pagination";
+import { useRecoilValue } from "recoil";
+import { authAtoms } from "../../../../atoms/authAtoms";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -26,7 +28,7 @@ interface HouseApproveTableProps {
 }
 
 const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
-  isOldestOrders
+  isOldestOrders,
 }) => {
   const [data, setData] = useState<Owner[]>([]);
   const [page, setPage] = useState(0); // 페이지 상태 관리
@@ -36,6 +38,8 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   const [isDenyModalOpen, setIsDenyModalOpen] = useState(false);
   const [selectedOwnerName, setSelectedOwnerName] = useState<string>(""); // 클릭한 아이템의 이름 저장
   const [selectedOwnerId, setSelectedOwnerId] = useState<number>(); // 클릭한 아이템의 id 저장
+  const user = useRecoilValue(authAtoms);
+  const token = user.token;
 
   const customModalStyles: ReactModal.Styles = {
     overlay: {
@@ -70,10 +74,13 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<OwnerAPIResponse>("/api/admin/owners", {
-          params: { isOldestOrders, page, pageSize },
-          headers: { accept: "application/json" },
-        });
+        const response = await axios.get<OwnerAPIResponse>(
+          "/api/admin/owners",
+          {
+            params: { isOldestOrders, page, pageSize, token },
+            headers: { accept: "application/json" },
+          }
+        );
 
         setData(response.data.data);
         setTotalCount(response.data.totalCount);

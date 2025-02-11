@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ChatRoomInfo from "./components/ChatRoomInfo";
 import styles from "./styles/chatRoom.module.scss";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 import { useNavigate } from "react-router-dom";
 
 // ChatRoomResponse 타입을 정의합니다.

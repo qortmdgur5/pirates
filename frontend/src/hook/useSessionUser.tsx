@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { userAtom } from "../../atoms/userAtoms";
+import { userAtom } from "../atoms/userAtoms";
 
 function useSessionUser() {
   const [user, setUser] = useRecoilState(userAtom);

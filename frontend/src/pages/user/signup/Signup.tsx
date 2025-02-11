@@ -2,7 +2,7 @@ import { useState, ChangeEvent, useEffect } from "react";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/signup.module.scss";
 import { useNavigate } from "react-router-dom";
-import useSessionUser from "../../hook/useSessionUser";
+import useSessionUser from "../../../hook/useSessionUser";
 import { useSetRecoilState } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
 

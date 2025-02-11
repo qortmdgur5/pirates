@@ -1,32 +1,46 @@
 import styles from "./styles/login.module.scss";
 import { useNavigation } from "../../../utils/navigation";
-import TabsComponent from "../../../components/common/tabs/Tabs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { authAtoms, accomoAtoms } from "../../../atoms/authAtoms";
-import { useRecoilState } from "recoil";
+import { authAtoms } from "../../../atoms/authAtoms";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 interface DecodedToken {
+  sub: number | null;
   role: string | null;
-  owner_id?: number | null;
-  manager_id?: number | null;
-  accommodation_id?: number | null;
 }
 
 function Login() {
   // 네비게이션 함수
   const navigation = useNavigation();
 
+  // 유저 로그인 정보
+  const user = useRecoilValue(authAtoms);
+
   // 상태관리 모음
-  const [isOwner, setIsOwner] = useState<boolean>(true); // 매니저 사장님 상태 관리
   const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
   const [password, setPassword] = useState<string>(""); // 비밀번호 입력값 관리
 
   // 전역 상태관리 모음
   // Recoil 상태 훅
-  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 매니저 or 사장님 로그인 상태
-  const [accomoAtom, setAccomoAtom] = useRecoilState(accomoAtoms); // 숙소 정보 상태
+  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 사용자 정보 상태
+
+  // useEffect(() => {
+  //   const roleMapping: Record<string, string> = {
+  //     SUPER_ADMIN: "/admin/houseManage",
+  //     ROLE_AUTH_OWNER: "/owner/manageHouse",
+  //     ROLE_NOTAUTH_OWNER: "/owner/manageHouse",
+  //     ROLE_AUTH_MANAGER: "/manager/manageParty",
+  //     ROLE_NOTAUTH_MANAGER: "/manager/manageParty",
+  //     ROLE_USER: "/user/party",
+  //   };
+
+  //   if (user) {
+  //     const redirectPath = user.role ? roleMapping[user.role] : null;
+  //     if (redirectPath) navigation(redirectPath);
+  //   }
+  // }, [user, navigation]);
 
   // 아이디 입력창 관리
   const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,53 +52,38 @@ function Login() {
     setPassword(e.target.value);
   };
 
-  // 탭이 변경될 때 (사장님, 매니저 변경) 모든 입력 필드 초기화
-  useEffect(() => {
-    setUserName("");
-    setPassword("");
-  }, [isOwner]);
-
-  // 회원가입 처리
+  // 로그인 처리
   const handleLogin = async () => {
     const data = new URLSearchParams();
     data.append("username", username); // 입력한 사용자명
     data.append("password", password); // 입력한 비밀번호
-
-    const apiUrl = isOwner ? "/api/owner/login" : "/api/manager/login";
-
     try {
-      const response = await axios.post(apiUrl, data, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          accept: "application/json",
-        },
-      });
+      const response = await axios.post(
+        "http://61.73.191.42:19000/admin/login",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            accept: "application/json",
+          },
+        }
+      );
       const token = response.data.access_token; // 서버에서 반환한 토큰
       const decoded: DecodedToken = jwtDecode(token);
-      console.log("디코딩된 토큰 정보:", decoded);
-
       const userRole = decoded.role;
-      const userId =
-        userRole === "ROLE_AUTH_OWNER" || userRole === "ROLE_NOTAUTH_OWNER"
-          ? decoded.owner_id ?? null
-          : decoded.manager_id ?? null;
-      const accommodationId = decoded.accommodation_id || null;
+      const userId = decoded.sub;
 
-      // Recoil 상태 업데이트
-      setAuthAtom({
+      const userData = {
         userId: userId,
         role: userRole,
         token: token,
-        username: username,
-      }); // 사용자 정보 저장
-      setAccomoAtom({
-        accomodation_id: accommodationId,
-        accomodation_name: null,
-      }); // 숙소 ID 저장
+        username: null,
+      };
 
-      isOwner
-        ? navigation("/owner/manageHouse")
-        : navigation("/manager/manageParty");
+      // Recoil 상태 업데이트
+      setAuthAtom(userData); // 사용자 정보 저장
+
+      navigation("/admin/houseManage");
     } catch (error) {
       console.error("로그인 오류:", error);
       alert("로그인 정보가 올바르지 않습니다.");
@@ -117,12 +116,8 @@ function Login() {
               해적입니다.
             </p>
             <p className={styles.login_box_right_inner_text_2}>
-              회원 서비스 이용을 위해 로그인 해주세요.
+              관리자가 아니라면 돌아가 주시기 바랍니다.
             </p>
-            <TabsComponent
-              tabs={["사장님", "매니저"]}
-              setIsOwner={setIsOwner}
-            />
             <div className={styles.login_box_right_inner_input_box}>
               <input
                 type="text"
@@ -141,17 +136,6 @@ function Login() {
                 onClick={handleLogin}
               >
                 로그인
-              </button>
-            </div>
-            <div className={styles.login_box_right_inner_signup_box}>
-              <p className={styles.login_box_right_inner_signup_text}>
-                아직 회원이 아니신가요?
-              </p>
-              <button
-                className={styles.login_box_right_inner_signup_button}
-                onClick={() => navigation("/manager/signup")}
-              >
-                회원가입
               </button>
             </div>
           </div>
