@@ -48,7 +48,6 @@ async def kakao_callback(
         user_info = await kakaoLogin.kakao_callback_data(db, code, state)
         grouped_data = await userService.post_userLoginKakaoCallback(db, user_info["user_info"], user_info["id"])
         access_token = await oauth.create_access_token(data={"data": grouped_data})
-        # return {"access_token": access_token, "token_type": "bearer"}
 
         ip_address = os.getenv("BACKEND_IP")
         port = os.getenv("FRONTEND_PORT")

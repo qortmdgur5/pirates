@@ -87,7 +87,8 @@ async def read_ownerAccomodation(
     token: str = Depends(oauth.owner_verify_token)
 ):
     try:
-        if token != "ROLE_AUTH_OWNER" or token != "ROLE_NOTAUTH_OWNER":
+        print(token)
+        if token not in ["ROLE_AUTH_OWNER", "ROLE_NOTAUTH_OWNER"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
@@ -109,7 +110,7 @@ async def create_ownerAccomdation(
     token: str = Depends(oauth.owner_verify_token)
 ):
     try:
-        if token != "ROLE_AUTH_OWNER" or token != "ROLE_NOTAUTH_OWNER":
+        if token not in ["ROLE_AUTH_OWNER", "ROLE_NOTAUTH_OWNER"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
@@ -131,7 +132,7 @@ async def update_ownerAccomodation(
     token: str = Depends(oauth.owner_verify_token)
 ):
     try:
-        if token != "ROLE_AUTH_OWNER" or token != "ROLE_NOTAUTH_OWNER":
+        if token not in ["ROLE_AUTH_OWNER", "ROLE_NOTAUTH_OWNER"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."

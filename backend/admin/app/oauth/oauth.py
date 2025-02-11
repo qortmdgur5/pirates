@@ -82,7 +82,7 @@ async def manager_verify_token(token: str):
 async def user_verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True})
-        user_role: str = payload.get("role")
+        user_role: str = payload.get("data")[0].get("role") if "data" in payload else None
         return user_role
     
     except jwt.ExpiredSignatureError:
