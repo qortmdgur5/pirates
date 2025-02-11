@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styles from "./styles/houseInfoBox.module.scss";
 
 interface HouseInfo {
+  id: number | null;
   name: string;
   address: string;
   number?: string; // 전화번호는 선택사항으로 처리
@@ -20,6 +21,7 @@ function HouseInfoBox({ houseInfo, onSave, onUpdate }: HouseInfoBoxProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [editedInfo, setEditedInfo] = useState<HouseInfo>({
+    id: null,
     name: "",
     address: "",
     number: "",

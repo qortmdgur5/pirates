@@ -9,8 +9,7 @@ import { useRecoilState } from "recoil";
 
 interface DecodedToken {
   role: string | null;
-  owner_id?: number | null;
-  manager_id?: number | null;
+  sub: number | null;
   accommodation_id?: number | null;
 }
 
@@ -61,13 +60,8 @@ function Login() {
       });
       const token = response.data.access_token; // 서버에서 반환한 토큰
       const decoded: DecodedToken = jwtDecode(token);
-      console.log("디코딩된 토큰 정보:", decoded);
-
       const userRole = decoded.role;
-      const userId =
-        userRole === "ROLE_AUTH_OWNER" || userRole === "ROLE_NOTAUTH_OWNER"
-          ? decoded.owner_id ?? null
-          : decoded.manager_id ?? null;
+      const userId = decoded.sub ?? null
       const accommodationId = decoded.accommodation_id || null;
 
       // Recoil 상태 업데이트

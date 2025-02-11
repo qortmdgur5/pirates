@@ -5,10 +5,11 @@ import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import HouseInfoBox from "./components/HouseInfoBox";
 import styles from "./styles/manageHouse.module.scss";
-import { useRecoilState } from "recoil";
-import { accomoAtoms } from "../../../atoms/authAtoms";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 
 interface Accommodation {
+  id: number | null;
   name: string;
   address: string;
   number?: string;
@@ -21,8 +22,10 @@ function ManageHouse() {
   const [houseInfo, setHouseInfo] = useState<Accommodation | null>(null);
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
   const [accomoAtom, setAccomoAtom] = useRecoilState(accomoAtoms); // 숙소 정보 상태
-  const ownerId = 1; // 로그인된 사장님 id 값
-  const accomodationId = 31; // 수정할 숙소 id 값
+  const user = useRecoilValue(authAtoms);
+  const ownerId = user.userId; // 로그인된 사장님 id 값
+  const accomodationId = accomoAtom.accomodation_id; // 수정할 숙소 id 값
+  const token = user.token; // 로그인 정보 token
 
   const managerMenuTabs = [
     {
@@ -44,15 +47,20 @@ function ManageHouse() {
       const response = await axios.get<{ data: Accommodation[] }>(
         `/api/owner/accomodation/${id}`,
         {
-          params: { skip: 0, limit: 10 },
+          params: { skip: 0, limit: 10, token: token },
           headers: { accept: "application/json" },
         }
       );
-      setHouseInfo(response.data.data[0]);
-      setAccomoAtom((prevState) => ({
-        ...prevState,
-        accomodation_name: response.data.data[0].name, // 이름만 업데이트
-      }));
+
+      const houseData = response.data.data[0];
+      if (houseData) {
+        setHouseInfo(response.data.data[0]);
+        setAccomoAtom((prevState) => ({
+          ...prevState,
+          accomodation_name: houseData.name,
+          accomodation_id: houseData.id,
+        }));
+      }
     } catch (error) {
       console.error("데이터를 불러오지 못했습니다.", error);
     } finally {
@@ -61,13 +69,22 @@ function ManageHouse() {
   };
 
   useEffect(() => {
-    fetchAccommodation(ownerId);
+    if (ownerId) fetchAccommodation(ownerId);
   }, []);
 
   const saveAccommodation = async (newData: Accommodation) => {
     try {
-      await axios.post("/api/owner/accomodation", { ...newData, id: ownerId });
-      fetchAccommodation(ownerId);
+      await axios.post(
+        "/api/owner/accomodation",
+        {
+          ...newData,
+          id: ownerId,
+        },
+        {
+          params: { token }, // token을 쿼리 파라미터로 추가
+        }
+      );
+      if (ownerId) fetchAccommodation(ownerId);
     } catch (error) {
       console.error("데이터 저장에 실패했습니다.", error);
     }
@@ -75,8 +92,16 @@ function ManageHouse() {
 
   const updateAccommodation = async (updatedData: Accommodation) => {
     try {
-      await axios.put(`/api/owner/accomodation/${accomodationId}`, updatedData);
-      fetchAccommodation(ownerId);
+      await axios.put(
+        `/api/owner/accomodation/${accomodationId}`,
+        {
+          ...updatedData,
+        },
+        {
+          params: { token }, // token을 쿼리 파라미터로 추가
+        }
+      );
+      if (ownerId) fetchAccommodation(ownerId);
     } catch (error) {
       console.error("데이터 수정에 실패했습니다.", error);
     }
