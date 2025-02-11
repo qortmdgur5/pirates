@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import styles from "./styles/guestHouseTable.module.scss";
 import Pagination from "../../../../components/common/pagination/Pagination";
-import useSessionUser from "../../../../hook/useSessionAdmin";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { authAtoms } from "../../../../atoms/authAtoms";
 
 // API 응답 데이터 타입 정의
 interface GuestHouse {
@@ -28,9 +29,8 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
   const [page, setPage] = useState(0); // 페이지 상태 관리
   const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
   const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
-  const user = useSessionUser();
+  const user = useRecoilValue(authAtoms);   // 로그인 된 사용자
   const token = user.token;
-  console.log(token);
 
   useEffect(() => {
     const fetchData = async () => {

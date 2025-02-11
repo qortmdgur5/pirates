@@ -4,7 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { authAtoms } from "../../../atoms/authAtoms";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 interface DecodedToken {
   sub: number | null;
@@ -15,6 +15,9 @@ function Login() {
   // 네비게이션 함수
   const navigation = useNavigation();
 
+  // 유저 로그인 정보
+  const user = useRecoilValue(authAtoms);
+
   // 상태관리 모음
   const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
   const [password, setPassword] = useState<string>(""); // 비밀번호 입력값 관리
@@ -22,6 +25,22 @@ function Login() {
   // 전역 상태관리 모음
   // Recoil 상태 훅
   const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 사용자 정보 상태
+
+  // useEffect(() => {
+  //   const roleMapping: Record<string, string> = {
+  //     SUPER_ADMIN: "/admin/houseManage",
+  //     ROLE_AUTH_OWNER: "/owner/manageHouse",
+  //     ROLE_NOTAUTH_OWNER: "/owner/manageHouse",
+  //     ROLE_AUTH_MANAGER: "/manager/manageParty",
+  //     ROLE_NOTAUTH_MANAGER: "/manager/manageParty",
+  //     ROLE_USER: "/user/party",
+  //   };
+
+  //   if (user) {
+  //     const redirectPath = user.role ? roleMapping[user.role] : null;
+  //     if (redirectPath) navigation(redirectPath);
+  //   }
+  // }, [user, navigation]);
 
   // 아이디 입력창 관리
   const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,9 +82,6 @@ function Login() {
 
       // Recoil 상태 업데이트
       setAuthAtom(userData); // 사용자 정보 저장
-
-      // 로컬 스토리지에 사용자 데이터 저장
-      sessionStorage.setItem("user", JSON.stringify(userData));
 
       navigation("/admin/houseManage");
     } catch (error) {
