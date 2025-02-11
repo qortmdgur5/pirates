@@ -22,17 +22,21 @@ interface PartyAPIResponse {
 interface ManagePartyTableProps {
   isOldestOrders: boolean;
   fetchTrigger: boolean;
+  token: string | null;
+  accomoId: number | null;
 }
 
 const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   isOldestOrders,
   fetchTrigger,
+  token,
+  accomoId,
 }) => {
   const [data, setData] = useState<Party[]>([]);
   const [page, setPage] = useState(0); // 페이지 상태 관리
   const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
   const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
-  const accomodationId = 1; // 임시 숙소 id
+  const accomodationId = accomoId; // 숙소 id
   const navigate = useNavigate(); // navigate 추가
 
   // 파티 리스트 가져오기 API
@@ -42,7 +46,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
         const response = await axios.get<PartyAPIResponse>(
           `/api/manager/parties/${id}`,
           {
-            params: { isOldestOrders, page, pageSize },
+            params: { isOldestOrders, page, pageSize, token },
             headers: { accept: "application/json" },
           }
         );
@@ -54,7 +58,7 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
       }
     };
 
-    fetchData(accomodationId);
+    if (accomodationId) fetchData(accomodationId);
   }, [isOldestOrders, page, pageSize, fetchTrigger]);
 
   // 행 클릭 시 상세 페이지로 이동

@@ -13,15 +13,42 @@ import styles from "./styles/manageParty.module.scss";
 import NameSearch from "../../../components/common/search/NameSearch";
 import ManagePartyTable from "./components/ManagePartyTable";
 import axios from "axios";
+import { useRecoilValue } from "recoil";
+import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
 function ManageParty() {
+  const user = useRecoilValue(authAtoms);
+  const role = user.role;
+  const token = user.token;
+  const accomoAtom = useRecoilValue(accomoAtoms);
+  const accomoId = accomoAtom.accomodation_id;
+
   // 메뉴 탭 데이터
-  const managerMenuTabs = [
-    { text: "파티방 관리", isActive: true, path: "/manager/manageParty" },
-    { text: "마이페이지", isActive: false, path: "#" },
+  const allManagerMenuTabs = [
+    {
+      text: "게스트 하우스 관리",
+      isActive: false,
+      path: "/owner/manageHouse",
+    },
+    {
+      text: "매니저 등록 관리",
+      isActive: false,
+      path: "/owner/managerApprove",
+    },
+    {
+      text: "파티방 관리",
+      isActive: true,
+      path: "/manager/manageParty",
+    },
   ];
+
+  // ROLE_NOTAUTH_OWNER 또는 ROLE_AUTH_OWNER이면 전체 메뉴, 아니면 파티방 관리만 표시
+  const managerMenuTabs =
+    role === "ROLE_NOTAUTH_OWNER" || role === "ROLE_AUTH_OWNER"
+      ? allManagerMenuTabs
+      : allManagerMenuTabs.filter((tab) => tab.text === "파티방 관리");
 
   // 현재 날짜 yyyy-MM-dd 형식으로 설정
   const getTodayDate = () => {
@@ -78,7 +105,6 @@ function ManageParty() {
   const [calendarDate, setCalendarDate] = useState<Date | null>(getTodayDate);
   const [AMPMTime, setAMPMTime] = useState<Date>();
   // 폼 데이터 상태
-  const [id, setId] = useState<number>(1); // 초기 숙소 PK 키 임시 1로 지정
   const [partyDate, setPartyDate] = useState<string>(formatDate(calendarDate));
   const [partyOpen, setPartyOpen] = useState<boolean>(false);
   const [partyTime, setPartyTime] = useState<string>("20-00-00");
@@ -99,7 +125,7 @@ function ManageParty() {
 
     // 서버로 보낼 데이터
     const postData = {
-      id,
+      id: accomoId,
       partyDate,
       partyOpen,
       partyTime,
@@ -109,9 +135,9 @@ function ManageParty() {
 
     try {
       const response = await axios.post("/api/manager/party", postData, {
+        params: { token },
         headers: { "Content-Type": "application/json" },
       });
-      console.log("파티방 개설 성공:", response.data);
       closeModal(); // 모달 닫기
       setFetchTriger((prev) => !prev);
     } catch (error) {
@@ -195,6 +221,8 @@ function ManageParty() {
               <ManagePartyTable
                 isOldestOrders={selectedOption}
                 fetchTrigger={fetchTrigger}
+                token={token}
+                accomoId={accomoId}
               />
               <button className={styles.blue_button} onClick={openModal}>
                 파티방 개설하기
