@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import styles from "./styles/guestHouseTable.module.scss";
 import Pagination from "../../../../components/common/pagination/Pagination";
+import useSessionUser from "../../../../hook/useSessionAdmin";
 
 // API 응답 데이터 타입 정의
 interface GuestHouse {
@@ -27,6 +28,9 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
   const [page, setPage] = useState(0); // 페이지 상태 관리
   const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
   const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
+  const user = useSessionUser();
+  const token = user.token;
+  console.log(token);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +38,7 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
         const response = await axios.get<GuestHouseAPIResponse>(
           "/api/admin/accomodations",
           {
-            params: { isMostReviews, page, pageSize },
+            params: { isMostReviews, page, pageSize, token },
             headers: { accept: "application/json" },
           }
         );
