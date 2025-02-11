@@ -25,7 +25,7 @@ function Login() {
 
   // 전역 상태관리 모음
   // Recoil 상태 훅
-  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 사용자 정보 상태
+  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 매니저 or 사장님 로그인 상태
   const [accomoAtom, setAccomoAtom] = useRecoilState(accomoAtoms); // 숙소 정보 상태
 
   // 아이디 입력창 관리
