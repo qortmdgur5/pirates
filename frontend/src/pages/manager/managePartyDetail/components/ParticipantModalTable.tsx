@@ -17,6 +17,7 @@ interface ParticipantModalTableProps {
   onRegister: () => void;
   participant: number;
   setParticipantCount: React.Dispatch<React.SetStateAction<number>>;
+  token: string | null;
 }
 
 function ParticipantModalTable({
@@ -24,6 +25,7 @@ function ParticipantModalTable({
   onRegister,
   participant,
   setParticipantCount,
+  token,
 }: ParticipantModalTableProps) {
   const initialParticipantData: ParticipantData = {
     id: partyId,
@@ -66,6 +68,7 @@ function ParticipantModalTable({
         "/api/manager/participant",
         participantData,
         {
+          params: { token },
           headers: { "Content-Type": "application/json" },
         }
       );
@@ -73,7 +76,7 @@ function ParticipantModalTable({
 
       // 등록 후 초기값으로 리셋
       setParticipantData(initialParticipantData);
-      setParticipantCount(prev => prev + 1); // 참가자 수 증가
+      setParticipantCount((prev) => prev + 1); // 참가자 수 증가
       onRegister();
     } catch (error) {
       console.error("참가자 등록 실패:", error);

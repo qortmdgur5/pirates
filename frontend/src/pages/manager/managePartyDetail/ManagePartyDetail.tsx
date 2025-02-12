@@ -9,6 +9,8 @@ import Modal from "react-modal";
 import ParticipantModalTable from "./components/ParticipantModalTable";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { useRecoilValue } from "recoil";
+import { authAtoms } from "../../../atoms/authAtoms";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -41,11 +43,33 @@ function ManagePartyDetail() {
   const [pageSize, setPageSize] = useState<number>(10); // 페이지 사이즈 상태 기본 10 사이즈로 설정
   const [totalCount, setTotalCount] = useState<number>(0);
   const navigate = useNavigate();
+  const user = useRecoilValue(authAtoms);
+  const role = user.role;
+  const token = user.token;
   // 메뉴 탭 데이터
-  const managerMenuTabs = [
-    { text: "파티방 관리", isActive: true, path: "/manager/manageParty" },
-    { text: "마이페이지", isActive: false, path: "#" },
+  const allManagerMenuTabs = [
+    {
+      text: "게스트 하우스 관리",
+      isActive: false,
+      path: "/owner/manageHouse",
+    },
+    {
+      text: "매니저 등록 관리",
+      isActive: false,
+      path: "/owner/managerApprove",
+    },
+    {
+      text: "파티방 관리",
+      isActive: true,
+      path: "/manager/manageParty",
+    },
   ];
+
+  // ROLE_NOTAUTH_OWNER 또는 ROLE_AUTH_OWNER이면 전체 메뉴, 아니면 파티방 관리만 표시
+  const managerMenuTabs =
+    role === "ROLE_NOTAUTH_OWNER" || role === "ROLE_AUTH_OWNER"
+      ? allManagerMenuTabs
+      : allManagerMenuTabs.filter((tab) => tab.text === "파티방 관리");
 
   const customModalStyles: ReactModal.Styles = {
     // overlay 모달 창 외부 영역 디자인
@@ -86,7 +110,9 @@ function ManagePartyDetail() {
 
   const fetchParticipants = () => {
     axios
-      .get(`/api/manager/party/${partyId}`, { params: { page, pageSize } })
+      .get(`/api/manager/party/${partyId}`, {
+        params: { page, pageSize, token },
+      })
       .then((response) => {
         const filteredData = response.data.data.map((item: Participant) => ({
           id: item.id,
@@ -148,6 +174,7 @@ function ManagePartyDetail() {
                   onRegister={fetchParticipants}
                   participant={participantCount}
                   setParticipantCount={setParticipantCount}
+                  token={token}
                 />
               </Modal>
               <ParticipantTable
@@ -158,6 +185,7 @@ function ManagePartyDetail() {
                 totalCount={totalCount}
                 onPageChange={setPage} // 페이지 변경 시 호출
                 onPageSizeChange={setPageSize} // 페이지 사이즈 변경 시 호출
+                token={token}
               />
               <div className={styles.party_detail_button_box}>
                 <button className={styles.party_modify_button} type="button">

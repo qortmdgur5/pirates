@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "./styles/reservationStatusTable.module.scss";
 import Pagination from "../../../../components/common/pagination/Pagination";
+import axios from "axios";
 
 // 참석자 정보를 정의하는 인터페이스
 interface Participant {
@@ -22,6 +23,7 @@ interface ParticipantTableProps {
   totalCount: number;
   onPageChange: (newPage: number) => void;
   onPageSizeChange: (newPageSize: number) => void;
+  token: string | null;
 }
 
 function ParticipantTable({
@@ -32,6 +34,7 @@ function ParticipantTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  token,
 }: ParticipantTableProps) {
   const [participants, setParticipants] = useState<Participant[]>([]);
 
@@ -42,19 +45,15 @@ function ParticipantTable({
   // 삭제 처리 함수
   const handleDelete = async (id: number) => {
     try {
-      const response = await fetch(`/api/manager/participant/${id}`, {
-        method: "DELETE",
+      await axios.delete(`/api/manager/participant/${id}`, {
+        params: { token },
       });
 
-      if (response.ok) {
-        // 성공적으로 삭제되면 UI에서 해당 항목을 제거
-        setParticipants((prevParticipants) =>
-          prevParticipants.filter((participant) => participant.id !== id)
-        );
-        setParticipantCount((prev) => prev - 1);
-      } else {
-        console.error("삭제 실패:", response.statusText);
-      }
+      // 성공적으로 삭제되면 UI에서 해당 항목을 제거
+      setParticipants((prevParticipants) =>
+        prevParticipants.filter((participant) => participant.id !== id)
+      );
+      setParticipantCount((prev) => prev - 1);
     } catch (error) {
       console.error("삭제 요청 에러:", error);
     }
