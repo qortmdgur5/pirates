@@ -15,7 +15,7 @@ function LoginSuccess() {
     const access_token = urlParams.get("access_token"); // 'access_token'을 URL에서 가져옴
 
     if (!access_token) {
-      alert("카카오 계정이 없습니다. 계정을 만들어주세요.");
+      alert("카카오 계정이 없습니다.");
       navigate("/"); // 홈으로 리디렉션
       return;
     }
@@ -28,6 +28,7 @@ function LoginSuccess() {
       if (!decodedUser.id) {
         // id가 없으면 에러 처리
         alert("로그인을 진행해주세요.");
+        navigate("/"); // 홈으로 리디렉션
         return;
       }
 
@@ -43,10 +44,7 @@ function LoginSuccess() {
       // user Recoil 상태 설정
       setUser(userData);
 
-      // 로컬 스토리지에 사용자 데이터 저장
-      sessionStorage.setItem("user", JSON.stringify(userData));
-
-      // userInfo가 없으면 /user/signup으로 있으면 /user/party 페이지로 리다이렉트
+      // userInfo가 없으면 /user/signup으로, 있으면 /user/party 페이지로 리다이렉트
       if (!decodedUser.userInfo || decodedUser.userInfo.length === 0) {
         navigate("/user/signup");
       } else {

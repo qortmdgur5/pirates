@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ChatRoomInfo from "./components/ChatRoomInfo";
 import styles from "./styles/chatRoom.module.scss";
-import useSessionUser from "../../../hook/useSessionUser";
 import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../atoms/userAtoms";
 
 // ChatRoomResponse 타입을 정의합니다.
 type ChatRoomResponse = {
@@ -27,7 +28,7 @@ const ChatRoom = () => {
   const navigate = useNavigate();
 
   // 유저 상태 관리 변수 Recoil
-  const user = useSessionUser();
+  const user = useRecoilValue(userAtom);
   const user_id = user?.id;
   // const party_id = user?.party_id;
 

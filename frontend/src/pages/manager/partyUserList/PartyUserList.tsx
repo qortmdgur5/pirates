@@ -27,7 +27,6 @@ function PartyUserList() {
   const [originalUsers, setOriginalUsers] = useState<UserPartyInfo[]>([]); // 원본 데이터 저장
   const accomodation = useRecoilValue(accomoAtoms);
   const user = useRecoilValue(authAtoms);
-  const role = user.role;
   const token = user.token;
   const guestHouseName = accomodation.accomodation_name;
   const navigate = useNavigate();

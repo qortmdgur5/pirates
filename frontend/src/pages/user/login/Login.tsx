@@ -1,12 +1,14 @@
 import styles from "./styles/login.module.scss";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useSessionUser from "../../../hook/useSessionUser";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../atoms/userAtoms";
 
 function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const user = useSessionUser();
+  const user = useRecoilValue(userAtom);
+  console.log(user);
 
   useEffect(() => {
     if (user) {

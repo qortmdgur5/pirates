@@ -4,7 +4,8 @@ import styles from "./styles/party.module.scss";
 import { useEffect, useState } from "react";
 import axios from "axios"; // API 호출을 위한 axios 사용
 import { useNavigate } from "react-router-dom";
-import useSessionUser from "../../../hook/useSessionUser";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../atoms/userAtoms";
 
 // 파티 정보 타입 정의
 interface PartyInfo {
@@ -24,7 +25,7 @@ function Party() {
   const [matchTime, setMatchTime] = useState<string | null>(null); // 짝매칭 시작 시간
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 추가
   const [error, setError] = useState<string | null>(null); // 에러 상태 추가
-  const user = useSessionUser();
+  const user = useRecoilValue(userAtom);
   const navigation = useNavigate();
 
   // 파티방 전체 정보 가졍오기 API

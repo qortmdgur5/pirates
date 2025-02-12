@@ -8,8 +8,9 @@ import styles from "./styles/loveSelect.module.scss";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { useEffect, useState } from "react";
-import useSessionUser from "../../../hook/useSessionUser";
 import axios from "axios";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../atoms/userAtoms";
 
 dayjs.extend(duration);
 
@@ -45,7 +46,7 @@ function LoveSelect() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null); // 선택한 유저 ID
   const [confirm, setConfirm] = useState<boolean>(false);
   const [matchUserList, setMatchUserList] = useState<MatchPairProps[]>([]);
-  const user = useSessionUser();
+  const user = useRecoilValue(userAtom);
   const userId = user?.id || null; // 본인 id
   const partyId = user?.party_id || null; // 파티 id
   const [matchStatus, setMatchStatus] = useState<

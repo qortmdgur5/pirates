@@ -4,7 +4,8 @@ import axios from "axios";
 import styles from "./styles/chat.module.scss";
 import MeChat from "./components/me/chat/MeChat";
 import OthersChat from "./components/others/chat/OthersChat";
-import useSessionUser from "../../../hook/useSessionUser";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../atoms/userAtoms";
 
 interface ChatData {
   id: number;
@@ -18,7 +19,7 @@ interface ChatResponse {
 }
 
 function Chat() {
-  const user = useSessionUser();
+  const user = useRecoilValue(userAtom);
   const userId = user?.id;
   const location = useLocation();
   const { chatRoom_id, gender, yourName } = location.state || {}; // state에서 chatRoom_id, gender 받아오기

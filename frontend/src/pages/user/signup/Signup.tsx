@@ -2,8 +2,7 @@ import { useState, ChangeEvent, useEffect } from "react";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/signup.module.scss";
 import { useNavigate } from "react-router-dom";
-import useSessionUser from "../../../hook/useSessionUser";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
 
 // 타입 정의
@@ -32,7 +31,7 @@ function Signup() {
   };
 
   const [formData, setFormData] = useState<SignupFormData>(initialFormData);
-  const user = useSessionUser(); // 커스텀 훅 세션 로그인 유저 정보
+  const user = useRecoilValue(userAtom); // 커스텀 훅 세션 로그인 유저 정보
   const setUser = useSetRecoilState(userAtom); // Recoil 상태 업데이트
 
   // useNavigate 훅 초기화
