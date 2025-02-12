@@ -11,7 +11,7 @@ function Login() {
   console.log(user);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       // userInfo가 배열인지 확인하고, 배열이 비어있지 않은지 확인
       if (
         !user.userInfo ||
@@ -29,7 +29,7 @@ function Login() {
   const handleLogin = () => {
     setLoading(true); // 로그인 중 상태로 설정
     // 백엔드 로그인 엔드포인트로 리디렉션
-    window.location.href = "/api/user/auth/kakao/login?id=1";
+    window.location.href = "/api/user/auth/kakao/login?id=52";
   };
 
   return (

@@ -2,8 +2,9 @@ import { useState, ChangeEvent, useEffect } from "react";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/signup.module.scss";
 import { useNavigate } from "react-router-dom";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
+import axios from "axios";
 
 // 타입 정의
 interface SignupFormData {
@@ -31,19 +32,33 @@ function Signup() {
   };
 
   const [formData, setFormData] = useState<SignupFormData>(initialFormData);
-  const user = useRecoilValue(userAtom); // 커스텀 훅 세션 로그인 유저 정보
-  const setUser = useSetRecoilState(userAtom); // Recoil 상태 업데이트
+  const [user, setUser] = useRecoilState(userAtom); // Recoil 상태 업데이트
 
   // useNavigate 훅 초기화
   const navigate = useNavigate();
 
+  // 로그아웃 처리 함수
+  const handleLogout = () => {
+    // Recoil 상태를 초기화하여 로그인 정보 삭제
+    setUser({
+      role: null,
+      token: null,
+      id: null,
+      party_id: null,
+      userInfo: null,
+    });
+
+    // 인덱스 페이지로 리디렉션
+    navigate("/"); // '/'는 인덱스 페이지를 의미합니다.
+  };
+
   // 페이지 진입 시 user_id가 없으면 = 로그인 하지 않은 유저라면
   useEffect(() => {
-    if (!user?.id) {
+    if (!user || !user.id) {
       alert("로그인을 진행하여야 합니다.");
       navigate("/"); // 홈으로 이동
     }
-  }, [user, navigate]);
+  }, [user]);
 
   // 지역 및 MBTI 데이터
   const regions = [
@@ -125,31 +140,18 @@ function Signup() {
     };
 
     try {
-      const response = await fetch("/api/user/signup", {
-        method: "POST",
+      const response = await axios.post("/api/user/signup", payload, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
+      if (response.status === 200) {
+        alert("회원가입이 완료되었습니다.");
+        navigate("/user/party");
+      } else {
         throw new Error("회원가입에 실패했습니다.");
       }
-
-      const result = await response.json();
-
-      // 세션 스토리지에 새로운 user 데이터 덮어쓰기
-      const updatedUserData = {
-        token: user?.token, // user에서 access_token을 가져옴
-        id: user?.id, // user에서 id를 가져옴
-        party_id: user?.party_id, // user에서 party_id를 가져옴
-        userInfo: formData, // 추가된 userInfo 데이터
-      };
-
-      sessionStorage.setItem("user", JSON.stringify(updatedUserData));
-      alert("회원가입이 완료되었습니다.");
-      navigate("/user/party");
     } catch (error) {
       console.error(error);
       alert("오류가 발생했습니다. 다시 시도해주세요.");
@@ -289,7 +291,11 @@ function Signup() {
           >
             가입하기
           </button>
-          <button className={styles.cancel_button} type="button">
+          <button
+            className={styles.cancel_button}
+            type="button"
+            onClick={handleLogout}
+          >
             가입취소
           </button>
         </div>

@@ -1,11 +1,11 @@
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { userAtom, UserInfo } from "../../../atoms/userAtoms";
 
 function LoginSuccess() {
-  const [user, setUser] = useRecoilState(userAtom);
+  const setUser = useSetRecoilState(userAtom);
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 추가
   const navigate = useNavigate();
 

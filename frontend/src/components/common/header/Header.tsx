@@ -16,8 +16,6 @@ function Header() {
       userId: null,
       username: null,
     });
-    // localStorage에서 저장된 recoil-persist 데이터 삭제
-    localStorage.removeItem("localStorage"); // Recoil-persist key에 해당하는 저장소 항목 삭제
 
     // 인덱스 페이지로 리디렉션
     navigate("/manager/login"); // '/'는 인덱스 페이지를 의미합니다.

@@ -19,9 +19,9 @@ export interface UserInfo {
 }
 
 export interface User {
-  token: string;
-  id: number;
-  role: string;
+  token: string | null;
+  id: number | null;
+  role: string | null;
   party_id: number | null;
   userInfo: UserInfo | null;
 }
