@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./styles/userListCard.module.scss";
 import axios from "axios";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../../atoms/userAtoms";
 
 interface UserListCardProps {
   id: number; // 해당 유저 id 값
@@ -22,6 +24,8 @@ function UserListCard({
   partyId,
 }: UserListCardProps) {
   const navigate = useNavigate();
+  const user = useRecoilValue(userAtom);
+  const token = user?.token;
 
   // 채팅방 생성 API
   const makeParty = async () => {
@@ -38,11 +42,17 @@ function UserListCard({
     try {
       // 더 큰 값이 user_id_1에 오도록 처리
       const [user_id_1, user_id_2] = userId > id ? [userId, id] : [id, userId];
-      const response = await axios.post("/api/user/chatRoom", {
-        user_id_1: user_id_1,
-        user_id_2: user_id_2,
-        party_id: partyId,
-      });
+      const response = await axios.post(
+        "/api/user/chatRoom",
+        {
+          user_id_1: user_id_1,
+          user_id_2: user_id_2,
+          party_id: partyId,
+        },
+        {
+          params: { token },
+        }
+      );
 
       const newChatRoomId = response.data.data.chatRoom_id; // 생성된 채팅방 id
 

@@ -26,6 +26,7 @@ function PartyUserList() {
   const user = useRecoilValue(userAtom); // userAtom에서 현재 로그인된 사용자 정보 가져오기
   const userId = user?.id || null;
   const partyId = user?.party_id || null;
+  const token = user?.token;
   const navigate = useNavigate();
 
   // 각 팀의 토글 상태 관리 (팀마다 열기/닫기 상태를 저장)
@@ -36,23 +37,23 @@ function PartyUserList() {
   useEffect(() => {
     async function fetchPartyUsers() {
       try {
-        if (!user) return; // 유저 로그인 정보가 없으면 대기
-
-        const partyId = user.party_id;
-        if (!partyId) {
-          navigate(`/user/party/${user.token}`);
-          return;
-        }
+        if (!user || !partyId) return; // 유저 로그인 정보, partyId 없으면 대기
 
         // 1. 첫 번째 API 호출 (파티 참여자 목록)
         const { data: partyResponse } = await axios.get(
-          `/api/user/partyInfo/${partyId}`
+          `/api/user/partyInfo/${partyId}`,
+          {
+            params: { token },
+          }
         );
         const partyUsers: UserPartyInfo[] = partyResponse.data;
 
         // 2. 두 번째 API 호출 (현재 사용자와 이미 채팅방이 있는 유저 목록)
         const { data: chatResponse } = await axios.get(
-          `/api/user/partyInfo/chatExist/${partyId}/${user.id}`
+          `/api/user/partyInfo/chatExist/${partyId}/${user.id}`,
+          {
+            params: { token },
+          }
         );
         const chatUsers: { id: number; chatRoom_id: number }[] =
           chatResponse.data;
