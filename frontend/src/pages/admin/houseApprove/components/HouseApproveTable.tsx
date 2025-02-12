@@ -143,9 +143,14 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   // 사장님 승인 API
   const approveOwner = async (id: number) => {
     try {
-      const response = await axios.put(`/api/admin/owner/auth/${id}`, {
-        headers: { accept: "application/json" },
-      });
+      const response = await axios.put(
+        `/api/admin/owner/auth/${id}`,
+        {},
+        {
+          params: { token },
+          headers: { accept: "application/json" },
+        }
+      );
     } catch (error) {
       console.error("사장님 승인 요청을 실패하였습니다.", error);
     }
@@ -154,9 +159,14 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   // 사장님 취소 API
   const denyOwner = async (id: number) => {
     try {
-      const response = await axios.put(`/api/admin/owner/deny/${id}`, {
-        headers: { accept: "application/json" },
-      });
+      const response = await axios.put(
+        `/api/admin/owner/deny/${id}`,
+        {},
+        {
+          params: { token },
+          headers: { accept: "application/json" },
+        }
+      );
     } catch (error) {
       console.error("사장님 취소 요청을 실패하였습니다.", error);
     }
