@@ -21,6 +21,7 @@ interface ChatResponse {
 function Chat() {
   const user = useRecoilValue(userAtom);
   const userId = user?.id;
+  const token = user?.token;
   const location = useLocation();
   const { chatRoom_id, gender, yourName } = location.state || {}; // state에서 chatRoom_id, gender 받아오기
   const [chatData, setChatData] = useState<ChatData[]>([]);
@@ -59,7 +60,8 @@ function Chat() {
 
       const response = await axios.post<ChatResponse>(
         "/api/user/chat/contents",
-        { chatRoom_id, lastChat_id: append ? lastChatId : null }
+        { chatRoom_id, lastChat_id: append ? lastChatId : null },
+        { params: { token } }
       );
 
       const newData = response?.data?.data || [];
@@ -100,7 +102,7 @@ function Chat() {
   useEffect(() => {
     if (chatRoom_id && userId) {
       socketRef.current = new WebSocket(
-        `ws://localhost:9000/user/ws/chat/${chatRoom_id}/${userId}`
+        `ws://localhost:9000/user/ws/chat/${chatRoom_id}/${userId}?token=${token}`
       );
 
       socketRef.current.onopen = () => {
@@ -173,14 +175,19 @@ function Chat() {
     lastReadChatId: number
   ) => {
     try {
-      const response = await axios.post("/api/user/chat/lastReadChat", {
-        chatRoom_id: chatRoomId,
-        user_id: userId,
-        lastReadChat_id: lastReadChatId,
-      });
-      console.log(response);
+      const response = await axios.post(
+        "/api/user/chat/lastReadChat",
+        {
+          chatRoom_id: chatRoomId,
+          user_id: userId,
+          lastReadChat_id: lastReadChatId,
+        },
+        {
+          params: { token },
+        }
+      );
     } catch (e) {
-      setError("채팅 데이터를 불러오는 데 실패했습니다.");
+      console.log("마지막 채팅 읽기 에러:", e);
     }
   };
 
