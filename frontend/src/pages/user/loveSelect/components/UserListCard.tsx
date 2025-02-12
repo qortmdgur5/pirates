@@ -1,6 +1,8 @@
 import axios from "axios";
 import styles from "./styles/userListCard.module.scss";
 import { useState } from "react";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../../../../atoms/userAtoms";
 
 interface MatchUserListCardProps {
   id: number; // 해당 유저 id 값
@@ -26,6 +28,8 @@ function UserListCard({
   setConfirm,
 }: MatchUserListCardProps) {
   const [loading, setLoading] = useState(false);
+  const user = useRecoilValue(userAtom);
+  const token = user?.token;
 
   const handleSelect = async () => {
     if (loading) return; // 로딩 중이면 중복 호출 방지
@@ -43,11 +47,17 @@ function UserListCard({
 
     try {
       // API 호출: 짝 매칭 선택
-      await axios.post("/api/user/match/select", {
-        party_id: partyId,
-        user_id_1: userId,
-        user_id_2: id,
-      });
+      await axios.post(
+        "/api/user/match/select",
+        {
+          party_id: partyId,
+          user_id_1: userId,
+          user_id_2: id,
+        },
+        {
+          params: { token },
+        }
+      );
 
       // 매칭 성공
       setConfirm(true); // 확정 confirm state 변경

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./styles/chat.module.scss";
 import MeChat from "./components/me/chat/MeChat";
@@ -37,6 +37,7 @@ function Chat() {
   const chatContainerRef = useRef<HTMLDivElement>(null); // 최상단 스크롤 할 시 이전 채팅 내역 로드 위한 ref
   const isFetchingRef = useRef(false); // 중복 요청 방지
   const isFirstRender = useRef(true); // 첫 렌더링 여부 체크
+  const navigation = useNavigate();
 
   // WebSocket 연결을 위한 ref
   const socketRef = useRef<WebSocket | null>(null);
@@ -298,7 +299,11 @@ function Chat() {
     <div className={styles.container}>
       <div className={styles.container_contens}>
         <div className={styles.chat_header}>
-          <button type="button" className={styles.back_button}>
+          <button
+            type="button"
+            className={styles.back_button}
+            onClick={() => navigation("/user/chatRooms")}
+          >
             &lt;
           </button>
           <p className={styles.chat_header_text}>{yourName} 님과의 채팅</p>

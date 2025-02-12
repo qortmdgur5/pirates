@@ -47,6 +47,7 @@ function LoveSelect() {
   const [confirm, setConfirm] = useState<boolean>(false);
   const [matchUserList, setMatchUserList] = useState<MatchPairProps[]>([]);
   const user = useRecoilValue(userAtom);
+  const token = user?.token;
   const userId = user?.id || null; // 본인 id
   const partyId = user?.party_id || null; // 파티 id
   const [matchStatus, setMatchStatus] = useState<
@@ -60,7 +61,7 @@ function LoveSelect() {
 
     // 첫 렌더링 시에만 종료 시간을 설정
     if (!endTime) {
-      setEndTime(startTime.add(1, "minute")); // 5분 뒤를 종료 시간으로 설정
+      setEndTime(startTime.add(0.3, "minute")); // 5분 뒤를 종료 시간으로 설정
     }
 
     const updateTimer = () => {
@@ -96,12 +97,19 @@ function LoveSelect() {
         ).padStart(2, "0")}`
       : "--:--";
 
+  // 같은 조 매칭할 이성 유저 리스트 가져오기 API
   const getMatchUserList = async () => {
     try {
-      const response = await axios.post("/api/user/match/userList", {
-        user_id: user?.id,
-        party_id: user?.party_id,
-      });
+      const response = await axios.post(
+        "/api/user/match/userList",
+        {
+          user_id: user?.id,
+          party_id: user?.party_id,
+        },
+        {
+          params: { token },
+        }
+      );
       const data = response.data.data;
       setUserList(data);
       setTeam(data[0].team || "X");
@@ -127,7 +135,10 @@ function LoveSelect() {
   const getConfirmUser = async () => {
     try {
       const response = await axios.get(
-        `/api/user/match/confirm/${partyId}/${userId}`
+        `/api/user/match/confirm/${partyId}/${userId}`,
+        {
+          params: { token },
+        }
       );
       const confirmedUserId = response.data.user_id_2;
       if (confirmedUserId) {
@@ -148,9 +159,10 @@ function LoveSelect() {
   // 매칭 결과 가져오기 API
   const getMatchResults = async (partyId: number) => {
     try {
-      const response = await axios.get(`/api/user/match/select/${partyId}`);
+      const response = await axios.get(`/api/user/match/select/${partyId}`, {
+        params: { token },
+      });
       const pairData = response.data.data;
-      console.log(pairData);
       setMatchUserList(pairData); // 상태 업데이트
     } catch (error) {
       console.error("매칭 결과 가져오기 실패:", error);
@@ -158,9 +170,8 @@ function LoveSelect() {
   };
 
   useEffect(() => {
-    // if (matchStatus === "finished" && partyId) getMatchResults(partyId);
-    if (partyId) getMatchResults(partyId);
-  }, [partyId]);
+    if (matchStatus === "finished" && partyId) getMatchResults(partyId);
+  }, [partyId, matchStatus]);
 
   // matchStatus가 "notStarted"일 경우 대기 메시지 표시
   if (matchStatus === "notStarted") return <p>매칭 시작 대기 중...</p>;
