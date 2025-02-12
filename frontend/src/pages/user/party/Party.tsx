@@ -26,12 +26,15 @@ function Party() {
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 추가
   const [error, setError] = useState<string | null>(null); // 에러 상태 추가
   const user = useRecoilValue(userAtom);
+  const token = user?.token;
   const navigation = useNavigate();
 
   // 파티방 전체 정보 가졍오기 API
   const getPartyInfo = async (partyId: number) => {
     try {
-      const response = await axios.get(`/api/user/party/${partyId}`);
+      const response = await axios.get(`/api/user/party/${partyId}`, {
+        params: { token },
+      });
       const data = response.data.data[0];
       setPartyInfo(data);
       setMatchTime(data.matchStartTime);
@@ -49,7 +52,10 @@ function Party() {
 
     try {
       const response = await axios.get(
-        `/api/user/party/matchTime/${user.party_id}`
+        `/api/user/party/matchTime/${user.party_id}`,
+        {
+          params: { token },
+        }
       );
       const newMatchTime = response.data.data.matchStartTime; // 새로 받아온 시작시간
 
