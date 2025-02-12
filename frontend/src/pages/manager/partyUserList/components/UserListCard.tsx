@@ -1,6 +1,8 @@
 import { useState } from "react";
 import styles from "./styles/userListCard.module.scss";
 import axios from "axios";
+import { useRecoilValue } from "recoil";
+import { authAtoms } from "../../../../atoms/authAtoms";
 
 interface UserListCardProps {
   id: number;
@@ -24,6 +26,8 @@ function UserListCard({
   // 팀 상태 및 파티 참석 상태 관리
   const [selectedTeam, setSelectedTeam] = useState<number | null>(team);
   const [partyOn, setPartyOn] = useState<boolean>(initialPartyOn);
+  const user = useRecoilValue(authAtoms);
+  const token = user.token;
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newTeam = event.target.value;
@@ -39,7 +43,7 @@ function UserListCard({
     try {
       // 서버에 PUT 요청
       await axios.put(`/api/manager/partyUserOn/${id}`, null, {
-        params: { partyOn: newPartyOnState },
+        params: { partyOn: newPartyOnState, token },
       });
 
       // 요청 성공 시 상태 업데이트

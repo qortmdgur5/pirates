@@ -26,42 +26,31 @@ function PartyUserList() {
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
   const [originalUsers, setOriginalUsers] = useState<UserPartyInfo[]>([]); // 원본 데이터 저장
   const accomodation = useRecoilValue(accomoAtoms);
-  const manager = useRecoilValue(authAtoms);
+  const user = useRecoilValue(authAtoms);
+  const role = user.role;
+  const token = user.token;
   const guestHouseName = accomodation.accomodation_name;
   const navigate = useNavigate();
 
   // 유저 리스트 가져오기 API
   useEffect(() => {
-    async function fetchPartyUsers() {
+    const fetchPartyUsers = async () => {
       try {
-        if (!manager) {
-          alert("로그인을 진행해주세요.");
-          navigate("/manager/login");
-          return;
-        }
+        const response = await axios.get(`/api/manager/partyInfo/${partyId}`, {
+          params: { token },
+        });
+        const data: UserPartyInfo[] = response.data.data;
 
-        if (!partyId) {
-          navigate(`/manager/manageParty`);
-          return;
-        }
-
-        const response = await fetch(`/api/manager/partyInfo/${partyId}`);
-        if (!response.ok) {
-          throw new Error("데이터를 가져오는 데 실패했습니다.");
-        }
-
-        const responseData = await response.json();
-        const data: UserPartyInfo[] = responseData.data;
         setPartyUsers(data);
         setOriginalUsers(data); // 원본 데이터 초기화
       } catch (error) {
         console.error("API 호출 에러:", error);
         alert("참여자 정보를 불러오는 데 실패했습니다.");
       }
-    }
+    };
 
     fetchPartyUsers();
-  }, [manager, navigate]);
+  }, [user, navigate]);
 
   // 유저 리스트 팀으로 그룹화
   const groupByTeam = (
@@ -86,7 +75,6 @@ function PartyUserList() {
   };
 
   const groupedUsers = groupByTeam(partyUsers);
-  console.log(groupedUsers);
 
   // 팀 변경 Change 함수
   const handleTeamChange = (userId: number, newTeam: number | null) => {
@@ -117,7 +105,9 @@ function PartyUserList() {
       const payload = {
         data: changedUsers.map(({ id, team }) => ({ id, team })),
       };
-      await axios.put(`/api/manager/partyUserInfo`, payload);
+      await axios.put(`/api/manager/partyUserInfo`, payload, {
+        params: { token },
+      });
       alert("변경 사항이 저장되었습니다.");
       setOriginalUsers(partyUsers); // 원본 데이터 동기화
     } catch (error) {
