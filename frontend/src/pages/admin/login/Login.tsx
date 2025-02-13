@@ -59,7 +59,7 @@ function Login() {
     data.append("password", password); // 입력한 비밀번호
     try {
       const response = await axios.post(
-        "http://61.73.191.42:19000/admin/login",
+        "/api/admin/login",
         data,
         {
           headers: {
