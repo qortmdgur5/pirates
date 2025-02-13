@@ -8,6 +8,23 @@
     justify-content: center;
     padding: 105px 5.6% 86px 5.6%;
 
+    .home_and_logout_box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      .logout_button {
+        width: 120px;
+        height: 40px;
+        border-radius: 8px;
+        font-size: 24px;
+        font-family: 'NanumSquareB', sans-serif;
+        background-color: $color-blue-000;
+        color: $color-white-000;
+      }
+    }
+
     .house_info_box {
       width: 100%;
       margin-top: 86px;

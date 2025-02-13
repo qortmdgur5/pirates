@@ -4,7 +4,7 @@ import styles from "./styles/party.module.scss";
 import { useEffect, useState } from "react";
 import axios from "axios"; // API 호출을 위한 axios 사용
 import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
 
 // 파티 정보 타입 정의
@@ -25,7 +25,7 @@ function Party() {
   const [matchTime, setMatchTime] = useState<string | null>(null); // 짝매칭 시작 시간
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 추가
   const [error, setError] = useState<string | null>(null); // 에러 상태 추가
-  const user = useRecoilValue(userAtom);
+  const [user, setUser] = useRecoilState(userAtom);
   const token = user?.token;
   const navigation = useNavigate();
 
@@ -100,6 +100,21 @@ function Party() {
     }
   }, [user]);
 
+  // 로그아웃 처리 함수
+  const handleLogout = () => {
+    // Recoil 상태를 초기화하여 로그인 정보 삭제
+    setUser({
+      token: null,
+      id: null,
+      role: null,
+      party_id: null,
+      userInfo: null,
+    });
+
+    // 인덱스 페이지로 리디렉션
+    navigation("/"); // '/'는 인덱스 페이지를 의미합니다.
+  };
+
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>{error}</div>;
 
@@ -109,7 +124,12 @@ function Party() {
         <HouseNameAndDate
           guestHouseName={partyInfo ? partyInfo.name : "게스트 하우스"}
         />
-        <HomeButton />
+        <div className={styles.home_and_logout_box}>
+          <HomeButton />
+          <button className={styles.logout_button} onClick={handleLogout}>
+            로그아웃
+          </button>
+        </div>
         {partyInfo ? (
           <>
             <div className={styles.house_info_box}>
