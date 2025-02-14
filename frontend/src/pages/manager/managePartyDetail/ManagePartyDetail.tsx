@@ -7,7 +7,7 @@ import ReservationStatusTable from "./components/ReservationStatusTable";
 import styles from "./styles/managePartyDetail.module.scss";
 import Modal from "react-modal";
 import ParticipantModalTable from "./components/ParticipantModalTable";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { authAtoms } from "../../../atoms/authAtoms";

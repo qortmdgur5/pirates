@@ -1,4 +1,4 @@
-import { useNavigation } from "../../../utils/navigation"; // 네비게이션 훅 임포트
+import { useNavigate } from "react-router-dom";
 import styles from "./styles/menuBox.module.scss";
 
 // MenuBox의 타입 정의
@@ -7,7 +7,7 @@ interface MenuBoxProps {
 }
 
 function MenuBox({ menuTabs }: MenuBoxProps) {
-  const navigateTo = useNavigation(); // 네비게이션 훅 호출
+  const navigation = useNavigate(); // 네비게이션 훅 호출
 
   return (
     <div className={styles.house_manage_menu_box}>
@@ -26,7 +26,7 @@ function MenuBox({ menuTabs }: MenuBoxProps) {
             className={`${styles.menu_card} ${
               tab.isActive ? styles.active_card : ""
             }`}
-            onClick={() => navigateTo(tab.path)} // 클릭 시 해당 경로로 이동
+            onClick={() => navigation(tab.path)} // 클릭 시 해당 경로로 이동
           >
             {tab.text}
           </button>

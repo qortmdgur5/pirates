@@ -1,11 +1,11 @@
 import styles from "./styles/login.module.scss";
-import { useNavigation } from "../../../utils/navigation";
 import TabsComponent from "../../../components/common/tabs/Tabs";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { authAtoms, accomoAtoms } from "../../../atoms/authAtoms";
 import { useRecoilState } from "recoil";
+import { useNavigate } from "react-router-dom";
 
 interface DecodedToken {
   role: string | null;
@@ -15,7 +15,7 @@ interface DecodedToken {
 
 function Login() {
   // 네비게이션 함수
-  const navigation = useNavigation();
+  const navigation = useNavigate();
 
   // 상태관리 모음
   const [isOwner, setIsOwner] = useState<boolean>(true); // 매니저 사장님 상태 관리

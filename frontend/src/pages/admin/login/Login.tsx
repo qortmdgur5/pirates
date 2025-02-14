@@ -1,10 +1,10 @@
 import styles from "./styles/login.module.scss";
-import { useNavigation } from "../../../utils/navigation";
 import { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { authAtoms } from "../../../atoms/authAtoms";
 import { useRecoilState, useRecoilValue } from "recoil";
+import { useNavigate } from "react-router-dom";
 
 interface DecodedToken {
   sub: number | null;
@@ -13,7 +13,7 @@ interface DecodedToken {
 
 function Login() {
   // 네비게이션 함수
-  const navigation = useNavigation();
+  const navigation = useNavigate();
 
   // 유저 로그인 정보
   const user = useRecoilValue(authAtoms);

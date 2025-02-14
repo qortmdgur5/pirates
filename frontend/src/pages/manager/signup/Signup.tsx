@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigation } from "../../../utils/navigation"; // 네비게이션 훅 임포트
 import TabsComponent from "../../../components/common/tabs/Tabs";
 import styles from "./styles/Signup.module.scss";
 import AutoComplete from "../../../components/common/autoComplete/AutoComplete";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
-  const navigateTo = useNavigation(); // 네비게이션 훅 호출
+  const navigateTo = useNavigate(); // 네비게이션 훅 호출
   const [isOwner, setIsOwner] = useState<boolean>(true);
   const [ownerId, setOwnerId] = useState<number | undefined>(); // 매니저의 게스트하우스 리스트 owner_id 관리
   const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
