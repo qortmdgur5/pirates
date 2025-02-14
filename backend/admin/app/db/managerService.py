@@ -233,7 +233,9 @@ async def post_managerParty(db: AsyncSession, party: schemas.managerPartiesPost)
             number=party.number,
             partyOpen=party.partyOpen,
             partyTime=formatted_time,
-            team=party.team
+            team=party.team,
+            partyOn=True,
+            matchStartTime=None 
         )
         db.add(db_party)
         await db.commit()
@@ -532,6 +534,12 @@ async def get_managerPartyInfo(
         result = await db.execute(query)
         users = result.all()
         
+        if not users: 
+            return {
+                "data": None,  
+                "totalCount": 0
+            }
+            
         response = [
                 {
                     "id": user[0].id, 

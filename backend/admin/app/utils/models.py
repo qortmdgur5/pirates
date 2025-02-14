@@ -70,7 +70,7 @@ class Party(Base):
     number = Column(Integer)
     partyOn = Column(Integer)
     team = Column(Integer)
-    matchStartTime = Column(DateTime, default=func.now())
+    matchStartTime = Column(DateTime, nullable=False)
     
     partys = relationship("Accomodation", back_populates="party") 
     participant = relationship("Participant", back_populates="participants") 

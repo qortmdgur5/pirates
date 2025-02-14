@@ -519,7 +519,10 @@ async def post_userChatRooms(
         result = await db.execute(query)
         chat_room_data = result.fetchall()  
         if not chat_room_data:
-            raise HTTPException(status_code=404, detail="Chat rooms not found")
+            return {
+                "data": None,
+                "totalCount": 0
+            }
 
         response = []
         for chat_room in chat_room_data:
