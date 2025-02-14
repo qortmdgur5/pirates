@@ -20,7 +20,7 @@ interface UserPartyInfo {
 
 function PartyUserList() {
   const { state } = useLocation();
-  const partyId = state.partyId;
+  const partyId = state.id;
   const partyDate = state.partyDate;
   const maxTeam = state.team;
   const [partyUsers, setPartyUsers] = useState<UserPartyInfo[]>([]);
@@ -124,7 +124,7 @@ function PartyUserList() {
         </button>
         <div className={styles.home_and_back_box}>
           <HomeButton />
-          <BackButton navigateTo="" />
+          <BackButton navigateTo="/manager/managePartyDetail" state={state} />
         </div>
         <div className={styles.search_and_participant_box}>
           <div className={styles.search_box}>

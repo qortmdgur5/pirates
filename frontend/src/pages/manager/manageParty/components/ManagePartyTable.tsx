@@ -51,7 +51,6 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
           }
         );
         setData(response.data.data);
-        console.log(response.data.data);
         setTotalCount(response.data.totalCount);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);

@@ -4,13 +4,16 @@ import { useNavigate } from "react-router-dom";
 // Props 타입 정의 (TypeScript 사용 시)
 interface BackButtonProps {
   navigateTo: string; // 이동할 주소
+  state?: any; // 선택적으로 넘길 state
 }
 
-function BackButton({ navigateTo }: BackButtonProps) {
+function BackButton({ navigateTo, state }: BackButtonProps) {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate(navigateTo); // props로 받은 주소로 이동
+    navigate(navigateTo, {
+      state, // state가 undefined면 전달 안 됨
+    });
   };
 
   return (

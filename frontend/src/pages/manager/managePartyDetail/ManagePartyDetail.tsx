@@ -131,7 +131,7 @@ function ManagePartyDetail() {
 
   useEffect(() => {
     fetchParticipants();
-  }, [partyId, page, pageSize, totalCount]);
+  }, [partyId, page, pageSize]);
 
   return (
     <>
@@ -199,7 +199,7 @@ function ManagePartyDetail() {
                   type="button"
                   onClick={() =>
                     navigate(`/manager/party/userList`, {
-                      state: { partyId, partyDate, team },
+                      state: { ...state },
                     })
                   }
                 >
