@@ -1,10 +1,11 @@
 import { useRecoilState } from "recoil";
 import styles from "./styles/header.module.scss";
 import { useNavigate } from "react-router-dom";
-import { authAtoms } from "../../../atoms/authAtoms";
+import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 
 function Header() {
-  const [user, setUser] = useRecoilState(authAtoms); // Recoil 상태와 setter 가져오기
+  const [user, setUser] = useRecoilState(authAtoms);
+  const [accomodation, setAccomodation] = useRecoilState(accomoAtoms);
   const navigate = useNavigate(); // useNavigate 훅 사용
 
   // 로그아웃 처리 함수
@@ -17,10 +18,15 @@ function Header() {
       username: null,
     });
 
+    setAccomodation({
+      accomodation_id: null,
+      accomodation_name: null,
+    });
+
     // 인덱스 페이지로 리디렉션
     navigate("/manager/login"); // '/'는 인덱스 페이지를 의미합니다.
   };
-  
+
   return (
     <header className={styles.container}>
       <div className={styles.header_logo_box}>
