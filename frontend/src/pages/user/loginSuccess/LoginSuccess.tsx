@@ -2,7 +2,7 @@ import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
-import { userAtom, UserInfo } from "../../../atoms/userAtoms";
+import { userAtom } from "../../../atoms/userAtoms";
 
 function LoginSuccess() {
   const setUser = useSetRecoilState(userAtom);

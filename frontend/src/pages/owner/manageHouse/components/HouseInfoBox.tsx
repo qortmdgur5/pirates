@@ -133,7 +133,12 @@ function HouseInfoBox({ houseInfo, onSave, onUpdate }: HouseInfoBoxProps) {
           </>
         ) : (
           <>
-            <p className={styles.house_name}>{houseInfo?.name}</p>
+            <div className={styles.house_name_qr_box}>
+              <p className={styles.house_name}>{houseInfo?.name}</p>
+              <button className={styles.qr_box} type="button">
+                <img src="/src/assets/image/qrcode.jpg" alt="qrcode_img" />
+              </button>
+            </div>
             <div className={styles.house_info_box}>
               <div className={styles.house_info}>
                 <p className={styles.house_info_left_text}>소개</p>

@@ -15,14 +15,38 @@
     background-color: $color-white-000;
     overflow: hidden;
 
-    .house_name {
-      font-size: 2.083vw;
-      font-weight: bold;
-      font-family: 'NanumSquareEB', sans-serif;
-      padding: 1.042vw 2.083vw 1.042vw 2.083vw;
-      border-radius: 0.938vw;
-      background-color: $color-blue-200;
+    .house_name_qr_box {
+      position: relative;
+      display: flex;
+      width: 100%;
+
+      .house_name {
+        font-size: 2.083vw;
+        font-weight: bold;
+        font-family: 'NanumSquareEB', sans-serif;
+        padding: 1.042vw 2.083vw 1.042vw 2.083vw;
+        border-radius: 0.938vw;
+        background-color: $color-blue-200;
+        margin: 0 auto;
+      }
+
+      .qr_box{
+        position: absolute;
+        right: 0;
+        width: 4.083vw;
+        height: 4.083vw;
+        background-color: transparent;
+
+        img{
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      
     }
+
+
 
     .house_name_input {
       font-size: 2.083vw;
