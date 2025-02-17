@@ -27,9 +27,16 @@ function ManagerApprove() {
 
   // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState<boolean>(false);
+  const [name, setName] = useState<string>(""); // 매니저 이름 검색 조건
 
+  // 라디오 버튼 함수
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
+  };
+
+  // 이름 검색 함수
+  const handleSearch = (searchName: string) => {
+    setName(searchName);
   };
 
   return (
@@ -61,9 +68,12 @@ function ManagerApprove() {
                     onChange={handleRadioChange}
                   />
                 </div>
-                <NameSearch />
+                <NameSearch onSearch={handleSearch} />
               </div>
-              <ManagerApproveTable isOldestOrders={selectedOption} />
+              <ManagerApproveTable
+                isOldestOrders={selectedOption}
+                name={name}
+              />
             </div>
           </div>
         </div>

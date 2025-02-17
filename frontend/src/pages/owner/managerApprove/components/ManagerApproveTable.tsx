@@ -28,10 +28,12 @@ interface ManagerAPIResponse {
 
 interface ManagerApproveTableProps {
   isOldestOrders: boolean;
+  name: string;
 }
 
 const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   isOldestOrders,
+  name,
 }) => {
   const [data, setData] = useState<Manager[]>([]);
   const [page, setPage] = useState(0); // 페이지 상태 관리
@@ -83,7 +85,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
         const response = await axios.get<ManagerAPIResponse>(
           `/api/owner/managers/${id}`,
           {
-            params: { isOldestOrders, page, pageSize, token },
+            params: { isOldestOrders, page, pageSize, token, name },
             headers: { accept: "application/json" },
           }
         );
@@ -95,7 +97,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
     };
 
     if (ownerId) fetchData(ownerId);
-  }, [isOldestOrders, page, pageSize]); // isOldestOrders가 변경될 때마다 데이터 갱신
+  }, [isOldestOrders, page, pageSize, name]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
   const openApproveModal = (name: string, id: number) => {
