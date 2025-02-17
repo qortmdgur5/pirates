@@ -45,10 +45,15 @@ async def get_adminAccomodations(
     db: AsyncSession,
     isMostReviews: Optional[bool] = False,
     page: int = 0,
-    pageSize: int = 10
+    pageSize: int = 10,
+    name: Optional[str] = None
 ) -> List[dict]:
     try:
         query = select(models.Accomodation)
+        
+        if name:
+            query = query.filter(models.Accomodation.name.ilike(f"%{name}%"))
+            
         if isMostReviews:
             query = query.outerjoin(models.Review)
             query = query.group_by(models.Accomodation.id)
@@ -101,7 +106,8 @@ async def get_adminOwners(
     db: AsyncSession, 
     isOldestOrders: Optional[bool] = False, 
     page: int = 0, 
-    pageSize: int = 10
+    pageSize: int = 10,
+    name: Optional[str] = None
 ):
     try:
         offset = max(page * pageSize, 0)
@@ -111,8 +117,13 @@ async def get_adminOwners(
             models.Owner.username,
             models.Owner.phoneNumber,
             models.Owner.role
-        ).order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))\
-         .offset(offset).limit(pageSize)
+        )
+        
+        if name:
+            query = query.filter(models.Owner.name.ilike(f"%{name}%"))
+            
+        query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
+        query.offset(offset).limit(pageSize)
          
         totalCount_query = select(func.count()).select_from(models.Owner)
         totalCount = await db.scalar(totalCount_query)

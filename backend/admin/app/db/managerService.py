@@ -147,11 +147,13 @@ async def authenticate_mananger(db: AsyncSession, username: str, password: str):
         raise HTTPException(status_code=500, detail={"msg": error_message})
     
 async def get_managerParties(
-    id: int,
-    db: AsyncSession,
-    isOldestOrders: Optional[bool] = False,
-    page: int = 0,
-    pageSize: int = 10
+id: int, 
+    db: AsyncSession, 
+    isOldestOrders: bool, 
+    page: int, 
+    pageSize: int, 
+    startDate: Optional[str] = None, 
+    endDate: Optional[str] = None
 ) -> List[dict]:
     try:
         offset = max(page * pageSize, 0)
@@ -171,18 +173,20 @@ async def get_managerParties(
             .join(models.Participant, models.Party.id == models.Participant.party_id, isouter=True)
             .filter(models.Party.accomodation_id == id)
             .group_by(models.Party.id)
-            .order_by(order_by_field)
-            .offset(offset)  
-            .limit(pageSize)
         )
         
+        if startDate and endDate:
+            query = query.filter(models.Party.partyDate.between(startDate, endDate))
+            
+        query = query.order_by(order_by_field).offset(offset).limit(pageSize)
+
         result = await db.execute(query)
         managerParties = result.all()
         
-        totalCount_query = (
-            select(func.count(models.Party.id))
-            .filter(models.Party.accomodation_id == id)
-        )
+        totalCount_query = select(func.count(models.Party.id)).filter(models.Party.accomodation_id == id)
+        if startDate and endDate:
+            totalCount_query = totalCount_query.filter(models.Party.partyDate.between(startDate, endDate))
+
         totalCount = await db.scalar(totalCount_query)
 
         response = [
@@ -546,7 +550,7 @@ async def get_managerPartyInfo(
                     "name": user[0].username,
                     "gender": user[1].gender if user[1] else True,
                     "team": user[2].team if user[2] else None,
-                    "partyOn": user[2].partyOn,
+                    "partyOn": user[2].partyOn if user[2] else None,
                 }
                 for user in users
             ]

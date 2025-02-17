@@ -152,6 +152,7 @@ async def update_ownerAccomodation(
 async def read_ownermanagers(
     id: int, 
     isOldestOrders: bool = Query(True), 
+    name: str = Query(None),
     page: int = Query(0),
     pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db),
@@ -163,7 +164,7 @@ async def read_ownermanagers(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
             )
-        data = await ownerService.get_ownermanagers(id, db, isOldestOrders, page, pageSize)
+        data = await ownerService.get_ownermanagers(id, db, isOldestOrders, page, pageSize, name)
         return data
     except Exception as e:
         error_message = str(e)

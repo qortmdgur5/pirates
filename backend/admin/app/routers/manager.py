@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Query, status, APIRouter
 from fastapi.responses import FileResponse
@@ -108,6 +109,8 @@ async def login_mananger(
 async def read_managerParties(
     id: int, 
     isOldestOrders: bool = Query(True),
+    startDate: Optional[str] = Query(None), 
+    endDate: Optional[str] = Query(None),
     page: int = Query(0),
     pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db),
@@ -119,7 +122,7 @@ async def read_managerParties(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
             )
-        data = await managerService.get_managerParties(id, db, isOldestOrders, page, pageSize)
+        data = await managerService.get_managerParties(id, db, isOldestOrders, page, pageSize, startDate, endDate)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -340,14 +343,14 @@ async def read_managerAccomodationQR(
 async def read_managerPartyInfo(
     id: int, 
     db: AsyncSession = Depends(database.get_db),
-    token: str = Depends(oauth.manager_verify_token)
+    # token: str = Depends(oauth.manager_verify_token)
 ):
     try:
-        if token not in ["ROLE_AUTH_OWNER", "ROLE_AUTH_MANAGER"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this resource."
-            )
+        # if token not in ["ROLE_AUTH_OWNER", "ROLE_AUTH_MANAGER"]:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_403_FORBIDDEN,
+        #         detail="You do not have permission to access this resource."
+        #     )
         data = await managerService.get_managerPartyInfo(id, db)
         return data
     except ValueError as e:

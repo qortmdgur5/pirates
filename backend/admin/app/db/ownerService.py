@@ -254,17 +254,20 @@ async def get_ownermanagers(
     db: AsyncSession,
     isOldestOrders: Optional[bool] = False,
     page: int = 0,
-    pageSize: int = 10
+    pageSize: int = 10,
+    name: Optional[str] = None
 ) -> List[dict]:
     try:
         offset = max(page * pageSize, 0)
 
         query = select(models.Manager).filter(models.Manager.owner_id == id)
-
-        query = query.offset(offset).limit(pageSize)
+        
+        if name:
+            query = query.filter(models.Manager.name.ilike(f"%{name}%"))
 
         query = query.order_by(asc(models.Manager.id) if isOldestOrders else desc(models.Manager.id))
-
+        query = query.offset(offset).limit(pageSize)
+        
         totalCount_query = select(func.count()).select_from(models.Manager).filter(models.Manager.owner_id == id)
         totalCount = await db.scalar(totalCount_query)
 

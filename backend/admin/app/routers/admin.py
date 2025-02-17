@@ -49,6 +49,7 @@ async def login_admin(
     summary="관리자용 게스트 하우스 관리 페이지 - 게스트 하우스 리스트 정보 가져오기 API")
 async def read_adminAccomodations(
     isMostReviews: bool = Query(True), 
+    name: str = Query(None),
     page: int = Query(0),
     pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db),
@@ -61,7 +62,7 @@ async def read_adminAccomodations(
                 detail="You do not have permission to access this resource."
             )
             
-        data = await adminService.get_adminAccomodations(db, isMostReviews, page, pageSize)
+        data = await adminService.get_adminAccomodations(db, isMostReviews, page, pageSize, name)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))
@@ -76,6 +77,7 @@ async def read_adminAccomodations(
     summary="관리자용 게스트 하우스 승인 관리 페이지 - 사장님 리스트 정보 가져오기 API")
 async def read_adminOwners(
     isOldestOrders: bool = Query(True),
+    name: str = Query(None),
     page: int = Query(0),
     pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db),
@@ -87,7 +89,7 @@ async def read_adminOwners(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
             )
-        data = await adminService.get_adminOwners(db, isOldestOrders, page, pageSize)
+        data = await adminService.get_adminOwners(db, isOldestOrders, page, pageSize, name)
         return data
     except ValueError as e:
         await errorLog.log_error(db, str(e))
