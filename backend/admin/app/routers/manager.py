@@ -343,14 +343,14 @@ async def read_managerAccomodationQR(
 async def read_managerPartyInfo(
     id: int, 
     db: AsyncSession = Depends(database.get_db),
-    # token: str = Depends(oauth.manager_verify_token)
+    token: str = Depends(oauth.manager_verify_token)
 ):
     try:
-        # if token not in ["ROLE_AUTH_OWNER", "ROLE_AUTH_MANAGER"]:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_403_FORBIDDEN,
-        #         detail="You do not have permission to access this resource."
-        #     )
+        if token not in ["ROLE_AUTH_OWNER", "ROLE_AUTH_MANAGER"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
         data = await managerService.get_managerPartyInfo(id, db)
         return data
     except ValueError as e:
