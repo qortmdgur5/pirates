@@ -47,6 +47,47 @@
             display: flex;
             gap: 1.302vw;
           }
+
+          .date_box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2vw;
+            flex: 1;
+
+            .start_date_input_box,
+            .end_date_input_box {
+              display: flex;
+              align-items: center;
+              flex: 1;
+              gap: 1vw;
+              height: 2.813vw;
+              border-radius: 1.406vw;
+              background-color: $color-white-000;
+              border: 0.156vw solid $color-blue-000;
+              font-size: 1.302vw;
+              font-family: 'NanumSquareB', sans-serif;
+              color: $color-black-200;
+              padding: 0 2.125vw 0 1.563vw;
+            }
+
+            .middle_text {
+              font-size: 2vw;
+            }
+
+            .date_input_text {
+              font-size: 1.354vw;
+              font-family: 'NanumSquareR', sans-serif;
+              color: $color-black-100;
+              margin-right: 1.042vw;
+            }
+
+            .date_calendar_emoji {
+              font-size: 1.875vw;
+              background-color: transparent;
+              margin-left: auto;
+            }
+          }
         }
 
         .blue_button {
@@ -197,29 +238,29 @@
     }
   }
 
-  .button_box{
+  .button_box {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 2.396vw;
     margin-top: 2.083vw;
 
-    .blue_button{
+    .blue_button {
       width: 9.375vw;
       height: 2.604vw;
       border-radius: 0.833vw;
-      box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4,0,0,0.55);
+      box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4, 0, 0, 0.55);
       background-color: $color-blue-000;
       font-size: 1.51vw;
       font-family: 'NanumSquareR', sans-serif;
       color: $color-white-000;
     }
 
-    .gray_button{
+    .gray_button {
       width: 9.375vw;
       height: 2.604vw;
       border-radius: 0.833vw;
-      box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4,0,0,0.55);
+      box-shadow: inset -0.131vw -0.162vw 0.208vw rgba(4, 0, 0, 0.55);
       background-color: $color-gray-300;
       font-size: 1.51vw;
       font-family: 'NanumSquareR', sans-serif;

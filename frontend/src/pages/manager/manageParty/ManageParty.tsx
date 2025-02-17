@@ -10,11 +10,11 @@ import MenuBox from "../../../components/common/menuBox/MenuBox";
 import ProfileBox from "../../../components/common/profileBox/ProfileBox";
 import RadioButton from "../../../components/common/radio/RadioButton";
 import styles from "./styles/manageParty.module.scss";
-import NameSearch from "../../../components/common/search/NameSearch";
 import ManagePartyTable from "./components/ManagePartyTable";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
+import { fontSize } from "@mui/system";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -102,8 +102,9 @@ function ManageParty() {
     return `${formattedHours}-${formattedMinutes}-00`; // 예시: "08-00-00"
   };
 
-  const [calendarDate, setCalendarDate] = useState<Date | null>(getTodayDate);
-  const [AMPMTime, setAMPMTime] = useState<Date>();
+  const [calendarDate, setCalendarDate] = useState<Date | null>(getTodayDate); // 파티방 개설 캘린더 날짜 상태
+  const [AMPMTime, setAMPMTime] = useState<Date>(); // 파티방 개설 시간 상태
+
   // 폼 데이터 상태
   const [partyDate, setPartyDate] = useState<string>(formatDate(calendarDate));
   const [partyOpen, setPartyOpen] = useState<boolean>(false);
@@ -113,13 +114,26 @@ function ManageParty() {
 
   // 최신 순 오래된 순 상태
   const [selectedOption, setSelectedOption] = useState(false);
+
+  // 파티방 시작 끝 검색조건 날짜
+  const [startCalendarDate, setStartCalendarDate] = useState<Date | null>(
+    getTodayDate
+  ); // 시작날짜 캘린더 날짜 상태
+  const [endCalendarDate, setEndCalendarDate] = useState<Date | null>(
+    getTodayDate
+  ); // 끝날짜 개설 캘린더 날짜 상태
+  const [startDate, setStartDate] = useState<string>(""); // 시작날짜
+  const [endDate, setEndDate] = useState<string>(""); // 끝날짜
+
   // 컴포넌트 안의 fetch 함수 트리거 상태
   const [fetchTrigger, setFetchTriger] = useState<boolean>(false);
 
+  // 라디오 버튼 변경 함수
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
   };
 
+  // 파티방 개설 버튼 함수
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -184,6 +198,10 @@ function ManageParty() {
 
   // 달력 오픈 상태
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  // 시작 날짜 달력 오픈 상태
+  const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
+  // 끝 날짜 달력 오픈 상태
+  const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   // 시계 오픈 상태
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
 
@@ -216,13 +234,87 @@ function ManageParty() {
                     onChange={handleRadioChange}
                   />
                 </div>
-                <NameSearch />
+                <div className={styles.date_box}>
+                  <div
+                    className={styles.start_date_input_box}
+                    style={{ position: "relative" }}
+                  >
+                    <p className={styles.date_input_text}>{startDate}</p>
+                    <button
+                      type="button"
+                      onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                      className={styles.date_calendar_emoji}
+                    >
+                      🗓️
+                    </button>
+                    {isStartDatePickerOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        <DatePicker
+                          selected={startCalendarDate}
+                          onChange={(date: Date | null) => {
+                            setStartDate(formatDate(date));
+                            setStartCalendarDate(date);
+                            setIsStartDatePickerOpen(false);
+                          }}
+                          dateFormat="yyyy-MM-dd"
+                          locale={ko} // 한글 설정
+                          inline
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <p className={styles.middle_text}>~</p>
+                  <div
+                    className={styles.end_date_input_box}
+                    style={{ position: "relative" }}
+                  >
+                    <p className={styles.date_input_text}>{endDate}</p>
+                    <button
+                      type="button"
+                      onClick={() => setIsEndDatePickerOpen((prev) => !prev)}
+                      className={styles.date_calendar_emoji}
+                    >
+                      🗓️
+                    </button>
+                    {isEndDatePickerOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        <DatePicker
+                          selected={endCalendarDate}
+                          onChange={(date: Date | null) => {
+                            setEndDate(formatDate(date));
+                            setEndCalendarDate(date);
+                            setIsEndDatePickerOpen(false);
+                          }}
+                          dateFormat="yyyy-MM-dd"
+                          locale={ko} // 한글 설정
+                          inline
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <ManagePartyTable
                 isOldestOrders={selectedOption}
                 fetchTrigger={fetchTrigger}
                 token={token}
                 accomoId={accomoId}
+                startDate={startDate}
+                endDate={endDate}
               />
               <button className={styles.blue_button} onClick={openModal}>
                 파티방 개설하기

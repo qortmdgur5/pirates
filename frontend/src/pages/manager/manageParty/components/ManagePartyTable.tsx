@@ -24,6 +24,8 @@ interface ManagePartyTableProps {
   fetchTrigger: boolean;
   token: string | null;
   accomoId: number | null;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
@@ -31,6 +33,8 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
   fetchTrigger,
   token,
   accomoId,
+  startDate,
+  endDate,
 }) => {
   const [data, setData] = useState<Party[]>([]);
   const [page, setPage] = useState(0); // 페이지 상태 관리
@@ -46,7 +50,14 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
         const response = await axios.get<PartyAPIResponse>(
           `/api/manager/parties/${id}`,
           {
-            params: { isOldestOrders, page, pageSize, token },
+            params: {
+              isOldestOrders,
+              page,
+              pageSize,
+              token,
+              startDate,
+              endDate,
+            },
             headers: { accept: "application/json" },
           }
         );
@@ -57,8 +68,14 @@ const ManagePartyTable: React.FC<ManagePartyTableProps> = ({
       }
     };
 
-    if (accomodationId) fetchData(accomodationId);
-  }, [isOldestOrders, page, pageSize, fetchTrigger]);
+    // startDate와 endDate가 모두 빈 문자열("")이거나, 둘 다 값이 있을 때만 API 호출
+    if (
+      (startDate === "" && endDate === "") || // 둘 다 빈 문자열일 경우
+      (startDate !== "" && endDate !== "") // 둘 다 값이 있을 경우
+    ) {
+      if (accomodationId) fetchData(accomodationId);
+    }
+  }, [isOldestOrders, page, pageSize, fetchTrigger, startDate, endDate]);
 
   // 행 클릭 시 상세 페이지로 이동
   const handleRowClick = (item: Party) => {
