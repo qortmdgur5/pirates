@@ -117,13 +117,13 @@ async def get_adminOwners(
             models.Owner.username,
             models.Owner.phoneNumber,
             models.Owner.role
-        )
+        ).select_from(models.Owner)
         
         if name:
             query = query.filter(models.Owner.name.ilike(f"%{name}%"))
             
-        query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
-        query.offset(offset).limit(pageSize)
+        query = query.order_by(models.Owner.date if isOldestOrders else desc(models.Owner.date))
+        query = query.offset(offset).limit(pageSize)
          
         totalCount_query = select(func.count()).select_from(models.Owner)
         totalCount = await db.scalar(totalCount_query)

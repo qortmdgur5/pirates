@@ -81,14 +81,14 @@ async def read_adminOwners(
     page: int = Query(0),
     pageSize: int = Query(10), 
     db: AsyncSession = Depends(database.get_db),
-    token: str = Depends(oauth.admin_verify_token)
+    # token: str = Depends(oauth.admin_verify_token)
 ):
     try:
-        if token != "SUPER_ADMIN":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this resource."
-            )
+        # if token != "SUPER_ADMIN":
+        #     raise HTTPException(
+        #         status_code=status.HTTP_403_FORBIDDEN,
+        #         detail="You do not have permission to access this resource."
+        #     )
         data = await adminService.get_adminOwners(db, isOldestOrders, page, pageSize, name)
         return data
     except ValueError as e:
