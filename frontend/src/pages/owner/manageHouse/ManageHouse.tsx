@@ -124,6 +124,8 @@ function ManageHouse() {
                 houseInfo={houseInfo}
                 onSave={saveAccommodation}
                 onUpdate={updateAccommodation}
+                accomodationId={accomodationId}
+                token={token}
               />
             )}
           </div>

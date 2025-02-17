@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./styles/houseInfoBox.module.scss";
+import axios from "axios";
 
 interface HouseInfo {
   id: number | null;
@@ -15,9 +16,17 @@ interface HouseInfoBoxProps {
   houseInfo: HouseInfo | null;
   onSave: (newData: HouseInfo) => Promise<void>;
   onUpdate: (updatedData: HouseInfo) => Promise<void>;
+  accomodationId: number | null;
+  token: string | null;
 }
 
-function HouseInfoBox({ houseInfo, onSave, onUpdate }: HouseInfoBoxProps) {
+function HouseInfoBox({
+  houseInfo,
+  onSave,
+  onUpdate,
+  accomodationId,
+  token,
+}: HouseInfoBoxProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [editedInfo, setEditedInfo] = useState<HouseInfo>({
@@ -70,6 +79,33 @@ function HouseInfoBox({ houseInfo, onSave, onUpdate }: HouseInfoBoxProps) {
       alert("게스트 하우스 등록을 해주세요.");
     } else {
       setIsEditing((prev) => !prev);
+    }
+  };
+
+  const downloadQRCode = async () => {
+    try {
+      // API 호출하여 QR 코드 이미지 파일을 가져옵니다
+      const response = await axios.get(
+        `/api/manager/accomodation/qr/${accomodationId}`,
+        {
+          params: { token },
+          responseType: "blob", // 응답을 blob으로 처리
+        }
+      );
+
+      // Blob 객체를 사용하여 다운로드 가능한 URL 생성
+      const url = window.URL.createObjectURL(response.data);
+
+      // 다운로드 링크를 생성하여 클릭 이벤트를 트리거합니다
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "qr_code.png"; // 다운로드될 파일 이름을 설정합니다
+      a.click();
+
+      // 메모리 해제
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("파일 다운로드 중 오류 발생:", error);
     }
   };
 
@@ -135,7 +171,11 @@ function HouseInfoBox({ houseInfo, onSave, onUpdate }: HouseInfoBoxProps) {
           <>
             <div className={styles.house_name_qr_box}>
               <p className={styles.house_name}>{houseInfo?.name}</p>
-              <button className={styles.qr_box} type="button">
+              <button
+                className={styles.qr_box}
+                type="button"
+                onClick={downloadQRCode}
+              >
                 <img src="/src/assets/image/qrcode.jpg" alt="qrcode_img" />
               </button>
             </div>
