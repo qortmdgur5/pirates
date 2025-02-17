@@ -22,14 +22,15 @@ interface GuestHouseAPIResponse {
 // 테이블 많은 리뷰 순, 최근 등록 순 Props, true 리뷰 많은 순 false 최근 등록 순
 interface GuestHouseTableProps {
   isMostReviews: boolean;
+  name: string;
 }
 
-function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
+function GuestHouseTable({ isMostReviews, name }: GuestHouseTableProps) {
   const [data, setData] = useState<GuestHouse[]>([]);
   const [page, setPage] = useState(0); // 페이지 상태 관리
   const [pageSize, setPageSize] = useState(10); // 페이지 사이즈 상태 관리
   const [totalCount, setTotalCount] = useState(0); // 총 항목 개수 상태 관리
-  const user = useRecoilValue(authAtoms);   // 로그인 된 사용자
+  const user = useRecoilValue(authAtoms); // 로그인 된 사용자
   const token = user.token;
 
   useEffect(() => {
@@ -38,7 +39,7 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
         const response = await axios.get<GuestHouseAPIResponse>(
           "/api/admin/accomodations",
           {
-            params: { isMostReviews, page, pageSize, token },
+            params: { isMostReviews, page, pageSize, token, name },
             headers: { accept: "application/json" },
           }
         );
@@ -51,7 +52,7 @@ function GuestHouseTable({ isMostReviews }: GuestHouseTableProps) {
     };
 
     fetchData();
-  }, [isMostReviews, page, pageSize]); // isMostReviews가 변경될 때마다 데이터 갱신
+  }, [isMostReviews, page, pageSize, name]); // isMostReviews가 변경될 때마다 데이터 갱신
 
   return (
     <div className={styles.table_container}>

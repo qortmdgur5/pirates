@@ -17,11 +17,19 @@ function HouseManage() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  // 리뷰 많은 순 최신등록 순 상태
-  const [selectedOption, setSelectedOption] = useState<boolean>(true);
+  // 최신등록 순서 상태 - 리뷰많은 순도 기획하였으나 현재는 리뷰가 미구현
+  const [selectedOption, setSelectedOption] = useState<boolean>(false);
+  // 이름 검색 조건 상태
+  const [name, setName] = useState<string>("");
 
+  // 라디오 버튼 상태 함수
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
+  };
+
+  // 이름 검색 함수
+  const handleSearch = (searchName: string) => {
+    setName(searchName);
   };
 
   return (
@@ -53,9 +61,9 @@ function HouseManage() {
                     onChange={handleRadioChange}
                   />
                 </div>
-                <NameSearch />
+                <NameSearch onSearch={handleSearch} />
               </div>
-              <GuestHouseTable isMostReviews={selectedOption} />
+              <GuestHouseTable isMostReviews={selectedOption} name={name} />
             </div>
           </div>
         </div>
