@@ -29,7 +29,6 @@ export default function Pagination({
     newPage: number
   ) => {
     onPageChange(newPage);
-    console.log(newPage);
   };
 
   const handleChangeRowsPerPage = (

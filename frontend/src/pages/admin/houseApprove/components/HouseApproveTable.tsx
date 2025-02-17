@@ -25,10 +25,12 @@ interface OwnerAPIResponse {
 
 interface HouseApproveTableProps {
   isOldestOrders: boolean;
+  name: string;
 }
 
 const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   isOldestOrders,
+  name,
 }) => {
   const [data, setData] = useState<Owner[]>([]);
   const [page, setPage] = useState(0); // 페이지 상태 관리
@@ -77,7 +79,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
         const response = await axios.get<OwnerAPIResponse>(
           "/api/admin/owners",
           {
-            params: { isOldestOrders, page, pageSize, token },
+            params: { isOldestOrders, page, pageSize, token, name },
             headers: { accept: "application/json" },
           }
         );
@@ -90,7 +92,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
     };
 
     fetchData();
-  }, [isOldestOrders, page, pageSize]); // isOldestOrders가 변경될 때마다 데이터 갱신
+  }, [isOldestOrders, page, pageSize, name]); // isOldestOrders가 변경될 때마다 데이터 갱신
 
   // 승인 모달 open
   const openApproveModal = (name: string, id: number) => {

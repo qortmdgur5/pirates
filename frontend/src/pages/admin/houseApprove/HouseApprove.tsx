@@ -17,12 +17,19 @@ function HouseApprove() {
     { text: "마이페이지", isActive: false, path: "#" },
   ];
 
-  // 오래된 순 최신 순 상태
-  const [selectedOption, setSelectedOption] = useState<boolean>(true);
+  const [selectedOption, setSelectedOption] = useState<boolean>(false); // 오래된 순 최신 순 상태
+  const [name, setName] = useState<string>(""); // 이름 검색용 상태
 
+  // 최근순 오래된 순 라디오 버튼 상태 함수
   const handleRadioChange = (value: boolean) => {
     setSelectedOption(value);
   };
+
+  // 이름 검색 함수
+  const handleSearch = (searchName: string) => {
+    setName(searchName);
+  };
+  
 
   return (
     <>
@@ -53,9 +60,9 @@ function HouseApprove() {
                     onChange={handleRadioChange}
                   />
                 </div>
-                <NameSearch />
+                <NameSearch onSearch={handleSearch} />
               </div>
-              <HouseApproveTable isOldestOrders={selectedOption} />
+              <HouseApproveTable isOldestOrders={selectedOption} name={name} />
             </div>
           </div>
         </div>
