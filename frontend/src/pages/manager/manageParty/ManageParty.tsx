@@ -14,7 +14,6 @@ import ManagePartyTable from "./components/ManagePartyTable";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
-import { fontSize } from "@mui/system";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 

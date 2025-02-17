@@ -24,16 +24,16 @@ interface Participant {
   region: string; // 지역
 }
 
-interface ParticipantAPIResponse {
-  data: Participant[];
-  totalCount: number;
-}
+// interface ParticipantAPIResponse {
+//   data: Participant[];
+//   totalCount: number;
+// }
 
 function ManagePartyDetail() {
   const { state } = useLocation(); // 전달된 state를 가져옵니다, 파티방 상세페이지 예약현황 데이터, 이전 manageParty 페이지에서 넘어온 데이터
   const partyId = state.id; // Party PK
-  const partyDate = state.partyDate; // Party 날짜
-  const team = state.team; // team 데이터
+  // const partyDate = state.partyDate; // Party 날짜
+  // const team = state.team; // team 데이터
   const [participants, setParticipants] = useState<Participant[]>([]); // 참석자 명단 데이터
   const [participantCount, setParticipantCount] = useState<number>(
     state.participant
@@ -46,6 +46,7 @@ function ManagePartyDetail() {
   const user = useRecoilValue(authAtoms);
   const role = user.role;
   const token = user.token;
+
   // 메뉴 탭 데이터
   const allManagerMenuTabs = [
     {
@@ -108,6 +109,7 @@ function ManagePartyDetail() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  // 참석자 리스트 가져오기 API
   const fetchParticipants = () => {
     axios
       .get(`/api/manager/party/${partyId}`, {
@@ -132,6 +134,27 @@ function ManagePartyDetail() {
   useEffect(() => {
     fetchParticipants();
   }, [partyId, page, pageSize]);
+
+  // 파티방 삭제 API
+  const deleteParty = () => {
+    // 알림창 확인
+    const confirmDelete = window.confirm("정말 삭제하시겠습니까?");
+
+    if (confirmDelete) {
+      // 삭제 요청
+      axios
+        .delete(`/api/manager/party/${partyId}`, {
+          params: { token },
+        })
+        .then(() => {
+          // 삭제 완료 후 페이지 이동
+          navigate("/manager/party");
+        })
+        .catch((error) => {
+          console.error("파티방 삭제 실패:", error);
+        });
+    }
+  };
 
   return (
     <>
@@ -191,7 +214,11 @@ function ManagePartyDetail() {
                 <button className={styles.party_modify_button} type="button">
                   파티방 수정
                 </button>
-                <button className={styles.party_delete_button} type="button">
+                <button
+                  className={styles.party_delete_button}
+                  type="button"
+                  onClick={deleteParty}
+                >
                   파티방 삭제
                 </button>
                 <button
