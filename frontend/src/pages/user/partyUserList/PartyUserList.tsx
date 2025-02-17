@@ -83,6 +83,7 @@ function PartyUserList() {
   const groupByTeam = (
     users: UserPartyInfo[]
   ): Map<string | number, UserPartyInfo[]> => {
+    if (!users) return new Map(); // 유저 데이터가 없다면 빈 맵 반환
     const grouped = users.reduce((acc, user) => {
       const teamKey = user.team ?? "미지정";
       if (!acc.has(teamKey)) acc.set(teamKey, []);
@@ -143,7 +144,9 @@ function PartyUserList() {
           </div>
           <div className={styles.participant_box}>
             <p className={styles.participant_text}>참여자수</p>
-            <p className={styles.participant_status}>{partyUsers.length}</p>
+            <p className={styles.participant_status}>
+              {partyUsers?.length || 0}
+            </p>
           </div>
         </div>
         <div className={styles.user_list_box}>
@@ -170,7 +173,16 @@ function PartyUserList() {
               </div>
             ))
           ) : (
-            <p>참여자가 없습니다.</p>
+            <p
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "26px",
+              }}
+            >
+              참여자가 없습니다.
+            </p>
           )}
         </div>
       </div>
