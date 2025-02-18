@@ -17,7 +17,7 @@ def get_kst_now():
 
 async def post_userLoginKakaoCallback(
     db: AsyncSession, 
-    user_info: dict,
+    user_info_dict: dict,
     accomodation_id: Optional[str]
 ):
     try:
@@ -33,12 +33,12 @@ async def post_userLoginKakaoCallback(
         else:
             query_date = None  # 12:00 ~ 17:59는 party_id 제공 X
 
-        username = user_info.get("id")
-        nickname = user_info.get("properties", {}).get("nickname")
+        username = user_info_dict.get("id")
+        nickname = user_info_dict.get("properties", {}).get("nickname")
 
         existing_user = await db.execute(select(models.User).where(models.User.username == username))
         user = existing_user.scalars().first()
-        
+  
         if accomodation_id in [None, "", "None"]:
             if not user:
                 new_user = models.User(username=username, nickname=nickname, date=kst_now, role="ROLE_USER")
@@ -56,16 +56,52 @@ async def post_userLoginKakaoCallback(
                 return grouped_data
                 
             else:
-                grouped_data = [{
-                        "id": user.id,
-                        "role": user.role,
-                        "party_id": None,
-                        "userInfo": []
-                    }]
+                query = select(
+                    models.User.id,
+                    models.User.party_id,
+                    models.UserInfo.user_id,
+                    models.UserInfo.name,
+                    models.UserInfo.phone,
+                    models.UserInfo.gender,
+                    models.UserInfo.job,
+                    models.UserInfo.age,
+                    models.UserInfo.mbti,
+                    models.UserInfo.region,
+                ).join(
+                    models.UserInfo, models.UserInfo.user_id == models.User.id, isouter=True
+                ).where(models.User.id == user.id)
 
+                result = await db.execute(query)
+                user_info = result.all()
+
+                grouped_data = []
+                rows_sorted = sorted(user_info, key=lambda x: x[0])
+
+                for user_id, group in groupby(rows_sorted, key=lambda x: x[0]):
+                    user_info_list = [
+                        {
+                            "name": info[3],
+                            "phone": info[4],
+                            "gender": info[5],
+                            "job": info[6],
+                            "age": info[7],
+                            "mbti": info[8],
+                            "region": info[9],
+                        }
+                        for info in group if info[3] is not None
+                    ]
+
+                    grouped_data.append({
+                        "id": user_id,
+                        "role": user.role,
+                        "party_id": user.party_id,
+                        "userInfo": user_info_list if user_info_list else []
+                    })
                 return grouped_data
         
+        # accomodation_id가 있을 때 (파티 매칭)
         else:
+            print("33333333333333333333333")
             if not user:
                 query_accomodation = select(models.Party.id).where(
                     and_(
@@ -73,7 +109,6 @@ async def post_userLoginKakaoCallback(
                         models.Party.partyDate == query_date
                     )
                 )
-
                 result_party = await db.execute(query_accomodation)
                 party_id = result_party.scalar()
 
@@ -88,7 +123,6 @@ async def post_userLoginKakaoCallback(
                     "party_id": party_id,
                     "userInfo": []
                 }]
-
                 return grouped_data
             
             else:
@@ -99,35 +133,33 @@ async def post_userLoginKakaoCallback(
                             models.Party.partyDate == query_date
                         )
                     )
-
                     result_party = await db.execute(query_accomodation)
                     party_id = result_party.scalar()
-                    
-                    query_user = select(models.User).where(
-                        and_(
-                            models.User.username == username,
-                            models.User.nickname == nickname
-                        )
-                    )
-                    result_user = await db.execute(query_user)
-                    existing_user = result_user.scalar()
 
-                    existing_user.party_id = party_id
-                    existing_user.role = "ROLE_USER"
-                    db.add(existing_user)
+                    user.party_id = party_id if party_id else user.party_id
+                    user.role = "ROLE_USER"
+                    db.add(user)
                     await db.commit()
-                    await db.refresh(existing_user)
-                    
+                    await db.refresh(user)
+
                     grouped_data = [{
                         "id": user.id,
                         "role": user.role,
                         "party_id": party_id,
-                        "userInfo": []
+                        "userInfo": None if not user_info else [{
+                            "name": user_info.get('name', None),
+                            "phone": user_info.get('phone', None),
+                            "gender": user_info.get('gender', None),
+                            "job": user_info.get('job', None),
+                            "age": user_info.get('age', None),
+                            "mbti": user_info.get('mbti', None),
+                            "region": user_info.get('region', None),
+                        }]
                     }]
-
                     return grouped_data
-                    
+
                 else:
+                    # UserInfo 조회
                     query = select(
                         models.User.id,
                         models.User.party_id,
@@ -139,54 +171,36 @@ async def post_userLoginKakaoCallback(
                         models.UserInfo.age,
                         models.UserInfo.mbti,
                         models.UserInfo.region,
-                    ).join(models.UserInfo, models.UserInfo.user_id == models.User.id).where(models.User.id == user.id)
+                    ).join(
+                        models.UserInfo, models.UserInfo.user_id == models.User.id, isouter=True
+                    ).where(models.User.id == user.id)
 
                     result = await db.execute(query)
                     user_info = result.all()
 
-                    if not user_info:
-                        grouped_data = [{
-                            "id": user.id,
+                    grouped_data = []
+                    rows_sorted = sorted(user_info, key=lambda x: x[0])
+
+                    for user_id, group in groupby(rows_sorted, key=lambda x: x[0]):
+                        user_info_list = [
+                            {
+                                "name": info[3],
+                                "phone": info[4],
+                                "gender": info[5],
+                                "job": info[6],
+                                "age": info[7],
+                                "mbti": info[8],
+                                "region": info[9],
+                            }
+                            for info in group if info[3] is not None
+                        ]
+
+                        grouped_data.append({
+                            "id": user_id,
                             "role": user.role,
                             "party_id": user.party_id,
-                            "userInfo": None if not user_info else [
-                                {
-                                    "name": info[3],
-                                    "phone": info[4],
-                                    "gender": info[5],
-                                    "job": info[6],
-                                    "age": info[7],
-                                    "mbti": info[8],
-                                    "region": info[9],
-                                }
-                                for info in group
-                            ],
-                        }]
-
-                        return grouped_data
-                        
-                    else:
-                        grouped_data = []
-                        rows_sorted = sorted(user_info, key=lambda x: (x[0], x[1]))
-                        for (user_id, party_id), group in groupby(rows_sorted, key=lambda x: (x[0], x[1])):
-                            user_info_list = [
-                                {
-                                    "name": info[3],
-                                    "phone": info[4],
-                                    "gender": info[5],
-                                    "job": info[6],
-                                    "age": info[7],
-                                    "mbti": info[8],
-                                    "region": info[9],
-                                }
-                                for info in group
-                            ]
-                            grouped_data.append({
-                                "id": user_id,
-                                "role": user.role,
-                                "party_id": party_id,
-                                "userInfo": user_info_list,
-                            })
+                            "userInfo": user_info_list if user_info_list else None,
+                        })
 
                     return grouped_data
 
