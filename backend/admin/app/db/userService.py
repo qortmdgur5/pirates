@@ -26,7 +26,7 @@ async def post_userLoginKakaoCallback(
         today_kst = kst_now.date()
         yesterday_kst = today_kst - timedelta(days=1)
 
-        if current_time >= time(hour=0) and current_time < time(hour=6):
+        if time(hour=0) <= current_time < time(hour=12):
             query_date = yesterday_kst
         else:
             query_date = today_kst

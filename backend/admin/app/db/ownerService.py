@@ -168,32 +168,40 @@ async def get_ownerAccomodation(
 
 async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAccomodationsPost):
     try:
-        qr_directory = QR_DIRECTORY
-        os.makedirs(qr_directory, exist_ok=True)
-        
-        base_url = QR_CODE
-        query_params = {
-            "id": accomodation.id
-        }
-        full_url = f"{base_url}?{urlencode(query_params)}"
-        
-        qr_img = qrcode.make(full_url)
-        qr_filename = f"{accomodation.id}_{accomodation.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
-        qr_path = os.path.join(qr_directory, qr_filename)
-        qr_img.save(qr_path) 
-        
         db_accomodation = models.Accomodation(
-            accomodation_id=accomodation.id,
+            owner_id=accomodation.id,
             name=accomodation.name,
             address=accomodation.address,
             introduction=accomodation.introduction,
             number=accomodation.number,
-            date = format_dates(datetime.now()),
-            directory = qr_path 
+            date=format_dates(datetime.now()),
         )
         db.add(db_accomodation)
-        await db.commit()
+        await db.commit()  
         await db.refresh(db_accomodation)
+        accomodation_id = db_accomodation.id 
+
+        qr_directory = QR_DIRECTORY
+        os.makedirs(qr_directory, exist_ok=True) 
+        
+        base_url = QR_CODE
+        query_params = {
+            "id": accomodation_id 
+        }
+        full_url = f"{base_url}?{urlencode(query_params)}"
+        
+        qr_img = qrcode.make(full_url)
+        qr_filename = f"{accomodation_id}_{accomodation.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+        qr_path = os.path.join(qr_directory, qr_filename)
+        qr_img.save(qr_path)  
+        
+        query = select(models.Accomodation).filter(models.Accomodation.id == accomodation_id)
+        result = await db.execute(query)
+        accomodation_to_update = result.scalar_one_or_none()  
+        if accomodation_to_update:
+            accomodation_to_update.directory = qr_path 
+            await db.commit()  
+            await db.refresh(accomodation_to_update) 
         
         return {"msg": "ok"}  
     except SQLAlchemyError as e:

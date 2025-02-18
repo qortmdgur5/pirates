@@ -107,14 +107,14 @@ async def read_ownerAccomodation(
 async def create_ownerAccomdation(
     accomodation: schemas.OwnerAccomodationsPost,
     db: AsyncSession = Depends(database.get_db),
-    token: str = Depends(oauth.owner_verify_token)
+    # token: str = Depends(oauth.owner_verify_token)
 ):
     try:
-        if token not in ["ROLE_AUTH_OWNER", "ROLE_NOTAUTH_OWNER"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this resource."
-            )
+        # if token not in ["ROLE_AUTH_OWNER", "ROLE_NOTAUTH_OWNER"]:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_403_FORBIDDEN,
+        #         detail="You do not have permission to access this resource."
+        #     )
         return await ownerService.post_ownerAccomodation(db, accomodation)
     except Exception as e:
         error_message = str(e)
