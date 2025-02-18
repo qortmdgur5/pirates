@@ -26,10 +26,12 @@ async def post_userLoginKakaoCallback(
         today_kst = kst_now.date()
         yesterday_kst = today_kst - timedelta(days=1)
 
-        if time(hour=0) <= current_time < time(hour=12):
-            query_date = yesterday_kst
+        if time(hour=0) <= current_time < time(hour=12):  
+            query_date = yesterday_kst  # 전날 파티 (단, 정오 이전 데이터만)
+        elif time(hour=18) <= current_time:  
+            query_date = today_kst  # 당일 파티
         else:
-            query_date = today_kst
+            query_date = None  # 12:00 ~ 17:59는 party_id 제공 X
 
         username = user_info.get("id")
         nickname = user_info.get("properties", {}).get("nickname")
@@ -147,7 +149,18 @@ async def post_userLoginKakaoCallback(
                             "id": user.id,
                             "role": user.role,
                             "party_id": user.party_id,
-                            "userInfo": []
+                            "userInfo": None if not user_info else [
+                                {
+                                    "name": info[3],
+                                    "phone": info[4],
+                                    "gender": info[5],
+                                    "job": info[6],
+                                    "age": info[7],
+                                    "mbti": info[8],
+                                    "region": info[9],
+                                }
+                                for info in group
+                            ],
                         }]
 
                         return grouped_data
