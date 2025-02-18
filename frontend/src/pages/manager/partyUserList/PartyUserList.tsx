@@ -16,7 +16,7 @@ interface UserPartyInfo {
   name: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
   team: number | null; // 팀 번호 (nullable)
-  partyOn: boolean; // 파티 실시간 참석여부
+  partyOn: boolean | null; // 파티 실시간 참석여부
 }
 
 function PartyUserList() {
@@ -102,10 +102,14 @@ function PartyUserList() {
   const groupedUsers = groupByTeam(partyUsers);
 
   // 팀 변경 Change 함수
-  const handleTeamChange = (userId: number, newTeam: number | null) => {
+  const handleTeamChange = (
+    userId: number,
+    newTeam: number | null,
+    partyOn: boolean | null
+  ) => {
     setPartyUsers((prevUsers) =>
       prevUsers.map((user) =>
-        user.id === userId ? { ...user, team: newTeam } : user
+        user.id === userId ? { ...user, team: newTeam, partyOn: partyOn } : user
       )
     );
   };
@@ -227,6 +231,7 @@ function PartyUserList() {
               <div key={team} className={styles.team_section}>
                 <TeamDropDown
                   team={team === "미지정" ? "미지정" : `${team}조`}
+                  onClick={() => {}} // 조 접엇다 폇다 토글 함수 추후
                 />
                 {users.map((user) => (
                   <UserListCard

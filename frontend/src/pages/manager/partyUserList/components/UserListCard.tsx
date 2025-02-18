@@ -10,8 +10,12 @@ interface UserListCardProps {
   userName: string; // 유저 이름
   gender: boolean; // true: 남자, false: 여자
   maxTeam: number | null; // 최대 팀
-  partyOn: boolean; // 파티 실시간 참석 여부
-  onTeamChange: (userId: number, newTeam: number | null) => void; // 팀 변경 처리 함수
+  partyOn: boolean | null; // 파티 실시간 참석 여부
+  onTeamChange: (
+    userId: number,
+    newTeam: number | null,
+    partyOn: boolean | null
+  ) => void; // 팀 변경 처리 함수
 }
 
 function UserListCard({
@@ -24,19 +28,22 @@ function UserListCard({
   onTeamChange,
 }: UserListCardProps) {
   // 팀 상태 및 파티 참석 상태 관리
-  const [selectedTeam, setSelectedTeam] = useState<number | null>(team);
-  const [partyOn, setPartyOn] = useState<boolean>(initialPartyOn);
+  const [selectedTeam, setSelectedTeam] = useState(team);
+  const [partyOn, setPartyOn] = useState(initialPartyOn);
   const user = useRecoilValue(authAtoms);
   const token = user.token;
 
+  // 조 변경 트리거 함수
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newTeam = event.target.value;
     const newTeamValue = newTeam === "없음" ? null : parseInt(newTeam, 10);
+    const newPartyOn = partyOn === null ? true : partyOn;
 
     setSelectedTeam(newTeamValue);
-    onTeamChange(id, newTeamValue); // 팀 변경 처리
+    onTeamChange(id, newTeamValue, newPartyOn); // 팀 변경 처리
   };
 
+  // 파티 ON/OFF 상태 토글 함수
   const handlePartyToggle = async () => {
     const newPartyOnState = !partyOn;
 
@@ -120,8 +127,9 @@ function UserListCard({
         }`}
         type="button"
         onClick={handlePartyToggle} // 버튼 클릭 시 상태 변경
+        disabled={partyOn === null}
       >
-        {partyOn ? "ON" : "OFF"}
+        {partyOn === null ? "배정" : partyOn ? "ON" : "OFF"}
       </button>
     </div>
   );
