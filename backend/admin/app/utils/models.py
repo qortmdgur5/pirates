@@ -28,6 +28,7 @@ class Owner(Base):
     date = Column(DateTime, default=func.now())
     name = Column(String(100))
     phoneNumber = Column(String(100))
+    
     accomodations = relationship("Accomodation", back_populates="owner")
     manager = relationship("Manager", back_populates="managers")
     
@@ -45,6 +46,7 @@ class Accomodation(Base):
     loveCount = Column(Integer, nullable=True)
     number = Column(String(100))
     directory = Column(String(255))
+    
     owner = relationship("Owner", back_populates="accomodations")
     reviews = relationship("Review", back_populates="accomodation")
     party = relationship("Party", back_populates="partys")
@@ -57,6 +59,7 @@ class Review(Base):
     user_id = Column(Integer)
     contents = Column(Text)
     score = Column(Float)
+    
     accomodation = relationship("Accomodation", back_populates="reviews") 
 
 class Party(Base):
@@ -73,10 +76,10 @@ class Party(Base):
     matchStartTime = Column(DateTime, nullable=False)
     
     partys = relationship("Accomodation", back_populates="party") 
-    participant = relationship("Participant", back_populates="participants") 
-    users = relationship("User", back_populates="party") 
-    chatRooms = relationship("ChatRoom", back_populates="party")
-    userMatch = relationship("UserMatch", back_populates="party")
+    participant = relationship("Participant", back_populates="participants", cascade="all, delete-orphan") 
+    users = relationship("User", back_populates="party", cascade="all, delete-orphan") 
+    chatRooms = relationship("ChatRoom", back_populates="party", cascade="all, delete-orphan")
+    userMatch = relationship("UserMatch", back_populates="party", cascade="all, delete-orphan")
     
 class Manager(Base):
     __tablename__ = "Manager"
@@ -89,6 +92,7 @@ class Manager(Base):
     date = Column(DateTime, default=func.now())
     name = Column(String(100))
     phoneNumber =Column(String(100))
+    
     managers = relationship("Owner", back_populates="manager")
 
 class Participant(Base):
@@ -102,6 +106,7 @@ class Participant(Base):
     age = Column(Integer)
     region = Column(String(255))
     gender = Column(Boolean)
+    
     participants = relationship("Party", back_populates="participant") 
 
 class User(Base):

@@ -302,37 +302,28 @@ async def put_managerParty(db: AsyncSession, id: int, party: schemas.managerPart
         return {"msg": "fail"}
     
 async def del_managerParty(db: AsyncSession, id: int):
-    result = await db.execute(
-        select(models.Party).filter(models.Party.id == id)
-    )
     
-    db_party = result.scalar_one_or_none()
-    if db_party:
-        try:
-            await db.execute(
-                delete(models.ChatRoom).filter(models.ChatRoom.party_id == id)
-            )
-            await db.delete(db_party) 
-            await db.commit() 
-            return {"msg": "ok"}  
-        
-        except SQLAlchemyError as e:
-            error_message = str(e)
-            print("SQLAlchemyError:", error_message)
-            await log_error(db, error_message)
-            raise HTTPException(status_code=500, detail="Database Error")
-        except ValueError as e:
-            error_message = str(e)
-            print("ValueError:", error_message)
-            await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": error_message})
-        except Exception as e:
-            error_message = str(e)
-            print("Exception:", error_message)
-            await log_error(db, error_message)
-            raise HTTPException(status_code=500, detail={"msg": error_message})
-    else:
-        return {"msg": "fail"}
+    try:
+        result = delete(models.Party).where(models.Party.id == id)
+        await db.execute(result) 
+        await db.commit() 
+        return {"msg": "ok"}  
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
     
     
 async def get_managerParty(
@@ -429,34 +420,28 @@ async def post_managerParticipant(db: AsyncSession, participants: schemas.manage
 
     
 async def del_managerParticipant(db: AsyncSession, id: int):
-    result = await db.execute(
-        select(models.Participant).filter(models.Participant.id == id)
-    )
+    try:
+        result = delete(models.Participant).where(models.Participant.id == id)
+        await db.execute(result) 
+        await db.commit() 
+        return {"msg": "ok"}  
     
-    db_participant = result.scalar_one_or_none()
-    if db_participant:
-        try:
-            await db.delete(db_participant) 
-            await db.commit() 
-            return {"msg": "ok"}  
-        
-        except SQLAlchemyError as e:
-            error_message = str(e)
-            print("SQLAlchemyError:", error_message)
-            await log_error(db, error_message)
-            raise HTTPException(status_code=500, detail="Database Error")
-        except ValueError as e:
-            error_message = str(e)
-            print("ValueError:", error_message)
-            await log_error(db, error_message)
-            raise HTTPException(status_code=400, detail={"msg": error_message})
-        except Exception as e:
-            error_message = str(e)
-            print("Exception:", error_message)
-            await log_error(db, error_message)
-            raise HTTPException(status_code=500, detail={"msg": error_message})
-    else:
-        return {"msg": "fail"}
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})
+
     
     
 async def put_managerPartyOn(db: AsyncSession, id: int, party: schemas.managerPartyOn):
