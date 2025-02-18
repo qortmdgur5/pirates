@@ -9,6 +9,7 @@ import { useRecoilValue } from "recoil";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
 
 interface UserPartyInfo {
   id: number; // User 테이블 Primary key
@@ -29,7 +30,10 @@ function PartyUserList() {
   const user = useRecoilValue(authAtoms);
   const token = user.token;
   const guestHouseName = accomodation.accomodation_name;
-  const navigate = useNavigate();
+  const [remainingTime, setRemainingTime] = useState<number | null>(null); // 짝매칭 남은 시간
+  const [matchStatus, setMatchStatus] = useState<
+    "notStarted" | "inProgress" | "finished"
+  >("notStarted"); // 짝매칭 상태
 
   // 유저 리스트 가져오기 API
   useEffect(() => {
@@ -48,8 +52,29 @@ function PartyUserList() {
       }
     };
 
+    const fetchMatchStartTime = async () => {
+      try {
+        const response = await axios.get(
+          `/api/manager/party/matchTime/${partyId}`,
+          {
+            headers: { Accept: "application/json" },
+            params: { token },
+          }
+        );
+        const startTime = response.data.data.matchStartTime;
+        if (startTime) {
+          setMatchStatus("inProgress");
+          const endTime = dayjs(startTime).add(2, "minute");
+          updateRemainingTime(endTime);
+        }
+      } catch (error) {
+        console.log("짝매칭 시간 가져오기 오류 :", error);
+      }
+    };
+
     fetchPartyUsers();
-  }, [user, navigate]);
+    fetchMatchStartTime();
+  }, [user]);
 
   // 유저 리스트 팀으로 그룹화
   const groupByTeam = (
@@ -116,12 +141,58 @@ function PartyUserList() {
     }
   };
 
+  // 짝매칭 타이머 함수
+  const updateRemainingTime = (endTime: dayjs.Dayjs) => {
+    const interval = setInterval(() => {
+      const now = dayjs();
+      const diff = endTime.diff(now, "second");
+      if (diff <= 0) {
+        clearInterval(interval);
+        setMatchStatus("finished");
+        setRemainingTime(null);
+      } else {
+        setRemainingTime(diff);
+      }
+    }, 1000);
+  };
+
+  const matchStart = async () => {
+    if (matchStatus === "inProgress" || matchStatus === "finished") return;
+    const isConfirmed = window.confirm("짝매칭을 시작하시겠습니까?");
+    if (!isConfirmed) return;
+
+    try {
+      await axios.put(
+        `/api/manager/party/matchStart/${partyId}`,
+        {},
+        { params: { token } }
+      );
+      setMatchStatus("inProgress");
+      const endTime = dayjs().add(2, "minute");
+      updateRemainingTime(endTime);
+    } catch (error) {
+      console.log("짝매칭 시작 오류: ", error);
+    }
+  };
+
+  // 시간 디스플레이 텍스트 표시
+  const displayTime =
+    matchStatus === "finished"
+      ? "❤️ 매칭끝"
+      : matchStatus === "inProgress" && remainingTime !== null
+      ? `⏳ ${dayjs.duration(remainingTime, "seconds").format("mm:ss")}`
+      : "❤️ 짝매칭";
+
   return (
     <div className={styles.container}>
       <div className={styles.container_contents}>
         <HouseNameAndDate guestHouseName={guestHouseName} date={partyDate} />
-        <button className={styles.love_matching_button} type="button">
-          ❤️ 짝매칭
+        <button
+          className={styles.love_matching_button}
+          type="button"
+          onClick={matchStart}
+        >
+          {displayTime}
         </button>
         <div className={styles.home_and_back_box}>
           <HomeButton />
@@ -177,7 +248,7 @@ function PartyUserList() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "26px"
+                fontSize: "26px",
               }}
             >
               참여자가 없습니다.

@@ -61,7 +61,7 @@ function LoveSelect() {
 
     // 첫 렌더링 시에만 종료 시간을 설정
     if (!endTime) {
-      setEndTime(startTime.add(2, "minute")); // 5분 뒤를 종료 시간으로 설정
+      setEndTime(startTime.add(2, "minute")); // 2분 뒤를 종료 시간으로 설정
     }
 
     const updateTimer = () => {

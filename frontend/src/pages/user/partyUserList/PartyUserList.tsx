@@ -104,7 +104,6 @@ function PartyUserList() {
 
   const groupedUsers = groupByTeam(partyUsers);
 
-  // 예시 수정
   useEffect(() => {
     // groupedUsers가 변경될 때만 팀을 열려있는 상태로 설정
     if (groupedUsers.size > 0) {

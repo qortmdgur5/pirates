@@ -55,7 +55,6 @@ function Signup() {
   // 페이지 진입 시 user_id가 없으면 = 로그인 하지 않은 유저라면
   useEffect(() => {
     if (!user || !user.id) {
-      alert("로그인을 진행하여야 합니다.");
       navigate("/"); // 홈으로 이동
     }
   }, [user]);

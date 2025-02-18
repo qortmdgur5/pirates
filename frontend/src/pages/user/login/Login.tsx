@@ -8,7 +8,6 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const user = useRecoilValue(userAtom);
-  console.log(user);
 
   useEffect(() => {
     if (user?.id) {
@@ -29,7 +28,7 @@ function Login() {
   const handleLogin = () => {
     setLoading(true); // 로그인 중 상태로 설정
     // 백엔드 로그인 엔드포인트로 리디렉션
-    window.location.href = "/api/user/auth/kakao/login?id=52";
+    window.location.href = "/api/user/auth/kakao/login?id=64";
   };
 
   return (
