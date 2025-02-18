@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
@@ -309,6 +309,9 @@ async def del_managerParty(db: AsyncSession, id: int):
     db_party = result.scalar_one_or_none()
     if db_party:
         try:
+            await db.execute(
+                delete(models.ChatRoom).filter(models.ChatRoom.party_id == id)
+            )
             await db.delete(db_party) 
             await db.commit() 
             return {"msg": "ok"}  
@@ -689,3 +692,40 @@ async def put_managerPartyMatchStart(id: int, db: AsyncSession):
             raise HTTPException(status_code=500, detail={"msg": error_message})
     else:
         return {"msg": "fail"}
+    
+
+async def get_managerPartyMatchTime(
+    id: int,
+    db: AsyncSession
+) -> List[dict]:
+    try:
+        query = (
+            select(models.Party).filter(models.Party.id == id)
+        )
+
+        result = await db.execute(query)
+        party  = result.scalars().first()
+
+        response = {
+            "matchStartTime": party.matchStartTime
+        }
+        return {
+            "data": response,
+            "totalCount": 0
+        }
+    
+    except SQLAlchemyError as e:
+        error_message = str(e)
+        print("SQLAlchemyError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail="Database Error")
+    except ValueError as e:
+        error_message = str(e)
+        print("ValueError:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=400, detail={"msg": error_message})
+    except Exception as e:
+        error_message = str(e)
+        print("Exception:", error_message)
+        await log_error(db, error_message)
+        raise HTTPException(status_code=500, detail={"msg": error_message})

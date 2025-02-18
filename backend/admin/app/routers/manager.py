@@ -428,3 +428,27 @@ async def update_managerPartyMatchStart(
     except Exception as e:
         await errorLog.log_error(db, str(e))
         raise HTTPException(status_code=500, detail={"msg": str(e)})
+    
+
+@router.get(
+    "/party/matchTime/{id}", 
+    summary="파티 짝 매칭 시작시간 가져오기 API")
+async def read_managerPartyMatchTime(
+    id: int, 
+    db: AsyncSession = Depends(database.get_db),
+    token: str = Depends(oauth.manager_verify_token)
+):
+    try:
+        if token not in ["ROLE_AUTH_OWNER", "ROLE_AUTH_MANAGER"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource."
+            )
+        data = await managerService.get_managerPartyMatchTime(id, db)
+        return data
+    except ValueError as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=400, detail={"msg": str(e)})
+    except Exception as e:
+        await errorLog.log_error(db, str(e))
+        raise HTTPException(status_code=500, detail={"msg": str(e)})

@@ -36,7 +36,7 @@ class Accomodation(Base):
     __tablename__ = "Accomodation"
 
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey('Owner.id'))
+    owner_id = Column(Integer, ForeignKey('Owner.id', ondelete="CASCADE"))
     name = Column(String(255))
     address = Column(String(255))
     introduction =Column(String(255))
@@ -53,7 +53,7 @@ class Review(Base):
     __tablename__ = "Review"
 
     id = Column(Integer, primary_key=True, index=True)
-    accomodation_id = Column(Integer, ForeignKey('Accomodation.id'))
+    accomodation_id = Column(Integer, ForeignKey('Accomodation.id', ondelete="CASCADE"))
     user_id = Column(Integer)
     contents = Column(Text)
     score = Column(Float)
@@ -63,7 +63,7 @@ class Party(Base):
     __tablename__ = "Party"
 
     id = Column(Integer, primary_key=True, index=True)
-    accomodation_id = Column(Integer, ForeignKey('Accomodation.id'))
+    accomodation_id = Column(Integer, ForeignKey('Accomodation.id', ondelete="CASCADE"))
     partyDate = Column(DateTime, default=func.now())
     partyOpen = Column(Integer)
     partyTime = Column(Time, default=func.now())
@@ -82,7 +82,7 @@ class Manager(Base):
     __tablename__ = "Manager"
 
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey('Owner.id'))
+    owner_id = Column(Integer, ForeignKey('Owner.id', ondelete="CASCADE"))
     username = Column(String(255))
     password = Column(String(255))
     role =Column(String(255))
@@ -95,7 +95,7 @@ class Participant(Base):
     __tablename__ = "Participant"
     
     id = Column(Integer, primary_key=True, index=True)
-    party_id = Column(Integer, ForeignKey('Party.id'))
+    party_id = Column(Integer, ForeignKey('Party.id', ondelete="CASCADE"))
     name = Column(String(255))
     phone = Column(String(255))
     mbti = Column(String(255))
@@ -108,7 +108,7 @@ class User(Base):
     __tablename__ = "User"
 
     id = Column(Integer, primary_key=True, index=True)
-    party_id = Column(Integer, ForeignKey('Party.id'))
+    party_id = Column(Integer, ForeignKey('Party.id', ondelete="CASCADE"))
     username = Column(String(255))
     provider = Column(String(255))
     provider_id = Column(String(255))
@@ -126,7 +126,7 @@ class UserInfo(Base):
     __tablename__ = "UserInfo"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('User.id'))
+    user_id = Column(Integer, ForeignKey('User.id', ondelete="CASCADE"))
     name = Column(String(255))
     phone = Column(String(255))
     email = Column(String(255))
@@ -142,7 +142,7 @@ class PartyUserInfo(Base):
     __tablename__ = "PartyUserInfo"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('User.id'))
+    user_id = Column(Integer, ForeignKey('User.id', ondelete="CASCADE"))
     team = Column(Integer)
     partyOn = Column(Boolean)
 
@@ -152,10 +152,10 @@ class Chat(Base):
     __tablename__ = "Chat"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('User.id'))
+    user_id = Column(Integer, ForeignKey('User.id', ondelete="CASCADE"))
     contents = Column(Text)
     date = Column(DateTime, default=func.now())
-    chatRoom_id = Column(Integer, ForeignKey('ChatRoom.id'))
+    chatRoom_id = Column(Integer, ForeignKey('ChatRoom.id', ondelete="CASCADE"))
 
     user = relationship("User", back_populates="chat")
     chatRooms = relationship("ChatRoom", back_populates="chat")
@@ -165,8 +165,8 @@ class ChatReadStatus(Base):
     __tablename__ = "ChatReadStatus"
 
     id = Column(Integer, primary_key=True, index=True)
-    chatRoom_id = Column(Integer, ForeignKey('ChatRoom.id'))
-    user_id = Column(Integer, ForeignKey('User.id'))
+    chatRoom_id = Column(Integer, ForeignKey('ChatRoom.id', ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey('User.id', ondelete="CASCADE"))
     lastReadChat_id = Column(Integer)
     date = Column(DateTime, default=func.now())
 
@@ -178,7 +178,7 @@ class ChatRoom(Base):
     __tablename__ = "ChatRoom"
 
     id = Column(Integer, primary_key=True, index=True)
-    party_id = Column(Integer, ForeignKey('Party.id'))
+    party_id = Column(Integer, ForeignKey('Party.id', ondelete="CASCADE"))
     user_id_1 = Column(Integer)
     user_id_2 = Column(Integer)
 
@@ -190,7 +190,7 @@ class UserMatch(Base):
     __tablename__ = "UserMatch"
     
     id = Column(Integer, primary_key=True, index=True)
-    party_id = Column(Integer, ForeignKey('Party.id'))
+    party_id = Column(Integer, ForeignKey('Party.id', ondelete="CASCADE"))
     user_id_1 = Column(Integer)
     user_id_2 = Column(Integer)
     date = Column(DateTime, default=func.now())
