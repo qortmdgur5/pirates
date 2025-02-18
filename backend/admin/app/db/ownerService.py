@@ -183,7 +183,7 @@ async def post_ownerAccomodation(db: AsyncSession, accomodation: schemas.OwnerAc
         qr_img.save(qr_path) 
         
         db_accomodation = models.Accomodation(
-            owner_id=accomodation.id,
+            accomodation_id=accomodation.id,
             name=accomodation.name,
             address=accomodation.address,
             introduction=accomodation.introduction,
