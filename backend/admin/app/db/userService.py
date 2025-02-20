@@ -8,6 +8,7 @@ from ..utils import models, schemas
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta, timezone, time
 from itertools import groupby
+import asyncio
 
 ## user
 ## 카카오 로그인 
@@ -681,25 +682,49 @@ async def post_userChatContents(
 class ConnectionManager:
     def __init__(self):
         self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
+        self.lock = asyncio.Lock() 
 
     async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
         await websocket.accept()
-        if chatRoom_id not in self.chat_room_connections:
-            self.chat_room_connections[chatRoom_id] = {}
-        self.chat_room_connections[chatRoom_id][user_id] = websocket
+        async with self.lock:
+            if chatRoom_id not in self.chat_room_connections:
+                self.chat_room_connections[chatRoom_id] = {}
+            self.chat_room_connections[chatRoom_id][user_id] = websocket
 
-    def disconnect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
-        if chatRoom_id in self.chat_room_connections:
-            del self.chat_room_connections[chatRoom_id][user_id]
+    async def disconnect(self, chatRoom_id: int, user_id: int):
+        async with self.lock():
+            if chatRoom_id in self.chat_room_connections:
+                if user_id in self.chat_room_connections[chatRoom_id]:
+                    del self.chat_room_connections[chatRoom_id][user_id]
+
+                if not self.chat_room_connections[chatRoom_id]:
+                    del self.chat_room_connections[chatRoom_id]
 
     async def broadcast(self, message: str, chatRoom_id: int):
-        if chatRoom_id in self.chat_room_connections:
-            for user_id, connection in self.chat_room_connections[chatRoom_id].items():
-                await connection.send_text(message)
+        if chatRoom_id not in self.chat_room_connections:
+            return
+        to_remove = []
 
-    async def get_connections_for_chat_room(self, chatRoom_id: int):
-        return self.chat_room_connections.get(chatRoom_id, [])
-    
+        async with self.lock:
+            connections = list(self.chat_room_connections[chatRoom_id].items())
+        
+        async def send_message(user_id, connection):
+            try:
+                await connection.send_text(message)
+            except Exception:
+                to_remove.append(user_id)
+        
+        await asyncio.gather(*(send_message(user_id, connection) for user_id, connection in connections))
+
+        async with self.lock:
+            for user_id in to_remove:
+                if user_id in self.chat_room_connections.get(chatRoom_id, {}):
+                    del self.chat_room_connections[chatRoom_id][user_id]
+
+            if not self.chat_room_connections.get(chatRoom_id):
+                del self.chat_room_connections[chatRoom_id]
+
+                
 manager = ConnectionManager()
 
 

@@ -285,25 +285,26 @@ async def websocket_endpoint(
 ):
     
     try:
-        await manager.connect(websocket, chatRoom_id, user_id)
         if token != "ROLE_USER":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
             )
+        await manager.connect(websocket, chatRoom_id, user_id)
         while True:
             data = await websocket.receive_text()
             chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
             await userService.post_chat(db, chat)
             
             chat_id = await userService.get_chatId(db, chatRoom_id, user_id)
-            message = {
-                    "user_id": user_id,
-                    "chatRoom_id": chatRoom_id,
-                    "chat_id": chat_id,
-                    "content": data,
-                }
-            await manager.broadcast(json.dumps(message, ensure_ascii=False), chatRoom_id)
+            message = json.dumps({
+                "user_id": user_id,
+                "chatRoom_id": chatRoom_id,
+                "chat_id": chat_id,
+                "content": data,
+            }, ensure_ascii=False)
+
+            await manager.broadcast(message, chatRoom_id)
             
     except WebSocketDisconnect:
         manager.disconnect(websocket, chatRoom_id, user_id)
