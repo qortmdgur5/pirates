@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
 import axios from "axios";
+import pirates_logo from "../../../assets/image/pirates_logo_img.png";
 
 // 타입 정의
 interface SignupFormData {
@@ -174,7 +175,7 @@ function Signup() {
       <div className={styles.container_contents}>
         <div className={styles.logo_box}>
           <div className={styles.logo_img_box}>
-            <img src="/src/assets/image/pirates_logo_img.png" alt="logo_img" />
+            <img src={pirates_logo} alt="logo_img" />
           </div>
           <p className={styles.logo_box_text}>해적</p>
         </div>

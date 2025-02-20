@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
+import pirates_logo from "../../../assets/image/pirates_logo_img.png";
+import kakao_button from "../../../assets/image/kakao_login_button.png";
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ function Login() {
           <p className={styles.logo_text_3}>게스트 하우스 정보가 한눈에!</p>
         </div>
         <div className={styles.logo_box}>
-          <img src="/src/assets/image/pirates_logo_img.png" alt="main_logo" />
+          <img src={pirates_logo} alt="main_logo" />
         </div>
         <p className={styles.login_text_1}>
           회원 서비스 이용을 위해 로그인 해주세요.
@@ -51,10 +53,7 @@ function Login() {
             onClick={handleLogin}
             disabled={loading}
           >
-            <img
-              src="/src/assets/image/kakao_login_button.png"
-              alt="kakao_login_img"
-            />
+            <img src={kakao_button} alt="kakao_login_img" />
             <span>{loading ? "로그인 중..." : "카카오 로그인"}</span>
           </button>
         </div>

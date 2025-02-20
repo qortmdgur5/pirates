@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import { authAtoms } from "../../../atoms/authAtoms";
 import { useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
+import pirates_logo from "../../../assets/image/pirates_logo_img.png";
 
 interface DecodedToken {
   sub: number | null;
@@ -58,16 +59,12 @@ function Login() {
     data.append("username", username); // 입력한 사용자명
     data.append("password", password); // 입력한 비밀번호
     try {
-      const response = await axios.post(
-        "/api/admin/login",
-        data,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            accept: "application/json",
-          },
-        }
-      );
+      const response = await axios.post("/api/admin/login", data, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          accept: "application/json",
+        },
+      });
       const token = response.data.access_token; // 서버에서 반환한 토큰
       const decoded: DecodedToken = jwtDecode(token);
       const userRole = decoded.role;
@@ -101,10 +98,7 @@ function Login() {
               게스트 하우스 정보가 한눈에!
             </p>
             <div className={styles.login_box_left_inner_img_box}>
-              <img
-                src="/src/assets/image/pirates_logo_img.png"
-                alt="pirates main image"
-              />
+              <img src={pirates_logo} alt="pirates main image" />
             </div>
           </div>
         </div>

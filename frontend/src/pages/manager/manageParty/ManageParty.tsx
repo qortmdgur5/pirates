@@ -14,6 +14,7 @@ import ManagePartyTable from "./components/ManagePartyTable";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
+import pirates_logo from "../../../assets/image/pirates_logo_img.png";
 
 Modal.setAppElement("#root"); // 앱의 최상위 요소를 설정
 
@@ -327,10 +328,7 @@ function ManageParty() {
               >
                 <div className={styles.modal_logo_box}>
                   <div className={styles.modal_logo_img_box}>
-                    <img
-                      src="/src/assets/image/pirates_logo_img.png"
-                      alt="modal_logo_img"
-                    />
+                    <img src={pirates_logo} alt="modal_logo_img" />
                   </div>
                   <p className={styles.modal_logo_text}>해적</p>
                 </div>

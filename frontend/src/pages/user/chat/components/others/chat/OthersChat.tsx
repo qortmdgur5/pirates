@@ -1,4 +1,6 @@
 import styles from "./othersChat.module.scss";
+import man_icon from "../../../../../../assets/image/man_icon_img.png";
+import woman_icon from "../../../../../../assets/image/woman_icon_img.png";
 
 interface OthersChatProps {
   text: string; // 유저 채팅 내역
@@ -8,10 +10,7 @@ interface OthersChatProps {
 
 function OthersChat({ text, time, gender }: OthersChatProps) {
   // gender에 따라 이미지 변경
-  const userImage =
-    gender === true
-      ? "/src/assets/image/man_icon_img.png"
-      : "/src/assets/image/woman_icon_img.png"; // 예시로 남성/여성 아이콘 사용
+  const userImage = gender === true ? man_icon : woman_icon; // 예시로 남성/여성 아이콘 사용
 
   return (
     <div className={styles.container}>

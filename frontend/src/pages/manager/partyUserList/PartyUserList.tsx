@@ -10,6 +10,7 @@ import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
+import glasses from "../../../assets/image/glasses.png";
 
 interface UserPartyInfo {
   id: number; // User 테이블 Primary key
@@ -209,7 +210,7 @@ function PartyUserList() {
               type="text"
               placeholder="검색"
             />
-            <img src="/src/assets/image/glasses.png" alt="search_icon_img" />
+            <img src={glasses} alt="search_icon_img" />
           </div>
           <div className={styles.participant_box}>
             <p className={styles.participant_text}>참여자수</p>

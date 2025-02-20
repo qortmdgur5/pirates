@@ -4,6 +4,7 @@ import styles from "./styles/Signup.module.scss";
 import AutoComplete from "../../../components/common/autoComplete/AutoComplete";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import pirates_logo from "../../../assets/image/pirates_logo_img.png";
 
 function Signup() {
   const navigateTo = useNavigate(); // 네비게이션 훅 호출
@@ -123,38 +124,37 @@ function Signup() {
   }, [isOwner]);
 
   const handleSignup = async () => {
-  // 모든 조건 확인 후 회원가입 처리
-  if (
-    (isOwner &&
-      isOwnerDuplication === true &&
-      isPasswordValid === true &&
-      isPasswordMatch === true) ||
-    (!isOwner &&
-      isManagerDuplication === true &&
-      isPasswordValid === true &&
-      isPasswordMatch === true &&
-      ownerId)
-  ) {
-    const signupData = isOwner
-      ? { username, password, name, phoneNumber }
-      : { username, password, name, phoneNumber, owner_id: ownerId };
+    // 모든 조건 확인 후 회원가입 처리
+    if (
+      (isOwner &&
+        isOwnerDuplication === true &&
+        isPasswordValid === true &&
+        isPasswordMatch === true) ||
+      (!isOwner &&
+        isManagerDuplication === true &&
+        isPasswordValid === true &&
+        isPasswordMatch === true &&
+        ownerId)
+    ) {
+      const signupData = isOwner
+        ? { username, password, name, phoneNumber }
+        : { username, password, name, phoneNumber, owner_id: ownerId };
 
-    const apiUrl = isOwner ? "/api/owner/signup" : "/api/manager/signup";
+      const apiUrl = isOwner ? "/api/owner/signup" : "/api/manager/signup";
 
-    try {
-      const response = await axios.post(apiUrl, signupData);
-      console.log("회원가입 성공", response.data);
-      alert("회원가입이 완료되었습니다.");
-      navigateTo("/manager/login"); // 회원가입 완료 후 사장 및 매니저 로그인 페이지 리다이렉트
-    } catch (error) {
-      console.error("회원가입 오류:", error);
-      alert("회원가입에 실패했습니다. 다시 시도해주세요.");
+      try {
+        const response = await axios.post(apiUrl, signupData);
+        console.log("회원가입 성공", response.data);
+        alert("회원가입이 완료되었습니다.");
+        navigateTo("/manager/login"); // 회원가입 완료 후 사장 및 매니저 로그인 페이지 리다이렉트
+      } catch (error) {
+        console.error("회원가입 오류:", error);
+        alert("회원가입에 실패했습니다. 다시 시도해주세요.");
+      }
+    } else {
+      alert("모든 항목을 정확히 입력해주세요.");
     }
-  } else {
-    alert("모든 항목을 정확히 입력해주세요.");
-  }
-};
-
+  };
 
   return (
     <>
@@ -162,10 +162,7 @@ function Signup() {
         <div className={styles.signup_container}>
           <div className={styles.logo_box}>
             <div className={styles.logo_img_box}>
-              <img
-                src="/src/assets/image/pirates_logo_img.png"
-                alt="logo_img"
-              />
+              <img src={pirates_logo} alt="logo_img" />
             </div>
             <p className={styles.logo_box_text}>해적</p>
           </div>

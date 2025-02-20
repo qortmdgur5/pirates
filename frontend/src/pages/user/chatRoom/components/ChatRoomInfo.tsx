@@ -1,4 +1,6 @@
 import styles from "./chatRoomInfo.module.scss";
+import man_icon from "../../../../assets/image/man_icon_img.png";
+import woman_icon from "../../../../assets/image/woman_icon_img.png";
 
 interface ChatRoomInfoProps {
   name: string; // 상대방 팀 및 이름
@@ -19,11 +21,7 @@ function ChatRoomInfo({
     <div className={styles.container}>
       <div className={styles.user_image_box}>
         <img
-          src={
-            gender
-              ? "/src/assets/image/man_icon_img.png"
-              : "/src/assets/image/woman_icon_img.png"
-          }
+          src={gender ? man_icon : woman_icon}
           alt={gender ? "man_img" : "woman_img"}
         />
       </div>

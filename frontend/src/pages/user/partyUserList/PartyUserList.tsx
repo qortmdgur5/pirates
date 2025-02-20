@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../../../atoms/userAtoms";
+import glasses from "../../../assets/image/glasses.png";
 
 // API 응답 타입 정의
 interface UserPartyInfo {
@@ -139,7 +140,7 @@ function PartyUserList() {
               type="text"
               placeholder="검색"
             />
-            <img src="/src/assets/image/glasses.png" alt="search_icon_img" />
+            <img src={glasses} alt="search_icon_img" />
           </div>
           <div className={styles.participant_box}>
             <p className={styles.participant_text}>참여자수</p>

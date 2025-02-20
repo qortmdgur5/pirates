@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./styles/houseInfoBox.module.scss";
 import axios from "axios";
+import qr_img from "../../../../assets/image/qrcode.jpg";
 
 interface HouseInfo {
   id: number | null;
@@ -176,7 +177,7 @@ function HouseInfoBox({
                 type="button"
                 onClick={downloadQRCode}
               >
-                <img src="/src/assets/image/qrcode.jpg" alt="qrcode_img" />
+                <img src={qr_img} alt="qrcode_img" />
               </button>
             </div>
             <div className={styles.house_info_box}>

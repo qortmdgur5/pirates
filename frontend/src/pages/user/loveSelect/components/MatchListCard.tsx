@@ -1,4 +1,9 @@
 import styles from "./styles/matchListCard.module.scss";
+import man_icon from "../../../../assets/image/man_icon_img.png";
+import woman_icon from "../../../../assets/image/woman_icon_img.png";
+import gender_man from "../../../../assets/image/gender_man.png";
+import gender_woman from "../../../../assets/image/gender_woman.png";
+import love_img from "../../../../assets/image/loveMatch.png";
 
 // 타입 정의
 interface MatchUser {
@@ -23,32 +28,30 @@ function MatListCard({ match }: MatchListCardProps) {
       <div className={styles.match_box}>
         <div className={styles.man_box}>
           <div className={styles.man_img_box}>
-            <img src="/src/assets/image/man_icon_img.png" alt="man_img" />
+            <img src={man_icon} alt="man_img" />
           </div>
           <div className={styles.name_and_gender_box}>
-            <p className={styles.name_info}>{match.man.team} 조 {match.man.name}</p>
+            <p className={styles.name_info}>
+              {match.man.team} 조 {match.man.name}
+            </p>
             <div className={styles.gender_box}>
-              <img
-                src="/src/assets/image/gender_man.png"
-                alt="gender_img_png"
-              />
+              <img src={gender_man} alt="gender_img_png" />
             </div>
           </div>
         </div>
         <div className={styles.love_img_box}>
-          <img src="/src/assets/image/loveMatch.png" alt="loveMatch_img" />
+          <img src={love_img} alt="loveMatch_img" />
         </div>
         <div className={styles.woman_box}>
           <div className={styles.woman_img_box}>
-            <img src="/src/assets/image/woman_icon_img.png" alt="woman_img" />
+            <img src={woman_icon} alt="woman_img" />
           </div>
           <div className={styles.name_and_gender_box}>
-          <p className={styles.name_info}>{match.woman.team} 조 {match.woman.name}</p>
+            <p className={styles.name_info}>
+              {match.woman.team} 조 {match.woman.name}
+            </p>
             <div className={styles.gender_box}>
-              <img
-                src="/src/assets/image/gender_woman.png"
-                alt="gender_img_png"
-              />
+              <img src={gender_woman} alt="gender_img_png" />
             </div>
           </div>
         </div>

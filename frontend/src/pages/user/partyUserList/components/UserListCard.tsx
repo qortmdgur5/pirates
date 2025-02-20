@@ -3,6 +3,10 @@ import styles from "./styles/userListCard.module.scss";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../../../../atoms/userAtoms";
+import man_icon from "../../../../assets/image/man_icon_img.png";
+import woman_icon from "../../../../assets/image/woman_icon_img.png";
+import gender_man from "../../../../assets/image/gender_man.png";
+import gender_woman from "../../../../assets/image/gender_woman.png";
 
 interface UserListCardProps {
   id: number; // 해당 유저 id 값
@@ -93,7 +97,7 @@ function UserListCard({
     <div className={styles.container}>
       <div className={styles.user_img_box}>
         <img
-          src={`/src/assets/image/${gender ? "man" : "woman"}_icon_img.png`}
+          src={gender ? man_icon : woman_icon}
           alt={`${gender ? "man" : "woman"}_icon_img`}
         />
       </div>
@@ -107,7 +111,7 @@ function UserListCard({
         )}
         <div className={styles.gender_img_box}>
           <img
-            src={`/src/assets/image/gender_${gender ? "man" : "woman"}.png`}
+            src={gender ? gender_man : gender_woman}
             alt={`gender_${gender ? "man" : "woman"}_img`}
           />
         </div>
