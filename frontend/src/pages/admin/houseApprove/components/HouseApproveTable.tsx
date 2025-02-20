@@ -145,7 +145,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   // 사장님 승인 API
   const approveOwner = async (id: number) => {
     try {
-      const response = await axios.put(
+      await axios.put(
         `/api/admin/owner/auth/${id}`,
         {},
         {
@@ -161,7 +161,7 @@ const HouseApproveTable: React.FC<HouseApproveTableProps> = ({
   // 사장님 취소 API
   const denyOwner = async (id: number) => {
     try {
-      const response = await axios.put(
+      await axios.put(
         `/api/admin/owner/deny/${id}`,
         {},
         {

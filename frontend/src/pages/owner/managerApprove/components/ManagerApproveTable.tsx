@@ -171,7 +171,7 @@ const ManagerApproveTable: React.FC<ManagerApproveTableProps> = ({
   // 매니저 취소 API
   const denyManager = async (id: number) => {
     try {
-      const response = await axios.put(
+      await axios.put(
         `/api/owner/manager/deny/${id}`,
         {}, // request body (빈 객체)
         {

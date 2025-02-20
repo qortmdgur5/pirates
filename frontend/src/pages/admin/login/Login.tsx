@@ -3,7 +3,7 @@ import { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { authAtoms } from "../../../atoms/authAtoms";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 
 interface DecodedToken {
@@ -16,7 +16,7 @@ function Login() {
   const navigation = useNavigate();
 
   // 유저 로그인 정보
-  const user = useRecoilValue(authAtoms);
+  // const user = useRecoilValue(authAtoms);
 
   // 상태관리 모음
   const [username, setUserName] = useState<string>(""); // 아이디 입력값 관리
@@ -24,7 +24,7 @@ function Login() {
 
   // 전역 상태관리 모음
   // Recoil 상태 훅
-  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 사용자 정보 상태
+  const setAuthAtom = useSetRecoilState(authAtoms); // 사용자 정보 상태
 
   // useEffect(() => {
   //   const roleMapping: Record<string, string> = {

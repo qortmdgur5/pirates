@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import BackButton from "../../../components/common/backButton/BackButton";
 import HomeButton from "../../../components/common/homeButton/HomeButton";
 import HouseNameAndDate from "../../../components/common/houseNameAndDate/HouseNameAndDate";

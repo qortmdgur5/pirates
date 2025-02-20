@@ -11,7 +11,7 @@ interface TabsProps {
 
 export default function TabsComponent({ tabs, setIsOwner }: TabsProps) {
   const handleTabChange = (
-    event: React.SyntheticEvent | null,
+    _event: React.SyntheticEvent | null,
     value: string | number | null
   ) => {
     setIsOwner(value === 0); // 0번 탭이면 true (사장님), 그 외는 false (매니저)
@@ -29,19 +29,6 @@ export default function TabsComponent({ tabs, setIsOwner }: TabsProps) {
     </Tabs>
   );
 }
-
-const blue = {
-  50: "#F0F7FF",
-  100: "#C2E0FF",
-  200: "#80BFFF",
-  300: "#66B2FF",
-  400: "#3399FF",
-  500: "#007FFF",
-  600: "#0072E5",
-  700: "#0059B2",
-  800: "#004C99",
-  900: "#003A75",
-};
 
 const grey = {
   50: "#F3F6F9",

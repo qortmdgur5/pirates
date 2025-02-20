@@ -23,7 +23,6 @@ interface ParticipantModalTableProps {
 function ParticipantModalTable({
   partyId,
   onRegister,
-  participant,
   setParticipantCount,
   token,
 }: ParticipantModalTableProps) {
@@ -38,8 +37,6 @@ function ParticipantModalTable({
   };
 
   // 참석인원 상태관리
-  const [participants, setParticipants] = useState(participant);
-
   const [participantData, setParticipantData] = useState<ParticipantData>(
     initialParticipantData
   );

@@ -147,7 +147,7 @@ function ManageParty() {
     };
 
     try {
-      const response = await axios.post("/api/manager/party", postData, {
+      await axios.post("/api/manager/party", postData, {
         params: { token },
         headers: { "Content-Type": "application/json" },
       });

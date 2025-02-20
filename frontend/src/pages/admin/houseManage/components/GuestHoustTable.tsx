@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import styles from "./styles/guestHouseTable.module.scss";
 import Pagination from "../../../../components/common/pagination/Pagination";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 import { authAtoms } from "../../../../atoms/authAtoms";
 
 // API 응답 데이터 타입 정의

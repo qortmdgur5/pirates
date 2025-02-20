@@ -25,7 +25,7 @@ export default function Pagination({
   onPageSizeChange,
 }: PaginationProps) {
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
     onPageChange(newPage);

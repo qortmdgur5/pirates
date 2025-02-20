@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { authAtoms, accomoAtoms } from "../../../atoms/authAtoms";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 
 interface DecodedToken {
@@ -24,8 +24,8 @@ function Login() {
 
   // 전역 상태관리 모음
   // Recoil 상태 훅
-  const [authAtom, setAuthAtom] = useRecoilState(authAtoms); // 매니저 or 사장님 로그인 상태
-  const [accomoAtom, setAccomoAtom] = useRecoilState(accomoAtoms); // 숙소 정보 상태
+  const setAuthAtom = useSetRecoilState(authAtoms); // 매니저 or 사장님 로그인 상태
+  const setAccomoAtom = useSetRecoilState(accomoAtoms); // 숙소 정보 상태
 
   // 아이디 입력창 관리
   const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -176,7 +176,7 @@ function Chat() {
     lastReadChatId: number
   ) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         "/api/user/chat/lastReadChat",
         {
           chatRoom_id: chatRoomId,

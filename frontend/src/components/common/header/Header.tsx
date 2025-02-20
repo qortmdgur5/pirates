@@ -1,11 +1,11 @@
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import styles from "./styles/header.module.scss";
 import { useNavigate } from "react-router-dom";
 import { accomoAtoms, authAtoms } from "../../../atoms/authAtoms";
 
 function Header() {
-  const [user, setUser] = useRecoilState(authAtoms);
-  const [accomodation, setAccomodation] = useRecoilState(accomoAtoms);
+  const setUser = useSetRecoilState(authAtoms);
+  const setAccomodation = useSetRecoilState(accomoAtoms);
   const navigate = useNavigate(); // useNavigate 훅 사용
 
   // 로그아웃 처리 함수

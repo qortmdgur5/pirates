@@ -25,3 +25,6 @@ dist-ssr
 
 # added ignore
 vite.config.ts
+
+# build cache files
+*.tsbuildinfo
