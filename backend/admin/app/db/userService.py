@@ -728,59 +728,35 @@ async def post_userChatContents(
 
 class ConnectionManager:
     def __init__(self):
-        self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
+        self.active_connections: Dict[int, List[WebSocket]] = {}
         self.lock = asyncio.Lock()
 
-    async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
+    async def connect(self, chatRoom_id: int, websocket: WebSocket):
         await websocket.accept()
         async with self.lock:
-            if chatRoom_id not in self.chat_room_connections:
-                self.chat_room_connections[chatRoom_id] = {}
-            self.chat_room_connections[chatRoom_id][user_id] = websocket
-
-    async def disconnect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
-        async with self.lock:
-            if chatRoom_id in self.chat_room_connections:
-                if user_id in self.chat_room_connections[chatRoom_id]:
-                    del self.chat_room_connections[chatRoom_id][user_id]
-                if not self.chat_room_connections[chatRoom_id]:  
-                    del self.chat_room_connections[chatRoom_id]
-        await websocket.close()
-
-    async def send_message(self, user_id: int, connection: WebSocket, message: str) -> bool:
-        try:
-            if connection.client_state == WebSocketState.CONNECTED:
-                await connection.send_text(message)
-                return True
-            return False
-        except WebSocketDisconnect:
-            return False
-        except Exception:
-            return False
-
-    async def broadcast(self, message: str, chatRoom_id: int, batch_size: int = 10):
-        if chatRoom_id not in self.chat_room_connections:
-            return
-
-        to_remove = []
-        async with self.lock:
-            connections = list(self.chat_room_connections.get(chatRoom_id, {}).items())
-
-        connection_batches = [connections[i:i + batch_size] for i in range(0, len(connections), batch_size)]
-        
-        for batch in connection_batches:
-            tasks = [self.send_message(user_id, connection, message) for user_id, connection in batch]
-            results = await asyncio.gather(*tasks)
-            failed_users = [user_id for (user_id, success) in zip((b[0] for b in batch), results) if not success]
-            to_remove.extend(failed_users)
+            if chatRoom_id not in self.active_connections:
+                self.active_connections[chatRoom_id] = []
             
+            if len(self.active_connections[chatRoom_id]) >= 2:
+                await websocket.close()
+                return 
+            self.active_connections[chatRoom_id].append(websocket)
+
+    async def disconnect(self, chatRoom_id: int, websocket: WebSocket):
         async with self.lock:
-            for user_id in to_remove:
-                if user_id in self.chat_room_connections.get(chatRoom_id, {}):
-                    del self.chat_room_connections[chatRoom_id][user_id]
-            if not self.chat_room_connections.get(chatRoom_id):
-                del self.chat_room_connections[chatRoom_id]
-                           
+            self.active_connections[chatRoom_id].remove(websocket)
+            if not self.active_connections[chatRoom_id]:
+                del self.active_connections[chatRoom_id]
+                
+    # 개별 메시지 방송 기능
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, chatRoom_id: int, message: str):
+        async with self.lock:
+            for connection in self.active_connections.get(chatRoom_id, []):
+                await connection.send_text(message)
+                
 manager = ConnectionManager()
 
 

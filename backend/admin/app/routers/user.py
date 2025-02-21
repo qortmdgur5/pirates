@@ -291,39 +291,31 @@ async def websocket_endpoint(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this resource."
             )
-        await manager.connect(websocket, chatRoom_id, user_id)
+        await manager.connect(chatRoom_id, websocket)
         
         while True:
-            if websocket.client_state != WebSocketState.CONNECTED:
-                print(f"WebSocket 연결 끊김: user {user_id} / chatRoom {chatRoom_id}")
-                break
-            
             try:
                 data = await websocket.receive_text()
+                chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
+                await userService.post_chat(db, chat)
+                
+                chat_id = await userService.get_chatId(db, chatRoom_id, user_id)
+                message = json.dumps({
+                    "user_id": user_id,
+                    "chatRoom_id": chatRoom_id,
+                    "chat_id": chat_id,
+                    "content": data,
+                }, ensure_ascii=False)
+
+                await manager.broadcast(chatRoom_id, message)
             except WebSocketDisconnect:
-                print(f"사용자 {user_id} 연결 종료됨.")
+                await manager.disconnect(chatRoom_id, websocket)
                 break
             except Exception as e:
-                print(f"WebSocket 오류 발생 (user {user_id}): {e}")
-                break
-            
-            chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
-            await userService.post_chat(db, chat)
-            print(f"Chat saved for user {user_id} in chat room {chatRoom_id}.")
-            
-            chat_id = await userService.get_chatId(db, chatRoom_id, user_id)
-            message = json.dumps({
-                "user_id": user_id,
-                "chatRoom_id": chatRoom_id,
-                "chat_id": chat_id,
-                "content": data,
-            }, ensure_ascii=False)
-            print(f"Broadcasting message: {message}")
-
-            await manager.broadcast(message, chatRoom_id)
+                await websocket.send_text(f"WebSocket 처리 중 예외 발생: {e}")
             
     except Exception as e:
-        raise f"WebSocket 처리 중 예외 발생: {e}"
+        await websocket.send_text(f"WebSocket 연결 처리 중 예외 발생: {e}")
         
 
 @router.post(
