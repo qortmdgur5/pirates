@@ -681,37 +681,64 @@ async def post_userChatContents(
 
 class ConnectionManager:
     def __init__(self):
-        self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
-        self.message_queue = asyncio.Queue()  # 메시지 큐 추가
-        asyncio.create_task(self.process_messages())  # 메시지 처리 백그라운드 태스크 실행
-
-    async def process_messages(self):
-        """큐에서 메시지를 꺼내 WebSocket 브로드캐스트 처리"""
-        while True:
-            chatRoom_id, message = await self.message_queue.get()
-            if chatRoom_id in self.chat_room_connections:
-                connections = list(self.chat_room_connections[chatRoom_id].values())
-                await asyncio.gather(*(conn.send_text(message) for conn in connections))
+        self.chat_rooms: Dict[int, Dict[int, WebSocket]] = {}  # {chatRoom_id: {user_id: WebSocket}}
+        self.message_queues: Dict[int, asyncio.Queue] = {}  # {chatRoom_id: asyncio.Queue}
+        self.tasks: Dict[int, asyncio.Task] = {}  # {chatRoom_id: asyncio.Task}
 
     async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
-        """WebSocket 연결 추가"""
+        """ 새 WebSocket 연결을 등록하고 메시지 큐를 관리 """
         await websocket.accept()
-        if chatRoom_id not in self.chat_room_connections:
-            self.chat_room_connections[chatRoom_id] = {}
-        self.chat_room_connections[chatRoom_id][user_id] = websocket
+
+        if chatRoom_id not in self.chat_rooms:
+            self.chat_rooms[chatRoom_id] = {}
+            self.message_queues[chatRoom_id] = asyncio.Queue()
+            self.tasks[chatRoom_id] = asyncio.create_task(self.message_dispatcher(chatRoom_id))  # 메시지 소비 Task 실행
+
+        self.chat_rooms[chatRoom_id][user_id] = websocket
 
     async def disconnect(self, chatRoom_id: int, user_id: int):
-        """WebSocket 연결 삭제"""
-        if chatRoom_id in self.chat_room_connections:
-            if user_id in self.chat_room_connections[chatRoom_id]:
-                del self.chat_room_connections[chatRoom_id][user_id]
+        """ 특정 사용자의 연결 해제 및 정리 """
+        if chatRoom_id in self.chat_rooms and user_id in self.chat_rooms[chatRoom_id]:
+            del self.chat_rooms[chatRoom_id][user_id]
 
-            if not self.chat_room_connections[chatRoom_id]:  # 방에 아무도 없으면 삭제
-                del self.chat_room_connections[chatRoom_id]
+        if chatRoom_id in self.chat_rooms and not self.chat_rooms[chatRoom_id]:  # 채팅방이 비었으면 정리
+            del self.chat_rooms[chatRoom_id]
+            del self.message_queues[chatRoom_id]
+
+            # 메시지 소비 Task 종료
+            if chatRoom_id in self.tasks:
+                self.tasks[chatRoom_id].cancel()
+                del self.tasks[chatRoom_id]
 
     async def broadcast(self, message: str, chatRoom_id: int):
-        """메시지를 큐에 추가하여 처리"""
-        await self.message_queue.put((chatRoom_id, message))
+        """ 특정 채팅방 메시지 큐에 메시지 추가 """
+        if chatRoom_id in self.message_queues:
+            await self.message_queues[chatRoom_id].put(message)
+
+    async def message_dispatcher(self, chatRoom_id: int):
+        """ 메시지 큐의 메시지를 꺼내어 모든 사용자에게 전송하는 Task """
+        while True:
+            try:
+                message = await self.message_queues[chatRoom_id].get()
+
+                if chatRoom_id in self.chat_rooms:
+                    to_remove = []
+                    
+                    async def send(user_id, ws):
+                        try:
+                            await ws.send_text(message)
+                        except:
+                            to_remove.append(user_id)
+                    
+                    await asyncio.gather(*(send(user_id, ws) for user_id, ws in self.chat_rooms[chatRoom_id].items()))
+
+                    # 끊긴 연결 정리
+                    for user_id in to_remove:
+                        if user_id in self.chat_rooms[chatRoom_id]:
+                            del self.chat_rooms[chatRoom_id][user_id]
+
+            except asyncio.CancelledError:
+                break  # Task가 취소되면 종료
 
                 
 manager = ConnectionManager()
