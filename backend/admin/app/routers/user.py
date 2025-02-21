@@ -292,22 +292,24 @@ async def websocket_endpoint(
                 detail="You do not have permission to access this resource."
             )
         await manager.connect(websocket, chatRoom_id, user_id)
+        
         while True:
             if websocket.client_state != WebSocketState.CONNECTED:
+                print(f"WebSocket 연결 끊김: user {user_id} / chatRoom {chatRoom_id}")
                 break
             
             try:
-                # 클라이언트로부터 텍스트 데이터 받기
                 data = await websocket.receive_text()
             except WebSocketDisconnect:
-                # WebSocket 연결이 끊어졌을 때 처리
-                await manager.disconnect(websocket, chatRoom_id, user_id)
-                # 해당 사용자 나갔을 때 채팅방에 알림 보내기
-                await manager.broadcast(f"User {user_id} left ChatRoom {chatRoom_id}", chatRoom_id)
+                print(f"사용자 {user_id} 연결 종료됨.")
+                break
+            except Exception as e:
+                print(f"WebSocket 오류 발생 (user {user_id}): {e}")
                 break
             
             chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
             await userService.post_chat(db, chat)
+            print(f"Chat saved for user {user_id} in chat room {chatRoom_id}.")
             
             chat_id = await userService.get_chatId(db, chatRoom_id, user_id)
             message = json.dumps({
@@ -316,14 +318,12 @@ async def websocket_endpoint(
                 "chat_id": chat_id,
                 "content": data,
             }, ensure_ascii=False)
+            print(f"Broadcasting message: {message}")
 
             await manager.broadcast(message, chatRoom_id)
             
     except Exception as e:
-        print(f"Unexpected error in WebSocket endpoint: {e}")
-        await manager.disconnect(websocket, chatRoom_id, user_id)
-    finally:
-        await websocket.close()
+        raise f"WebSocket 처리 중 예외 발생: {e}"
         
 
 @router.post(
