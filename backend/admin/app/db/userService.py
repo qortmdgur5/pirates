@@ -769,13 +769,11 @@ class ConnectionManager:
         connection_batches = [connections[i:i + batch_size] for i in range(0, len(connections), batch_size)]
         
         for batch in connection_batches:
-            tasks = [asyncio.create_task(self.send_message(user_id, connection, message)) for user_id, connection in batch]
+            tasks = [self.send_message(user_id, connection, message) for user_id, connection in batch]
             results = await asyncio.gather(*tasks)
+            failed_users = [user_id for (user_id, success) in zip((b[0] for b in batch), results) if not success]
+            to_remove.extend(failed_users)
             
-            for (user_id, success) in zip((b[0] for b in batch), results):
-                if not success:
-                    to_remove.append(user_id)
-
         async with self.lock:
             for user_id in to_remove:
                 if user_id in self.chat_room_connections.get(chatRoom_id, {}):
