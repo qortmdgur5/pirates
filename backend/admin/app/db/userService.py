@@ -694,8 +694,7 @@ class ConnectionManager:
     async def disconnect(self, chatRoom_id: int, user_id: int):
         async with self.lock:
             if chatRoom_id in self.chat_room_connections:
-                if user_id in self.chat_room_connections[chatRoom_id]:
-                    del self.chat_room_connections[chatRoom_id][user_id]
+                self.chat_room_connections[chatRoom_id].pop(user_id, None)
 
                 if not self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id]
