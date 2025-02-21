@@ -730,17 +730,12 @@ class ConnectionManager:
     def __init__(self):
         self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
         self.lock = asyncio.Lock()
-        self.message_queues: Dict[int, asyncio.Queue] = {}  # 각 채팅방별 메시지 큐
-        self.process_tasks: Dict[int, asyncio.Task] = {}  # 백그라운드 메시지 처리 태스크
 
     async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
         await websocket.accept()
         async with self.lock:
             if chatRoom_id not in self.chat_room_connections:
                 self.chat_room_connections[chatRoom_id] = {}
-                self.message_queues[chatRoom_id] = asyncio.Queue()  # 새로운 큐 생성
-                self.process_tasks[chatRoom_id] = asyncio.create_task(self.process_messages(chatRoom_id))  # 🔥 메시지 처리 태스크 실행
-
             self.chat_room_connections[chatRoom_id][user_id] = websocket
 
     async def disconnect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
@@ -748,24 +743,8 @@ class ConnectionManager:
             if chatRoom_id in self.chat_room_connections:
                 if user_id in self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id][user_id]
-
-                # 채팅방에 남은 연결이 없다면 정리
                 if not self.chat_room_connections[chatRoom_id]:  
                     del self.chat_room_connections[chatRoom_id]
-                    
-                    # 메시지 큐 삭제
-                    if chatRoom_id in self.message_queues:
-                        del self.message_queues[chatRoom_id]
-                    
-                    # 메시지 처리 태스크 안전 종료
-                    if chatRoom_id in self.process_tasks:
-                        task = self.process_tasks.pop(chatRoom_id)
-                        task.cancel()
-                        try:
-                            await task  # 안전한 취소
-                        except asyncio.CancelledError:
-                            print(f"Task for chatRoom {chatRoom_id} safely cancelled.")
-            
         await websocket.close()
 
     async def send_message(self, user_id: int, connection: WebSocket, message: str) -> bool:
@@ -773,29 +752,15 @@ class ConnectionManager:
             if connection.client_state == WebSocketState.CONNECTED:
                 await connection.send_text(message)
                 return True
-            else:
-                return False
-        except ConnectionClosed:
+            return False
+        except WebSocketDisconnect:
             return False
         except Exception:
             return False
 
-    async def process_messages(self, chatRoom_id: int):
-        """ 메시지 큐에서 메시지를 가져와 순차적으로 브로드캐스트 처리 """
-        try:
-            while True:
-                if chatRoom_id not in self.message_queues:  # 채팅방이 삭제되면 안전 종료
-                    print(f"process_messages 종료: chatRoom {chatRoom_id}")
-                    break
-                message = await self.message_queues[chatRoom_id].get()
-                await self._broadcast_message(message, chatRoom_id)
-        except asyncio.CancelledError:
-            print(f"process_messages 태스크 취소됨: chatRoom {chatRoom_id}")
-
-    async def _broadcast_message(self, message: str, chatRoom_id: int, batch_size: int = 10):
-        """ 메시지를 batch로 나누어 전송 """
+    async def broadcast(self, message: str, chatRoom_id: int, batch_size: int = 10):
         if chatRoom_id not in self.chat_room_connections:
-            return 
+            return
 
         to_remove = []
         async with self.lock:
@@ -804,16 +769,12 @@ class ConnectionManager:
         connection_batches = [connections[i:i + batch_size] for i in range(0, len(connections), batch_size)]
         
         for batch in connection_batches:
-            tasks = []
-            for user_id, connection in batch:
-                task = asyncio.create_task(self.send_message(user_id, connection, message))
-                tasks.append(task)
-
+            tasks = [asyncio.create_task(self.send_message(user_id, connection, message)) for user_id, connection in batch]
             results = await asyncio.gather(*tasks)
-
-            for idx, result in enumerate(results):
-                if not result:
-                    to_remove.append(batch[idx][0])
+            
+            for (user_id, success) in zip((b[0] for b in batch), results):
+                if not success:
+                    to_remove.append(user_id)
 
         async with self.lock:
             for user_id in to_remove:
@@ -821,11 +782,6 @@ class ConnectionManager:
                     del self.chat_room_connections[chatRoom_id][user_id]
             if not self.chat_room_connections.get(chatRoom_id):
                 del self.chat_room_connections[chatRoom_id]
-
-    async def broadcast(self, message: str, chatRoom_id: int):
-        """ 메시지를 큐에 추가하여 순차적 처리 보장 """
-        if chatRoom_id in self.message_queues:
-            await self.message_queues[chatRoom_id].put(message)  # 메시지를 큐에 추가
                            
 manager = ConnectionManager()
 
