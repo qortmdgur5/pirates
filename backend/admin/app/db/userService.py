@@ -736,32 +736,46 @@ class ConnectionManager:
                 self.chat_room_connections[chatRoom_id] = {}
             self.chat_room_connections[chatRoom_id][user_id] = websocket
 
-    async def disconnect(self, chatRoom_id: int, user_id: int):
+    async def disconnect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
         async with self.lock:
             if chatRoom_id in self.chat_room_connections:
                 if user_id in self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id][user_id]
+                    await websocket.close()
 
                 if not self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id]
 
-    async def broadcast(self, message: str, chatRoom_id: int):
+    async def send_message(self, user_id: int, connection: WebSocket, message: str) -> bool:
+            try:
+                await connection.send_text(message)
+                return True
+            except Exception:
+                return False
+                
+    async def broadcast(self, message: str, chatRoom_id: int, batch_size: int = 10):
         if chatRoom_id not in self.chat_room_connections:
-            return
+            return 
         
         to_remove = []
 
         async with self.lock:
-            connections = list(self.chat_room_connections[chatRoom_id].items()) 
+            connections = list(self.chat_room_connections.get(chatRoom_id, {}).items())
+            
+        connection_batches = [connections[i:i + batch_size] for i in range(0, len(connections), batch_size)]
         
-        async def send_message(user_id, connection):
-            try:
-                await connection.send_text(message)
-            except Exception:
-                to_remove.append(user_id)
-        
-        await asyncio.gather(*(send_message(user_id, connection) for user_id, connection in connections))
+        for batch in connection_batches:
+            tasks = []
+            for user_id, connection in batch:
+                task = asyncio.create_task(self.send_message(user_id, connection, message))
+                tasks.append(task)
 
+            results = await asyncio.gather(*tasks)
+            
+            for idx, result in enumerate(results):
+                if not result:
+                    to_remove.append(batch[idx][0])
+                    
         async with self.lock:
             for user_id in to_remove:
                 if user_id in self.chat_room_connections.get(chatRoom_id, {}):
