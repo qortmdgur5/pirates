@@ -320,8 +320,10 @@ async def websocket_endpoint(
             await manager.broadcast(message, chatRoom_id)
             
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"Unexpected error in WebSocket endpoint: {e}")
         await manager.disconnect(websocket, chatRoom_id, user_id)
+    finally:
+        await websocket.close()
         
 
 @router.post(

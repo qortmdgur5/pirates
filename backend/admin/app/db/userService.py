@@ -727,87 +727,69 @@ async def post_userChatContents(
 
 class ConnectionManager:
     def __init__(self):
-        # 채팅방마다 연결된 WebSocket 객체를 관리하는 딕셔너리
-        # chat_room_connections: {chatRoom_id: {user_id: WebSocket}}
         self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
-        # 동시성 문제를 피하기 위한 락
         self.lock = asyncio.Lock()
 
-    # WebSocket 연결을 관리하는 메서드
     async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
-        # WebSocket 연결 수락
         await websocket.accept()
-        
+        print(f"User {user_id} connected to chat room {chatRoom_id}.")
         async with self.lock:
-            # 특정 채팅방에 해당 user_id가 없으면 새로 추가
             if chatRoom_id not in self.chat_room_connections:
                 self.chat_room_connections[chatRoom_id] = {}
             self.chat_room_connections[chatRoom_id][user_id] = websocket
 
-    # WebSocket 연결을 종료하는 메서드
     async def disconnect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
         async with self.lock:
-            # 해당 채팅방에 연결된 사용자가 있으면 삭제
             if chatRoom_id in self.chat_room_connections:
                 if user_id in self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id][user_id]
-
-                # 채팅방에 더 이상 사용자가 없으면 해당 채팅방 삭제
                 if not self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id]
-        
-        # WebSocket 연결 종료
         await websocket.close()
+        print(f"User {user_id} disconnected from chat room {chatRoom_id}.")
 
-    # 메시지를 특정 사용자에게 전송하는 메서드
     async def send_message(self, user_id: int, connection: WebSocket, message: str) -> bool:
         try:
-            # 연결 상태가 'CONNECTED'일 때만 메시지 전송
             if connection.client_state == WebSocketState.CONNECTED:
                 await connection.send_text(message)
+                print(f"Message sent to user {user_id}: {message}")
                 return True
-        except Exception:
+            else:
+                print(f"WebSocket for user {user_id} is not connected.")
+                return False
+        except Exception as e:
+            print(f"Error sending message to user {user_id}: {e}")
             return False
 
-    # 채팅방에 연결된 모든 사용자에게 메시지를 브로드캐스트하는 메서드
     async def broadcast(self, message: str, chatRoom_id: int, batch_size: int = 10):
-        # 해당 채팅방에 연결된 사용자가 없으면 반환
         if chatRoom_id not in self.chat_room_connections:
+            print(f"No users in chat room {chatRoom_id}.")
             return 
         
         to_remove = []
-
-        # 락을 사용하여 동시성 문제를 피하고 연결된 사용자 목록 가져오기
         async with self.lock:
             connections = list(self.chat_room_connections.get(chatRoom_id, {}).items())
         
-        # 배치 크기만큼 나누어 브로드캐스트
         connection_batches = [connections[i:i + batch_size] for i in range(0, len(connections), batch_size)]
         
-        # 각 배치에 대해 메시지 전송
         for batch in connection_batches:
             tasks = []
             for user_id, connection in batch:
                 task = asyncio.create_task(self.send_message(user_id, connection, message))
                 tasks.append(task)
-
-            # 비동기적으로 메시지 전송 결과 기다리기
+            
             results = await asyncio.gather(*tasks)
             
-            # 전송 실패한 연결 사용자 목록 추가
             for idx, result in enumerate(results):
                 if not result:
                     to_remove.append(batch[idx][0])
         
-        # 실패한 사용자들 연결 목록에서 삭제
         async with self.lock:
             for user_id in to_remove:
                 if user_id in self.chat_room_connections.get(chatRoom_id, {}):
                     del self.chat_room_connections[chatRoom_id][user_id]
-
-            # 모든 사용자가 나갔으면 채팅방 삭제
             if not self.chat_room_connections.get(chatRoom_id):
-                del self.chat_room_connections[chatRoom_id]
+                del self
                            
 manager = ConnectionManager()
 
