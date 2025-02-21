@@ -682,47 +682,36 @@ async def post_userChatContents(
 class ConnectionManager:
     def __init__(self):
         self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
-        self.lock = asyncio.Lock() 
+        self.message_queue = asyncio.Queue()  # 메시지 큐 추가
+        asyncio.create_task(self.process_messages())  # 메시지 처리 백그라운드 태스크 실행
+
+    async def process_messages(self):
+        """큐에서 메시지를 꺼내 WebSocket 브로드캐스트 처리"""
+        while True:
+            chatRoom_id, message = await self.message_queue.get()
+            if chatRoom_id in self.chat_room_connections:
+                connections = list(self.chat_room_connections[chatRoom_id].values())
+                await asyncio.gather(*(conn.send_text(message) for conn in connections))
 
     async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
+        """WebSocket 연결 추가"""
         await websocket.accept()
-        async with self.lock:
-            if chatRoom_id not in self.chat_room_connections:
-                self.chat_room_connections[chatRoom_id] = {}
-            self.chat_room_connections[chatRoom_id][user_id] = websocket
+        if chatRoom_id not in self.chat_room_connections:
+            self.chat_room_connections[chatRoom_id] = {}
+        self.chat_room_connections[chatRoom_id][user_id] = websocket
 
     async def disconnect(self, chatRoom_id: int, user_id: int):
-        async with self.lock():
-            if chatRoom_id in self.chat_room_connections:
-                if user_id in self.chat_room_connections[chatRoom_id]:
-                    del self.chat_room_connections[chatRoom_id][user_id]
+        """WebSocket 연결 삭제"""
+        if chatRoom_id in self.chat_room_connections:
+            if user_id in self.chat_room_connections[chatRoom_id]:
+                del self.chat_room_connections[chatRoom_id][user_id]
 
-                if not self.chat_room_connections[chatRoom_id]:
-                    del self.chat_room_connections[chatRoom_id]
+            if not self.chat_room_connections[chatRoom_id]:  # 방에 아무도 없으면 삭제
+                del self.chat_room_connections[chatRoom_id]
 
     async def broadcast(self, message: str, chatRoom_id: int):
-        if chatRoom_id not in self.chat_room_connections:
-            return
-        to_remove = []
-
-        async with self.lock:
-            connections = list(self.chat_room_connections[chatRoom_id].items())
-        
-        async def send_message(user_id, connection):
-            try:
-                await connection.send_text(message)
-            except Exception:
-                to_remove.append(user_id)
-        
-        await asyncio.gather(*(send_message(user_id, connection) for user_id, connection in connections))
-
-        async with self.lock:
-            for user_id in to_remove:
-                if user_id in self.chat_room_connections.get(chatRoom_id, {}):
-                    del self.chat_room_connections[chatRoom_id][user_id]
-
-            if not self.chat_room_connections.get(chatRoom_id):
-                del self.chat_room_connections[chatRoom_id]
+        """메시지를 큐에 추가하여 처리"""
+        await self.message_queue.put((chatRoom_id, message))
 
                 
 manager = ConnectionManager()
