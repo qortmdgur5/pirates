@@ -1,6 +1,7 @@
 import json
 import os
 from fastapi import Depends, HTTPException, APIRouter, Query, WebSocket, WebSocketDisconnect, status
+from fastapi.websockets import WebSocketState
 from ..db import errorLog, userService, database
 from ..utils import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -292,7 +293,19 @@ async def websocket_endpoint(
             )
         await manager.connect(websocket, chatRoom_id, user_id)
         while True:
-            data = await websocket.receive_text()
+            if websocket.client_state != WebSocketState.CONNECTED:
+                break
+            
+            try:
+                # 클라이언트로부터 텍스트 데이터 받기
+                data = await websocket.receive_text()
+            except WebSocketDisconnect:
+                # WebSocket 연결이 끊어졌을 때 처리
+                await manager.disconnect(websocket, chatRoom_id, user_id)
+                # 해당 사용자 나갔을 때 채팅방에 알림 보내기
+                await manager.broadcast(f"User {user_id} left ChatRoom {chatRoom_id}", chatRoom_id)
+                break
+            
             chat = schemas.chatCreateRequest(user_id=user_id, contents=data, chatRoom_id=chatRoom_id)
             await userService.post_chat(db, chat)
             
@@ -306,9 +319,9 @@ async def websocket_endpoint(
 
             await manager.broadcast(message, chatRoom_id)
             
-    except WebSocketDisconnect:
+    except Exception as e:
+        print(f"Unexpected error: {e}")
         await manager.disconnect(websocket, chatRoom_id, user_id)
-        await manager.broadcast(f"User {user_id} left ChatRoom {chatRoom_id}", chatRoom_id)
         
 
 @router.post(
