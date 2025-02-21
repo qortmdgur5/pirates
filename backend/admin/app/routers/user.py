@@ -307,7 +307,7 @@ async def websocket_endpoint(
             await manager.broadcast(message, chatRoom_id)
             
     except WebSocketDisconnect:
-        manager.disconnect(websocket, chatRoom_id, user_id)
+        await manager.disconnect(chatRoom_id, user_id)
         await manager.broadcast(f"User {user_id} left ChatRoom {chatRoom_id}", chatRoom_id)
         
 

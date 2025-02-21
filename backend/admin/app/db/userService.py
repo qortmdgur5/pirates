@@ -727,7 +727,7 @@ async def post_userChatContents(
 class ConnectionManager:
     def __init__(self):
         self.chat_room_connections: Dict[int, Dict[int, WebSocket]] = {}
-        self.lock = asyncio.Lock() 
+        self.lock = asyncio.Lock()
 
     async def connect(self, websocket: WebSocket, chatRoom_id: int, user_id: int):
         await websocket.accept()
@@ -742,10 +742,9 @@ class ConnectionManager:
                 if user_id in self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id][user_id]
 
-                # Clean up the chat room if it's empty
                 if not self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id]
-                    
+
     async def broadcast(self, message: str, chatRoom_id: int):
         if chatRoom_id not in self.chat_room_connections:
             return
