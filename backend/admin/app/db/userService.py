@@ -748,12 +748,24 @@ class ConnectionManager:
             if chatRoom_id in self.chat_room_connections:
                 if user_id in self.chat_room_connections[chatRoom_id]:
                     del self.chat_room_connections[chatRoom_id][user_id]
+
+                # 채팅방에 남은 연결이 없다면 정리
                 if not self.chat_room_connections[chatRoom_id]:  
                     del self.chat_room_connections[chatRoom_id]
-                    del self.message_queues[chatRoom_id]  # 큐 삭제
-                    self.process_tasks[chatRoom_id].cancel()  # 메시지 처리 태스크 종료
-                    del self.process_tasks[chatRoom_id]  
-
+                    
+                    # 메시지 큐 삭제
+                    if chatRoom_id in self.message_queues:
+                        del self.message_queues[chatRoom_id]
+                    
+                    # 메시지 처리 태스크 안전 종료
+                    if chatRoom_id in self.process_tasks:
+                        task = self.process_tasks.pop(chatRoom_id)
+                        task.cancel()
+                        try:
+                            await task  # 안전한 취소
+                        except asyncio.CancelledError:
+                            print(f"Task for chatRoom {chatRoom_id} safely cancelled.")
+            
         await websocket.close()
 
     async def send_message(self, user_id: int, connection: WebSocket, message: str) -> bool:
@@ -770,9 +782,15 @@ class ConnectionManager:
 
     async def process_messages(self, chatRoom_id: int):
         """ 메시지 큐에서 메시지를 가져와 순차적으로 브로드캐스트 처리 """
-        while chatRoom_id in self.message_queues:
-            message = await self.message_queues[chatRoom_id].get()
-            await self._broadcast_message(message, chatRoom_id)
+        try:
+            while True:
+                if chatRoom_id not in self.message_queues:  # 채팅방이 삭제되면 안전 종료
+                    print(f"process_messages 종료: chatRoom {chatRoom_id}")
+                    break
+                message = await self.message_queues[chatRoom_id].get()
+                await self._broadcast_message(message, chatRoom_id)
+        except asyncio.CancelledError:
+            print(f"process_messages 태스크 취소됨: chatRoom {chatRoom_id}")
 
     async def _broadcast_message(self, message: str, chatRoom_id: int, batch_size: int = 10):
         """ 메시지를 batch로 나누어 전송 """
