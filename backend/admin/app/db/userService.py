@@ -748,14 +748,17 @@ class ConnectionManager:
             if not self.active_connections[chatRoom_id]:
                 del self.active_connections[chatRoom_id]
                 
-    # 개별 메시지 방송 기능
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
     async def broadcast(self, chatRoom_id: int, message: str):
-        async with self.lock:
-            for connection in self.active_connections.get(chatRoom_id, []):
+        connections = self.active_connections.get(chatRoom_id, [])
+        for connection in connections[:]:  
+            try:
                 await connection.send_text(message)
+            except Exception as e:
+                print(f"WebSocket 전송 오류: {e}")
+                await self.disconnect(chatRoom_id, connection)
                 
 manager = ConnectionManager()
 
