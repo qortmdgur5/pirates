@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styles from "./styles/houseInfoBox.module.scss";
 import axios from "axios";
 import qr_img from "../../../../assets/image/qrcode.jpg";
+import kakaoPay_img from "../../../../assets/image/kakao_pay_button.png";
 
 interface HouseInfo {
   id: number | null;
@@ -83,6 +84,7 @@ function HouseInfoBox({
     }
   };
 
+  // QR 코드 다운로드 API
   const downloadQRCode = async () => {
     try {
       // API 호출하여 QR 코드 이미지 파일을 가져옵니다
@@ -107,6 +109,43 @@ function HouseInfoBox({
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("파일 다운로드 중 오류 발생:", error);
+    }
+  };
+
+  // Kakao pay API
+  const handlePayment = async () => {
+    try {
+      const response = await axios.post(
+        "/kakao-pay",
+        {
+          cid: "TC0ONETIME",
+          partner_order_id: "partner_order_id",
+          partner_user_id: "partner_user_id",
+          item_name: "해적 1달 구독권",
+          quantity: 1,
+          total_amount: 19000,
+          tax_free_amount: 0,
+          approval_url: "http://localhost:5173/owner/manageHouse",
+          fail_url: "http://localhost:5173/owner/manageHouse",
+          cancel_url: "http://localhost:5173/owner/manageHouse",
+        },
+        {
+          headers: {
+            Authorization: `SECRET_KEY DEV55F4036178708913CAE242B44D9BFD6E6F79F`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // 결제 페이지로 리다이렉트
+      if (response.data.next_redirect_pc_url) {
+        window.location.href = response.data.next_redirect_pc_url;
+      } else {
+        alert("결제 페이지를 불러올 수 없습니다.");
+      }
+    } catch (error) {
+      console.error("결제 요청 실패:", error);
+      alert("결제 요청 중 오류가 발생했습니다.");
     }
   };
 
@@ -171,6 +210,13 @@ function HouseInfoBox({
         ) : (
           <>
             <div className={styles.house_name_qr_box}>
+              <button
+                className={styles.kakao_pay_button}
+                type="button"
+                onClick={handlePayment}
+              >
+                <img src={kakaoPay_img} alt="kakaoPay_img" />
+              </button>
               <p className={styles.house_name}>{houseInfo?.name}</p>
               <button
                 className={styles.qr_box}
