@@ -3,6 +3,8 @@ import styles from "./styles/houseInfoBox.module.scss";
 import axios from "axios";
 import qr_img from "../../../../assets/image/qrcode.jpg";
 import kakaoPay_img from "../../../../assets/image/kakao_pay_button.png";
+const SECRET_KEY = import.meta.env.VITE_KAKAO_SECRET_KEY;
+const CID = import.meta.env.VITE_KAKAO_CID;
 
 interface HouseInfo {
   id: number | null;
@@ -118,7 +120,7 @@ function HouseInfoBox({
       const response = await axios.post(
         "/kakao-pay",
         {
-          cid: "TC0ONETIME",
+          cid: CID,
           partner_order_id: "partner_order_id",
           partner_user_id: "partner_user_id",
           item_name: "해적 1달 구독권",
@@ -131,7 +133,7 @@ function HouseInfoBox({
         },
         {
           headers: {
-            Authorization: `SECRET_KEY DEV55F4036178708913CAE242B44D9BFD6E6F79F`,
+            Authorization: `SECRET_KEY ${SECRET_KEY}`,
             "Content-Type": "application/json",
           },
         }
